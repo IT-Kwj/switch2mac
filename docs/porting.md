@@ -61,7 +61,7 @@ Milestones for a new game: boot → first NVN2 call → first frame → title sc
 
 ## 4. Run-time shaders (the black screen)
 
-Switch 2 games build some shaders while they run, so they are not in the BNSH containers the split reads. Mario Kart World has 317 of them, including the final copy to the screen; without them the first launch is black. Their parts *are* in the dump, in BAHS containers (`Lib/agl`, `Lib/gsys`, `Lib/Terrain`, `Shader/*.sarc`) and loose in `main`.
+Switch 2 games build some shaders while they run, so they are not in the BNSH containers the split reads. Mario Kart World has 321 of them (4 only in handheld console mode), including the final copy to the screen; without them the first launch is black. Their parts *are* in the dump, in BAHS containers (`Lib/agl`, `Lib/gsys`, `Lib/Terrain`, `Shader/*.sarc`) and loose in `main`.
 
 1. Play the game with `./switch2mac.py run` (or the installed app). The host saves every unknown shader to `work/run/shdump` (or the app's support folder) as `<key>.ctl` + `<key>.code`.
 2. `./switch2mac.py refresh` builds them in, so your own build is complete.
