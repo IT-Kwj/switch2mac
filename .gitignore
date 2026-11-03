@@ -1,0 +1,13 @@
+# builds, dumps and anything made from the game: never committed
+/work/
+/.venv/
+*.app
+*.app.key
+*.img
+*.metallib
+*.mtl4a
+__pycache__/
+.DS_Store
+nxnative/dm/host/dmhost
+nxnative/dm/host/gen/
+nxnative/dm/gfx/tools/nx2_lower/nx2_lower
