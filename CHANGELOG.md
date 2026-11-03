@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-03 (2)
+
+- Builds now work on every macOS 26 version: the app is built for the macOS of the Mac that builds it, instead of nxnative's fixed 26.6 minimum. Thanks to lessy2020 on Reddit for finding and testing this on macOS 26.5.
+- `setup` checks the macOS version (macOS 26 or later is needed for Metal 4).
+
 ## 2026-11-03
 
 - README: the requirements now say **macOS 26.6 or later**. Apps built with switch2mac do not open on older versions (reported on macOS 26.5.1).

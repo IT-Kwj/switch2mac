@@ -26,7 +26,7 @@ switch2mac is a fork of [nxnative](https://github.com/seedds/nxnative), carried 
 
 ## What you need
 
-- A Mac with Apple silicon and **macOS 26.6 or later** (older versions refuse to open the app; tested: M1 Max, 64 GB, macOS 26.6). The game uses about 13-16 GB of memory.
+- A Mac with Apple silicon and **macOS 26 or later** (the runtime draws with Metal 4, new in macOS 26). The app is built for the macOS version of the Mac that builds it (tested: M1 Max, 64 GB, macOS 26.6; reported working: M4 Pro, 24 GB, macOS 26.5). The game uses about 13-16 GB of memory.
 - **Xcode** with the Metal toolchain (Xcode → Settings → Components), and its command line tools.
 - **.NET 10 SDK** ([dot.net](https://dot.net)): the shader translator runs on it.
 - **Python 3.12 or newer** (python.org or Homebrew).

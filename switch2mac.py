@@ -44,6 +44,11 @@ def env():
     return e
 
 
+def macos():   # this Mac's macOS as major.minor (e.g. 26.5): the app is built for the Mac that builds it, like its Metal shaders
+    v = subprocess.run(['sw_vers', '-productVersion'], capture_output=True, text=True).stdout.strip().split('.')
+    return f'{v[0]}.{v[1] if len(v) > 1 else 0}'
+
+
 def setup(a):
     say('Python packages (.venv)')
     if not VENV.exists(): run([sys.executable, '-m', 'venv', VENV])
@@ -54,6 +59,8 @@ def setup(a):
     r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
     print(f'  Metal compiler: {"ok" if r.returncode == 0 else "MISSING (Xcode → Settings → Components → Metal Toolchain)"}')
     print(f'  .NET: {"ok (" + env()["DOTNET_ROOT"] + ")" if "DOTNET_ROOT" in env() else "MISSING (.NET 10 SDK from dot.net)"}')
+    v = macos()
+    print(f'  macOS {v}: ' + ('ok (the app is built for this version and later)' if int(v.split('.')[0]) >= 26 else 'TOO OLD (macOS 26 or later is needed: the runtime draws with Metal 4)'))
 
 
 def dump_dirs(d):
@@ -157,7 +164,7 @@ def shaders(a, tid, w, sh, cache, e):
 def host_and_app(a, tid, w, lib, e):
     g = GAMES[tid]; prof = w / 'profile' / tid
     say('host (the native runtime)')
-    run(['make', '-C', NX / 'dm/host', f'GAME={tid}', 'dmhost'], env=e)
+    run(['make', '-C', NX / 'dm/host', f'GAME={tid}', f'MACOS_MIN={macos()}', 'dmhost'], env=e)   # for this Mac's macOS, not nxnative's fixed 26.6
     font = w / 'build/font'
     if not (font / 'nintendo_ext.ttf').exists():
         font.mkdir(parents=True, exist_ok=True); run([py(), NX / 'dm/tools/make_ext_font.py', font / 'nintendo_ext.ttf'], env=e)
