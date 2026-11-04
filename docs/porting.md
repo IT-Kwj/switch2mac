@@ -8,37 +8,37 @@ Bring-up is research. A new game will boot partway, draw wrong, or crash, and ea
 
 | Step | Tool | Output in `work/` |
 |---|---|---|
-| Game files | `engines/switch2mac/dm/tools/romfs_image.py` | `extract/ExeFS`, `extract/RomFS.img` (one image of the RomFS) |
-| Code | `engines/switch2mac/dm/tools/patch_nso.py` | `build/patched/`: the game's modules, rewritten so system calls and SDK functions land in the host |
+| Game files | switch2mac-engine's `dm/tools/romfs_image.py` | `extract/ExeFS`, `extract/RomFS.img` (one image of the RomFS) |
+| Code | switch2mac-engine's `dm/tools/patch_nso.py` | `build/patched/`: the game's modules, rewritten so system calls and SDK functions land in the host |
 | Shaders | `nx2_split.py` (find + lower Ampere → Maxwell with `nx2_lower`), `own_compilers.py` (Ryujinx translator → MSL → Metal), `nx2_res.py`, `nx2_reflect.py` | `cache/metal_shader_cache/b-<chain>/`, `profile/<title ID>/shader_*.tsv` |
-| Host | `make -C engines/switch2mac/dm/host GAME=<title ID>` | `engines/switch2mac/dm/host/dmhost`: the native runtime, built for this game's profile |
-| App | `engines/switch2mac/dm/mac/pack_app.py` | `<Game>.app` (APFS clones of the big files) |
+| Host | `make -C engines/switch2mac-<commit>/dm/host GAME=<title ID>` | `dm/host/dmhost` there: the native runtime, built for this game's profile |
+| App | switch2mac-engine's `dm/mac/pack_app.py` | `<Game>.app` (APFS clones of the big files) |
 
-The game's ARM64 code runs directly on the CPU. NVN2, the Switch 2 graphics API, is implemented on Metal 4 (`engines/switch2mac/dm/gfx/nvn/nvn_mtl.m`), and every shader is translated ahead of time. The *chain version* (`engines/switch2mac/dm/gfx/nvn/dmsh_chain.h`) is a hash of the translator tools. It names the library folder. Any change to the translator tools needs `dmsh_chain.py --header` and a host rebuild, or the host refuses the libraries.
+The game's ARM64 code runs directly on the CPU. NVN2, the Switch 2 graphics API, is implemented on Metal 4 (switch2mac-engine's `dm/gfx/nvn/nvn_mtl.m`), and every shader is translated ahead of time. The *chain version* (switch2mac-engine's `dm/gfx/nvn/dmsh_chain.h`) is a hash of the translator tools. It names the library folder. Any change to the translator tools needs `dmsh_chain.py --header` and a host rebuild, or the host refuses the libraries.
 
 ## 1. The dump
 
 You need a dumped, already-extracted folder: `exefs/` (`main`, `main.npdm`, `sdk`, `subsdk*`, `rtld`) and `romfs/`, or the same under `base/`. switch2mac decrypts nothing and uses no keys. Dump tools leave `.listing` files, and Finder adds `.DS_Store`; `build` skips both.
 
-The title ID is in `main.npdm` (ACI0 + 0x10). The build ID of each module is the first 0x10 bytes of its NSO build ID: `engines/switch2mac/dm/tools/nso.py <module> <out.img>` unpacks the module and prints it (`moduleid`). A version's identity is the build ID of its `main`.
+The title ID is in `main.npdm` (ACI0 + 0x10). The build ID of each module is the first 0x10 bytes of its NSO build ID: switch2mac-engine's `dm/tools/nso.py <module> <out.img>` unpacks the module and prints it (`moduleid`). A version's identity is the build ID of its `main`.
 
 Updates: an update dump's RomFS is the full patched tree. Build from the update's own `exefs/` + `romfs/`.
 
 ## 2. A game folder and a profile
 
 1. **`games/<game>/game.json`**: `title_id`, `name`, `version` and `marker`. The marker is a RomFS file that only this game has, used by the app to check its image.
-2. **`engines/switch2mac/dm/games/<title ID>/game.tsv`**: the profile. Start from a copy of Mario Kart World's (`0400C3F00006E000/`) and change:
+2. **switch2mac-engine's `dm/games/<title ID>/game.tsv`**: the profile (a game on switch2mac's engine has its profile there: commit it in that repository, then pin the new commit in `games/<game>/game.json`). Start from a copy of Mario Kart World's (`0400C3F00006E000/`) and change:
    - `title_id`, `program_id`, `name`.
    - `build v0 <version> main=<id> sdk=<id> subsdk0=<id> ...`: one line per version, with the IDs the build prints when it stops.
    - `modules`: every module that `main` imports from, in load order (Mario Kart World 1.0.0: `main subsdk0 sdk`; 1.8.0 adds `subsdk1`).
    - `romfs_marker`: as in game.json.
-   - Memory: `mem_reserve`, `mem_alias`, `app_pool` and `sys_resource` (the system resource size from NPDM META +0x14). `engines/switch2mac/dm/games/profile_guess.py <ExeFS dir> <RomFS dir>` guesses these and other keys from the game's files, with a reason for each.
+   - Memory: `mem_reserve`, `mem_alias`, `app_pool` and `sys_resource` (the system resource size from NPDM META +0x14). switch2mac-engine's `dm/games/profile_guess.py <ExeFS dir> <RomFS dir>` guesses these and other keys from the game's files, with a reason for each.
    - `tex_flush_upload on` and `tex_dirty_upload on`: keep these. Nintendo's own engines fill textures from the CPU, sometimes before the texture is created (see "Lessons" below).
    - Empty shader tables (`shader_map.tsv`, `shader_facts.tsv`, `shader_pairs.tsv`, `shader_map.tsv.conflicts.tsv`, each with only its header). The first build fills them in `work/profile/`; copy the results back into the profile when they are good.
 3. `games/<game>/launcher.py` and `env.txt`: copy Mario Kart World's and change the title ID and its game-specific rows (its Performance mode toggle names one of Mario Kart World's own shaders).
 4. Run `./switch2mac.py build <dump>`.
 
-nxnative's [`dm/games/README.md`](../engines/switch2mac/dm/games/README.md) describes every profile file.
+nxnative's `dm/games/README.md` ([in switch2mac-engine](https://github.com/azmasm/switch2mac-engine/blob/switch2mac/dm/games/README.md)) describes every profile file.
 
 ### A game another port already runs
 
@@ -85,7 +85,7 @@ Metal builds a pipeline for every shader pair and render state the game draws wi
 
 A list belongs to one game **and** one engine version: its first line is `# switch2mac shader list<TAB>game=<title ID><TAB>engine=<switch2mac | kind-commit>`. Keys differ between engines, so a game whose `game.json` moves to another engine commit may need its list recorded again.
 
-The app records every row it builds in `pso_user.tsv` (next to its save folder). When the game closes, `engines/switch2mac/dm/host/s2m_share.m` writes the rows the shipped list lacks to `shader-list-contribution.txt` under the same header (the engine comes from `S2M_ENGINE`, baked into the app), and every 100 new rows offers to send them: the **Shader list** issue form (`.github/ISSUE_TEMPLATE/shader-list.yml`) plus the file in Finder to drag in. Sent rows go to `.shader-list-contribution.txt.done`. `S2M_SHARE=0` turns the offer off, `S2M_SHARE_EVERY` changes the 100.
+The app records every row it builds in `pso_user.tsv` (next to its save folder). When the game closes, switch2mac-engine's `dm/host/s2m_share.m` writes the rows the shipped list lacks to `shader-list-contribution.txt` under the same header (the engine comes from `S2M_ENGINE`, baked into the app), and every 100 new rows offers to send them: the **Shader list** issue form (`.github/ISSUE_TEMPLATE/shader-list.yml`) plus the file in Finder to drag in. Sent rows go to `.shader-list-contribution.txt.done`. `S2M_SHARE=0` turns the offer off, `S2M_SHARE_EVERY` changes the 100.
 
 Maintainers: `tools/shader_list.py collect` reads the open `shader-list` issues (`gh`), checks each file's game and engine against `games/<game>/game.json` and its shader keys against the game's shader table (Mario Kart World; Donkey Kong Bananza once its engine is fetched), and reports; `--apply` adds the rows, `--close` thanks and closes the issues taken, `--drop-unknown` drops rows of other shaders. A file can be merged by hand with `merge <game> <file>`. For a new game, play it widely, then seed its list with `new <game>` and `merge`. (This follows MacNativeGames' shared shader list for Tears of the Kingdom.)
 
@@ -109,7 +109,7 @@ All of these are host switches (`./switch2mac.py run VAR=value ...`). While the 
 | `memdump <addr> <bytes> <file>` (ctl) | raw guest memory |
 | `DM_GPUW_LOG=1` | each distinct GPU writer (storage-buffer writes with shader key, copies, fills), once |
 | `DM_GPU_READWATCH=1` | the CPU code that reads GPU results |
-| `DM_NVN_GPUPROF=every:600` + `engines/switch2mac/dm/tools/gpuprof.py` | GPU time per pass |
+| `DM_NVN_GPUPROF=every:600` + switch2mac-engine's `dm/tools/gpuprof.py` | GPU time per pass |
 | `DM_METAL_HUD=1`, `DM_OVERLAY=detailed`, `tools/porting/perf.sh [log]` | fps, GPU / frame time, memory |
 | `DM_FT_DEBUG=WxH`, `DM_NVN_TEXINFO=WxH`, `DM_TEX_BT=WxH` | life of textures of one size: registration, uploads, who creates them |
 
@@ -117,7 +117,7 @@ Method that worked every time: screenshot → pass dump of that frame → the pa
 
 ## 6. Lessons from Mario Kart World
 
-Each of these lessons cost days to find, and each will probably apply to the next Switch 2 game too. All the fixes are in this repository's `engines/switch2mac/`.
+Each of these lessons cost days to find, and each will probably apply to the next Switch 2 game too. All the fixes are in [switch2mac-engine](https://github.com/azmasm/switch2mac-engine).
 
 - **Movies**: 1.0.0 decodes VP9 through the low-level `nn::codec` API, not `movie::VideoDecoder`. `hle_nx2_codec.c` covers both with libvpx, on a worker thread per decoder.
 - **NVN2 compute driver constants**: c0 has its own layout on Switch 2 (dispatch size at +4 / +8). The NVN1 layout gave 1/0 → NaN → a white world.

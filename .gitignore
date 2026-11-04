@@ -8,10 +8,5 @@
 *.mtl4a
 __pycache__/
 .DS_Store
-engines/switch2mac/dm/host/dmhost
-engines/switch2mac/dm/host/dmhost.dSYM/
-engines/switch2mac/dm/host/gen/
-engines/switch2mac/dm/gfx/tools/nx2_lower/nx2_lower
-# the engines builds download (Donkey Kong Bananza's, Pokopia's): engines/switch2mac is Mario Kart World's, in the repository
-/engines/*
-!/engines/switch2mac/
+# the engines builds download, one per game's pinned commit (switch2mac-engine, nxnative, pokopia-native)
+/engines/

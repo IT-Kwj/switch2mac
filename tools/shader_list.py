@@ -16,7 +16,7 @@ when the game closes: Send opens the "Shader list" issue form on GitHub and show
   tools/shader_list.py ship <game> <out pso_manifest.tsv> [--base <engine's own list>]   the list a build ships (switch2mac.py build runs it)
 
 <game> is a games/ folder name (mario-kart-world) or a title ID. A contribution's header names its game and engine; rows whose shader keys are not the game's
-(checked where the game's shader table is at hand: Mario Kart World always, Donkey Kong Bananza once its engine is fetched) refuse the file unless --drop-unknown.
+(checked where the game's shader table is at hand: Mario Kart World and Donkey Kong Bananza once their engine is fetched) refuse the file unless --drop-unknown.
 """
 import json, re, subprocess, sys, urllib.request
 from pathlib import Path
@@ -32,7 +32,10 @@ def games():
     out = {}
     for p in sorted((ROOT / 'games').glob('*/game.json')):
         g = json.loads(p.read_text()); e = g.get('engine')
-        g.update(dir=p.parent, list=p.parent / 'shader_list.tsv', engine_id=f'{e["kind"]}-{e["commit"][:12]}' if e else 'switch2mac')
+        # engine_id: what a list and a contribution name. switch2mac's own engine keeps "switch2mac" across its commits (its shader keys change only with its translator,
+        # which switch2mac controls); another engine is named with its commit. engine_dir: where switch2mac.py build fetched it (engines/<kind>-<commit>)
+        g.update(dir=p.parent, list=p.parent / 'shader_list.tsv', engine_dir=ROOT / f'engines/{e["kind"]}-{e["commit"][:12]}',
+                 engine_id='switch2mac' if e['kind'] == 'switch2mac' else f'{e["kind"]}-{e["commit"][:12]}')
         out[g['title_id']] = g
     return out
 
@@ -56,15 +59,12 @@ def header(text):   # (title ID, engine) from the first header line, or None
 
 
 def known_keys(g):   # the game's shader keys, or None when its table is not at hand (its rows are then checked by form only)
-    if g['engine_id'] == 'switch2mac':
-        keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', (ROOT / f'engines/switch2mac/dm/games/{g["title_id"]}/shader_map.tsv').read_text(), re.M))
-        rt = g['dir'] / 'runtime_shaders.tsv'
-        if rt.exists(): keys |= set(re.findall(r'^([0-9a-f]{16})\t', rt.read_text(), re.M))
-        return keys
-    if g['engine']['kind'] == 'nxnative':
-        m = ROOT / f'engines/{g["engine_id"]}/dm/games/{g["title_id"]}/shader_map.tsv'
-        if m.exists(): return set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', m.read_text(), re.M))
-    return None
+    m = g['engine_dir'] / f'dm/games/{g["title_id"]}/shader_map.tsv'   # switch2mac's and nxnative's engines carry the game's shader map
+    if not m.exists(): return None
+    keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', m.read_text(), re.M))
+    rt = g['dir'] / 'runtime_shaders.tsv'
+    if rt.exists(): keys |= set(re.findall(r'^([0-9a-f]{16})\t', rt.read_text(), re.M))
+    return keys
 
 
 def check(g, text, drop_unknown):   # (rows to add, problems): problems refuse the file

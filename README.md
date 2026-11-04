@@ -6,7 +6,7 @@ It is not an emulator: the game's own ARM64 code runs directly on the Mac, rewri
 
 | Game | Version | Built with | Status | Page |
 |---|---|---|---|---|
-| Mario Kart World | 1.0.0 | switch2mac's engine (`engines/switch2mac/`) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
+| Mario Kart World | 1.0.0 | switch2mac's engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine)) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
 | Donkey Kong Bananza | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level's opening areas (busy scenes dip to 30 for a few seconds). Not yet tested in switch2mac | [games/donkey-kong-bananza](games/donkey-kong-bananza) |
 | Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". Not yet tested in switch2mac | [games/pokemon-pokopia](games/pokemon-pokopia) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
@@ -127,13 +127,13 @@ The runtime loads the game's modules into memory, rewrites their system calls an
 | `tools/shader_list.py` | the shared shader lists: stats, merge, collect the lists players send, ship each build's list |
 | `tools/engine/` | switch2mac's front end for the games built with another engine: the overlay and settings panel (`s2m_ui.m`), the script that adds it to that engine (`patch.py`) and the one that moves those games to their build's newest commit (`update.py`) |
 | `tools/porting/` | helpers for bringing up a game: run-time shader finder, NSO disassembly helper, pass tracer, performance summary |
-| `engines/switch2mac/` | switch2mac's engine: nxnative with switch2mac's Switch 2 changes (upstream's iOS app sources are kept because the shader tools share them) |
-| `engines/switch2mac/dm/games/<title ID>/` | Mario Kart World's game profile: build IDs, memory layout, shader tables, shared pipeline list |
 | `docs/` | [porting.md](docs/porting.md) (bringing up a game), [mario-kart-world.md](docs/mario-kart-world.md) (how the first port was made) |
 | `AGENTS.md` | notes for AI coding assistants |
 | `CHANGELOG.md` | what changed, release by release |
 
-Made by the build, never committed: `work/` (the build), `engines/` (the fetched engines), `.venv/`.
+Made by the build, never committed: `work/` (the build), `engines/` (each game's engine, fetched at the commit its `game.json` names), `.venv/`.
+
+Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 work and the game's profile, is its own repository: [switch2mac-engine](https://github.com/azmasm/switch2mac-engine). Engine bugs and fixes (graphics, crashes, speed) go there; everything else here. Not sure? Open it here, and it is moved if it belongs there.
 
 ## Contributing
 
@@ -160,4 +160,4 @@ Other improvements are welcome too: speed-ups, fixes, testing on other Macs, gam
 
 ## Licences and credits
 
-MIT, except `engines/switch2mac/dm/gfx/tools/nx2_lower/` (GPL-3.0-or-later) and the third-party code in `engines/switch2mac/dm/third_party/`. Built on nxnative by seedds, the Switch 2 patch series by potentialad9091, Eglantine's shader lowering, Ryujinx's shader translator and xFractals' pokopia-native; the shared pipeline list and the overlay / settings panel design follow MacNativeGames by ly05010419. Details: [NOTICE.md](NOTICE.md), [LEGAL.md](LEGAL.md).
+MIT. The engines are separate repositories under their own licences ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine): MIT, except its `nx2_lower` (GPL-3.0-or-later) and third-party code). Built on nxnative by seedds, the Switch 2 patch series by potentialad9091, Eglantine's shader lowering, Ryujinx's shader translator and xFractals' pokopia-native; the shared pipeline list and the overlay / settings panel design follow MacNativeGames by ly05010419. Details: [NOTICE.md](NOTICE.md), [LEGAL.md](LEGAL.md).

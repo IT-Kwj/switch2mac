@@ -1,6 +1,6 @@
 # Mario Kart World
 
-Title ID `0400C3F00006E000`. Profile: [`engines/switch2mac/dm/games/0400C3F00006E000`](../../engines/switch2mac/dm/games/0400C3F00006E000).
+Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in switch2mac-engine](https://github.com/azmasm/switch2mac-engine/tree/switch2mac/dm/games/0400C3F00006E000).
 
 | Version | Title version | Status |
 |---|---|---|
@@ -11,7 +11,7 @@ Title ID `0400C3F00006E000`. Profile: [`engines/switch2mac/dm/games/0400C3F00006
 
 ## Build
 
-Built with switch2mac's own engine (`engines/switch2mac/` in this repository). Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+Built with switch2mac's own engine, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
 ```bash
 ./switch2mac.py build "<your dump folder>"
@@ -89,6 +89,6 @@ An update has other build IDs, and from 1.8.0 on also a `subsdk1` module and a n
 
 1. Pack the update's own `exefs/` and `romfs/` (an update dump's RomFS is the full patched tree) as the dump folder.
 2. Add a `build` line for it in `game.tsv` (the IDs are printed when `build` stops) and the modules in its `modules` line, then run `build` again.
-3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in `engines/switch2mac/dm/host`).
+3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in switch2mac-engine's `dm/host`).
 
 Please report what happens (log + screenshots, no game files). Mark such builds as untested.

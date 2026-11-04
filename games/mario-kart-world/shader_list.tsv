@@ -1,5 +1,5 @@
 # switch2mac shared shader list	game=0400C3F00006E000	engine=switch2mac
-# Mario Kart World 1.0.0, built with switch2mac's engine (engines/switch2mac/). Shipped in the app as its pso_manifest.tsv: the app builds these before its first frame.
+# Mario Kart World 1.0.0, built with switch2mac's engine (switch2mac-engine). Shipped in the app as its pso_manifest.tsv: the app builds these before its first frame.
 # Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.
 # Recorded while playing Grand Prix, free roam and the menus; players add to it with the app's Send button (tools/shader_list.py collect).
 S	24828e9d94acbb4e_b	0

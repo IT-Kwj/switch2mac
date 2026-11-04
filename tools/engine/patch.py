@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """switch2mac's additions in another nxnative checkout (upstream nxnative for Donkey Kong Bananza, pokopia-native's for Pokémon Pokopia), as switch2mac.py build applies them:
 
-  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (engines/switch2mac/dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
+  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (tools/engine/s2m_share.m, a copy of switch2mac-engine's dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
   - the overlay's data: mtl_cur_frame (nvn_mtl.m) and nvn_game_size (hle_nvn.c), when the checkout lacks them
   - the "Performance overlay" row in the app's settings list (dm/games/settings.py)
 
@@ -29,7 +29,7 @@ def edit(path, after, add, why):   # add the text after the first line holding `
 def main():
     if len(sys.argv) != 2: sys.exit(__doc__)
     nx = Path(sys.argv[1]).resolve(); host = nx / 'dm/host'; nvn = nx / 'dm/gfx/nvn'
-    for f in (ROOT / 'tools/engine/s2m_ui.m', ROOT / 'engines/switch2mac/dm/host/s2m_share.m'):   # the overlay and panel; the shared shader list's offer (the same file as Mario Kart World's)
+    for f in (ROOT / 'tools/engine/s2m_ui.m', ROOT / 'tools/engine/s2m_share.m'):   # the overlay and panel; the shared shader list's offer (the same file as Mario Kart World's)
         src = f.read_bytes()
         if not (host / f.name).is_file() or (host / f.name).read_bytes() != src: (host / f.name).write_bytes(src); print(f'  {f.name} copied')
     mk = host / 'Makefile'; s = mk.read_text()

@@ -9,7 +9,7 @@
 
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
-Each supported game has a folder in games/ (game.json names it); its profile is engines/switch2mac/dm/games/<title ID>.
+Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: switch2mac-engine's dm/games/<title ID>).
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
 with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
 """
@@ -17,7 +17,7 @@ import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NX = ROOT / 'engines/switch2mac'   # Mario Kart World's engine (the others are fetched next to it)
+NX = None   # the engine of the game being built on switch2mac's engine: engines/switch2mac-<commit> (use_engine)
 VENV = ROOT / '.venv'
 ENGINES = ROOT / 'engines'   # pinned checkouts of the other engines some games are built with (game.json "engine")
 GAMES = {g['title_id']: dict(g, dir=p.parent) for p in sorted((ROOT / 'games').glob('*/game.json')) for g in [json.loads(p.read_text())]}
@@ -119,6 +119,15 @@ def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm
 def title_and_build(exefs):
     sys.path.insert(0, str(NX / 'dm/tools')); import nso
     return title_id(exefs / 'main.npdm'), nso.read(exefs / 'main').build_id[:16].hex()
+
+
+def own_engine(g): return g.get('engine', {}).get('kind') == 'switch2mac'   # built step by step here (Mario Kart World), not by another builder
+
+
+def use_engine(g):   # switch2mac's engine at the commit the game pins, fetched once: every step below reads it through NX
+    global NX
+    NX = engine_dir(g)
+    return NX
 
 
 def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine": upstream nxnative or pokopia-native), fetched once: that commit only, no history
@@ -284,7 +293,9 @@ def build(a):
     if 'DOTNET_ROOT' not in e: sys.exit('.NET is missing: run ./switch2mac.py setup for the checks')
     say('the dump'); tid = dump_title(a.dump)
     if tid in GAMES: print(f'  {GAMES[tid]["name"]} ({tid})'); free_space(w, GAMES[tid])
-    if 'engine' in GAMES.get(tid, {}): return engine_build(a, tid, w, e)
+    if not own_engine(GAMES.get(tid, {'engine': {'kind': 'switch2mac'}})): return engine_build(a, tid, w, e)
+    if tid in GAMES: use_engine(GAMES[tid])
+    else: sys.exit(f'title {tid} is not supported yet (this repository has: {", ".join(g["name"] + " " + t for t, g in GAMES.items())}).\nAdding a game: docs/porting.md')
     exefs, romfs = dump_dirs(a.dump)
     tid, bid = title_and_build(exefs); check_version(tid, bid)
     for d in (ex / 'ExeFS', b, sh): d.mkdir(parents=True, exist_ok=True)
@@ -305,7 +316,8 @@ def refresh(a):
     tf = w / 'title.txt'
     if not tf.exists(): sys.exit('no finished build in ' + str(w) + ': run build first')
     tid = tf.read_text().strip()
-    if 'engine' in GAMES[tid]: sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on switch2mac\'s engine (build again instead)')
+    if not own_engine(GAMES[tid]): sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on switch2mac\'s engine (build again instead)')
+    use_engine(GAMES[tid])
     caps = w / 'captures'; caps.mkdir(exist_ok=True); new = []
     for saved in (Path.home() / f'Library/Application Support/nxnative/{tid}/shdump', w / 'run/shdump'):   # the installed app's captures, and run's
         got = [p for p in saved.glob('*') if p.is_file() and not (caps / p.name).exists()] if saved.is_dir() else []
@@ -334,7 +346,8 @@ def run_game(a):
     w = paths(a)[0]; tf = w / 'title.txt'
     if not tf.exists(): sys.exit('no finished build: run build first')
     tid = tf.read_text().strip(); g = GAMES[tid]; r = w / 'run'
-    if 'engine' in g: sys.exit(f'{g["name"]} is built with another engine: open the app instead (its own runner: {w / tid})')
+    if not own_engine(g): sys.exit(f'{g["name"]} is built with another engine: open the app instead (its own runner: {w / tid})')
+    use_engine(g)
     for d in ('save', 'temp', 'shdump'): (r / d).mkdir(parents=True, exist_ok=True)
     (r / 'ctl.txt').write_text(''); (w / 'logs').mkdir(exist_ok=True)
     e = dict(os.environ, DM_ROOT=str(w), DM_ROMFS=str(w / 'extract/RomFS.img'), DM_SAVE=str(r / 'save'), DM_TEMP=str(r / 'temp'), DM_NVN_SHDUMP=str(r / 'shdump'),

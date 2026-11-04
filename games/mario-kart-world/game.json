@@ -3,5 +3,10 @@
  "name": "Mario Kart World",
  "version": "1.0.0",
  "marker": "Movie/StaffRoll_00.webm",
- "disk_gb": 50
+ "disk_gb": 50,
+ "engine": {
+  "kind": "switch2mac",
+  "repo": "https://github.com/azmasm/switch2mac-engine",
+  "commit": "d0745f0455b5b08df690116714ab32351ca18634"
+ }
 }

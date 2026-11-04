@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 (3)
+
+- Mario Kart World's engine now lives in its own repository, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) (a fork of nxnative). switch2mac fetches it when building, the same way it fetches the other games' engines. Engine bugs and fixes go there; everything else stays here.
+
 ## 2026-11-04 (2)
 
 - New: **Build a Game.command**. Double-click it, drag your dump folder in, and the game ends up in Applications. A Quick start at the top of the README walks through it.

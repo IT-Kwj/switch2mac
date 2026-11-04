@@ -11,7 +11,7 @@
        old rows a build does not have are skipped quietly, and contributions recorded with the old engine are refused by tools/shader_list.py from then on);
        the game's README and NOTICE.md name the new commit. One commit on dev per game; the old version's download in engines/ is deleted. Nothing is pushed.
 
-A game's build is: for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
+A game's build is: for switch2mac-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
 of that repository. The newest such commit on the default branch is the one taken. Uses gh (signed in) or GitHub's public API.
 """
 import json, os, re, shutil, subprocess, sys, urllib.request
@@ -42,7 +42,7 @@ def games():
 
 def newest(g):   # (sha, date, subject) of the newest commit of the game's build
     e = g['engine']; slug = re.search(r'github\.com/([\w.-]+/[\w.-]+?)(?:\.git)?$', e['repo'])[1]
-    paths = g.get('watch') or ([f'dm/games/{g["title_id"]}'] if e['kind'] == 'nxnative' else [''])
+    paths = g.get('watch') or ([f'dm/games/{g["title_id"]}'] if e['kind'] == 'nxnative' else [''])   # switch2mac, pokopia-native: the whole repository
     best = None
     for p in paths:
         c = api(f'repos/{slug}/commits?per_page=1' + (f'&path={p}' if p else ''))[0]
@@ -80,6 +80,9 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
     e = g['engine']; d = fetch(e['repo'], sha, e['kind']); env = dict(os.environ)
     if e['kind'] == 'nxnative':
         say(run([py(), ROOT / 'tools/engine/patch.py', d]).rstrip())
+        if not (d / f'dm/games/{g["title_id"]}/game.tsv').is_file(): raise RuntimeError(f'the new commit has no profile for {g["title_id"]}')
+        host, genv = d / 'dm/host', env
+    elif e['kind'] == 'switch2mac':   # switch2mac's own engine carries its front end already
         if not (d / f'dm/games/{g["title_id"]}/game.tsv').is_file(): raise RuntimeError(f'the new commit has no profile for {g["title_id"]}')
         host, genv = d / 'dm/host', env
     elif e['kind'] == 'pokopia-native':
@@ -123,7 +126,9 @@ def main():
     if apply_ and git('-C', str(ROOT), 'status', '--porcelain', '--untracked-files=no'): sys.exit('--apply needs a clean dev branch: commit or put away the changes first')
     changed = 0
     for g in games():
-        e = g['engine']; sha, date, subj = newest(g)
+        e = g['engine']
+        try: sha, date, subj = newest(g)
+        except Exception as x: say(f'{g["name"]}: could not check {e["repo"]} ({x})'); continue
         if sha == e['commit']: say(f'{g["name"]}: up to date ({e["kind"]} {sha[:12]})'); continue
         changed += 1
         say(f'{g["name"]}: {e["kind"]} has a newer build: {sha[:12]} ({date[:10]}: {subj}); pinned {e["commit"][:12]}')
