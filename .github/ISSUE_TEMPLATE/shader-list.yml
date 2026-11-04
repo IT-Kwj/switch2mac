@@ -1,0 +1,32 @@
+name: Shader list
+description: Send the shaders and pipelines your app built that a game's shared list lacks (the app's Send button opens this form).
+title: "[Shader list] "
+labels: ["shader-list"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! Drag the file the app showed in Finder (`shader-list-<title ID>-<date>.txt`) into the box below. It holds shader IDs and render settings only: no game files, no save, nothing about you.
+        Each game has its own list, and rows only go into the list of the game and engine version they were recorded with (the file's first line says which).
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: Filled in by the app.
+      placeholder: Mario Kart World (0400C3F00006E000)
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: The file
+      description: Drag `shader-list-<title ID>-<date>.txt` here (or paste its contents).
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before you submit
+      options:
+        - label: The file is the one the app made. I attached no game files, shader dumps, Metal libraries, saves or apps.
+          required: true

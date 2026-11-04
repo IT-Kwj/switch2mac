@@ -7,6 +7,54 @@ Title ID `0400C3F00006E000`. Profile: [`nxnative/dm/games/0400C3F00006E000`](../
 | 1.0.0 | 0 | Tested on an M1 Max (64 GB, macOS 26): title, menus, Grand Prix, free roam, traffic and movies; ~58 fps in races with Performance mode on, 2560x1440. Handheld console mode tested on an M1 Pro (16-core GPU, 32 GB, macOS 27): races at a locked 60 fps (GPU ~14.3 ms a frame); docked on the M1 Pro: ~26 ms, so the game paces at 30 |
 | any update | — | **Untested** |
 
+## Build
+
+Built with switch2mac's own engine (`nxnative/` in this repository). Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+
+```bash
+./switch2mac.py build "<your dump folder>"
+```
+
+```bash
+./switch2mac.py install
+```
+
+`build` writes only into `./work`:
+
+1. **Game files**: the code modules and one RomFS image (dump-tool leftovers such as `.listing` files are left out).
+2. **Code**: rewrites the game's modules so they run on the Mac.
+3. **Shaders**: takes the shaders from the game's archives and the ones it builds at run time from the dump (`runtime_shaders.tsv`), lowers them, translates them to Metal and compiles them.
+4. **Host** (the native runtime) and **app**.
+
+### First start: a short "preparing" screen
+
+The first launch is complete: about 320 of the game's shaders (among them all its mesh shaders for roads and ground) are not in its shader archives because the game builds them while it runs, and `build` takes them straight out of your dump (`runtime_shaders.tsv`).
+
+The repository also carries this game's **shared shader list** ([`shader_list.tsv`](shader_list.tsv), shipped as the app's `pso_manifest.tsv`): the ~12,000 shaders and Metal pipelines met while playing Grand Prix, free roam and the menus. The app builds them all behind a progress screen before the first frame, once; later starts take about 10 seconds. Without it every new place stutters the first time. Places nobody has recorded yet can still stutter once.
+
+If something still looks missing after a while (a shader the list does not cover, e.g. in a mode not tested), the app saves it; then:
+
+```bash
+./switch2mac.py refresh
+```
+
+```bash
+./switch2mac.py install
+```
+
+## Settings (key 2)
+
+| Setting | Default | What it does |
+|---|---|---|
+| Performance overlay | Compact | Same as key 1 |
+| Display mode | Window | Window or full screen |
+| Console mode | Docked | What the game is told |
+| Upscaling | Standard | MetalFX for the final picture on large screens |
+| Performance mode | On | Skips one environment-reflection update (~4 ms a frame); off = full reflections, a few fps lower |
+| Encode thread | On | Encodes GPU work on its own thread (~10 fps) |
+| Frame buffering, Metal 4 pipelines, Pipeline prebuild | tested defaults | Advanced |
+| Rumble, strength, cutoff | On | Controller rumble |
+
 ## Files here
 
 | File | What |

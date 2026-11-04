@@ -4,7 +4,7 @@ These notes are for an AI coding assistant (Claude Code, Codex, Cursor and other
 
 ## What this project is
 
-switch2mac builds native Mac apps of Nintendo Switch 2 games from the user's own dump. It is built on [nxnative](https://github.com/seedds/nxnative) (in `nxnative/`) plus Switch 2 work done here: NVN2 on Metal, mesh / task shaders, movies, shader translator fixes and performance work. The game's ARM64 code runs natively; it is not an emulator. Mario Kart World 1.0.0 is the first supported game (`games/mario-kart-world/`).
+switch2mac builds native Mac apps of Nintendo Switch 2 games from the user's own dump. It is built on [nxnative](https://github.com/seedds/nxnative) (in `nxnative/`) plus Switch 2 work done here: NVN2 on Metal, mesh / task shaders, movies, shader translator fixes and performance work. The game's ARM64 code runs natively; it is not an emulator. Mario Kart World 1.0.0 is the first supported game (`games/mario-kart-world/`), on switch2mac's own engine. Donkey Kong Bananza and Pokémon Pokopia are built with another engine each (upstream nxnative, xFractals' pokopia-native), named with its commit in their `game.json`; `build` fetches it into `engines/` and adds switch2mac's front end with `tools/engine/patch.py`.
 
 ## Rules
 
@@ -26,15 +26,16 @@ switch2mac builds native Mac apps of Nintendo Switch 2 games from the user's own
 
 - **`run`**: runs the build from `work/` with a log in `work/logs/`, and writes control commands to `work/run/ctl.txt`.
 - **App log:** `~/Library/Logs/nxnative/<title ID>.log`.
-- **Performance summary:** `tools/perf.sh [log]`.
-- **Shared pipeline list:** `tools/pipelines.py new` / `merge` (docs/porting.md § 4b).
+- **Performance summary:** `tools/porting/perf.sh [log]`.
+- **Shared shader lists:** one per game, `games/<game>/shader_list.tsv`; `tools/shader_list.py stats` / `new` / `merge` / `collect` / `ship` (docs/porting.md § 4b). Never mix lists: each is for one game and one engine version.
 
 ## Where things are
 
 | Need | Look at |
 |---|---|
 | Build steps | `switch2mac.py` |
-| Game profile (build IDs, memory, flags, shader tables) | `nxnative/dm/games/<title ID>/` |
+| A game built with another engine, and the front end added to it (overlay, key-2 settings, no launch window) | `games/<game>/game.json` "engine", `tools/engine/patch.py`, `tools/engine/s2m_ui.m`; moving it to its build's newest commit: `tools/engine/update.py` |
+| Game profile (build IDs, memory, flags, shader tables) | `nxnative/dm/games/<title ID>/` (Mario Kart World); the engine's own for the others |
 | NVN2 → Metal | `nxnative/dm/gfx/nvn/nvn_mtl.m`, `nxnative/dm/host/hle_nvn.c` |
 | Switch 2 system stubs, movies | `nxnative/dm/host/hle_nx2*.c` |
 | Shader split / lowering / translation | `nxnative/dm/gfx/tools/nx2_split.py`, `nx2_lower/`, `dmsh_build.py`, `nxnative/dm/third_party/ryujinx/` |

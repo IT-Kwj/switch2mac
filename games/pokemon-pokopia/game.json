@@ -1,0 +1,6 @@
+{
+ "title_id": "0400A3A01EE4C000",
+ "name": "Pokemon Pokopia",
+ "version": "update v327680 or v655360 (2.0.1)",
+ "engine": {"kind": "pokopia-native", "repo": "https://github.com/xFractals/pokopia-native", "commit": "53d61c40a1fca8b35039e4ea4df1da7a69ea1901"}
+}

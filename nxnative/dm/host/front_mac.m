@@ -469,6 +469,7 @@ void front_run(void (*guest)(void)) {
         v.layer = g_layer; [(DmGameView *)v fitDrawable];
         const char *ov = getenv("DM_OVERLAY"); g_ov_mode = ov && !strcmp(ov, "off") ? 0 : ov && !strcmp(ov, "detailed") ? 2 : 1;
         g_ov = [[DmOverlay alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]; [v addSubview:g_ov]; [g_ov refreshWithCPU:0];
+        void s2m_share_attach(NSWindow *win); s2m_share_attach(win);   // the shared shader list: contribution file and the offer to send it, when the game closes (s2m_share.m)
         [win center];
         [win makeKeyAndOrderFront:nil];
         g_screen_fps = (int)(win.screen ?: NSScreen.mainScreen).maximumFramesPerSecond;

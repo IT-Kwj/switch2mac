@@ -10,6 +10,8 @@
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
 Each supported game has a folder in games/ (game.json names it); its profile is nxnative/dm/games/<title ID>.
+A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
+with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
 """
 import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys
 from pathlib import Path
@@ -17,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 NX = ROOT / 'nxnative'
 VENV = ROOT / '.venv'
+ENGINES = ROOT / 'engines'   # pinned checkouts of the other engines some games are built with (game.json "engine")
 GAMES = {g['title_id']: dict(g, dir=p.parent) for p in sorted((ROOT / 'games').glob('*/game.json')) for g in [json.loads(p.read_text())]}
 SKIP = {'.listing', '.DS_Store'}   # a dump tool's FTP listings and Finder's files: never game files
 
@@ -59,6 +62,7 @@ def setup(a):
     r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
     print(f'  Metal compiler: {"ok" if r.returncode == 0 else "MISSING (Xcode → Settings → Components → Metal Toolchain)"}')
     print(f'  .NET: {"ok (" + env()["DOTNET_ROOT"] + ")" if "DOTNET_ROOT" in env() else "MISSING (.NET 10 SDK from dot.net)"}')
+    print(f'  Python {sys.version_info[0]}.{sys.version_info[1]}: ' + ('ok' if sys.version_info >= (3, 12) else 'TOO OLD for the games built with upstream nxnative (3.12 or later)'))
     v = macos()
     print(f'  macOS {v}: ' + ('ok (the app is built for this version and later)' if int(v.split('.')[0]) >= 26 else 'TOO OLD (macOS 26 or later is needed: the runtime draws with Metal 4)'))
 
@@ -70,12 +74,75 @@ def dump_dirs(d):
     sys.exit(f'no exefs/main and romfs/ in {d} (or in {d}/base)')
 
 
-def title_and_build(exefs):
-    npdm = (exefs / 'main.npdm').read_bytes()
+def title_id(npdm):
+    npdm = npdm.read_bytes()
     aci = struct.unpack_from('<I', npdm, 0x70)[0]   # ACI0 offset in the META header
-    tid = f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
+    return f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
+
+
+def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/)
+    d = Path(d).expanduser().resolve()
+    for base in (d, d / 'base'):
+        if (base / 'exefs/main.npdm').is_file(): return title_id(base / 'exefs/main.npdm')
+    sys.exit(f'no exefs/main.npdm in {d} (or in {d}/base)')
+
+
+def title_and_build(exefs):
     sys.path.insert(0, str(NX / 'dm/tools')); import nso
-    return tid, nso.read(exefs / 'main').build_id[:16].hex()
+    return title_id(exefs / 'main.npdm'), nso.read(exefs / 'main').build_id[:16].hex()
+
+
+def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine": upstream nxnative or pokopia-native), fetched once: that commit only, no history
+    eng = g['engine']; d = ENGINES / f'{eng["kind"]}-{eng["commit"][:12]}'
+    if (d / '.git').is_dir() and not d.with_name(d.name + '.part').exists(): return d
+    say(f'engine: {eng["kind"]} {eng["commit"][:12]} from {eng["repo"]} (once)')
+    tmp = d.with_name(d.name + '.part'); shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
+    for c in (['init', '-q'], ['remote', 'add', 'origin', eng['repo']], ['fetch', '-q', '--depth', '1', 'origin', eng['commit']], ['checkout', '-q', 'FETCH_HEAD']): run(['git', '-C', tmp] + c)
+    tmp.rename(d)
+    return d
+
+
+# Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
+# with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
+# S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
+def app_switches(g): return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-{g["engine"]["commit"][:12]}'
+
+
+def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
+    g = GAMES[tid]; eng = g['engine']; d = engine_dir(g); dump = Path(a.dump).expanduser().resolve()
+    if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
+    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}; UNTESTED in switch2mac')
+    e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
+    w.mkdir(parents=True, exist_ok=True); app = w / f'{g["name"]}.app'
+    if eng['kind'] == 'nxnative':
+        run([py(), ROOT / 'tools/engine/patch.py', d], env=e)
+        seed = w / f'{tid}-engine-seed.tsv'   # the engine's own seed list at its pinned commit, then the game's shared list after it
+        seed.write_text(subprocess.run(['git', '-C', d, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
+        ship_list(tid, d / f'dm/games/{tid}/pso_manifest.tsv', seed)
+        sw = w / 'app_switches.txt'; sw.write_text(app_switches(g) + '\n')
+        run([py(), d / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
+             '--work-dir', w / tid, '-o', app, '--progress', 'lines'] + eng.get('args', []), env=e, cwd=d)
+    elif eng['kind'] == 'pokopia-native':
+        nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx))
+        run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=e, cwd=d)   # nxnative at its pinned commit with pokopia-native's Switch 2 patch, and its shader lowering
+        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e)
+        ship_list(tid, d / f'profile/{tid}/pso_manifest.tsv')   # pokopia-native ships no list of its own: the game's shared list is the app's
+        script = d / 'nxs2.py'; t = script.read_text()   # once: its app's baked switches (APP_ENV) get switch2mac's, and its profile step copies the list
+        if 'S2M_ENGINE=' not in t:
+            k = "DM_NVN_SHDUMP=shdump\\n'\n"
+            if t.count(k) != 1: sys.exit(f'{script}: its APP_ENV line is not the one switch2mac knows')
+            t = t.replace(k, k[:-2] + app_switches(g).replace('\n', '\\n') + "\\n'   # (switch2mac)\n", 1)
+        if "'shader_facts.seed.tsv', 'pso_manifest.tsv')" not in t:
+            k = "'shader_facts.seed.tsv'):"
+            if t.count(k) != 1: sys.exit(f'{script}: its profile step is not the one switch2mac knows')
+            t = t.replace(k, "'shader_facts.seed.tsv', 'pso_manifest.tsv'):", 1)
+        script.write_text(t)
+        run([py(), script, 'build', dump, '--out', w / tid, '--mac-app', '--no-ios'], env=e, cwd=d)
+        if app.exists(): shutil.rmtree(app)
+        shutil.move(str(w / tid / 'out' / f'{g["name"]}.app'), app)
+    else: sys.exit(f'{g["dir"]}/game.json: engine kind {eng["kind"]!r} is not one switch2mac builds with')
+    (w / 'title.txt').write_text(tid + '\n')
+    print(f'\nbuilt: {app}\n./switch2mac.py install moves it to /Applications.')
 
 
 def check_version(tid, bid):
@@ -110,7 +177,12 @@ def profile(w, tid):   # a fresh copy of the repo's profile in work/profile: the
     prof = w / 'profile' / tid
     if prof.exists(): shutil.rmtree(prof)
     shutil.copytree(NX / f'dm/games/{tid}', prof)
+    ship_list(tid, prof / 'pso_manifest.tsv')
     return prof
+
+
+def ship_list(tid, out, base=None):   # the game's shared shader list (games/<game>/shader_list.tsv) as the pso_manifest.tsv its app ships, after the engine's own rows when it has some
+    run([py(), ROOT / 'tools/shader_list.py', 'ship', tid, out] + (['--base', base] if base else []))
 
 
 def runtime_shaders(tid, w):
@@ -181,8 +253,10 @@ def host_and_app(a, tid, w, lib, e):
 def build(a):
     e = env(); w, ex, b, sh, cache = paths(a)
     if 'DOTNET_ROOT' not in e: sys.exit('.NET is missing: run ./switch2mac.py setup for the checks')
+    say('the dump'); tid = dump_title(a.dump)
+    if 'engine' in GAMES.get(tid, {}): return engine_build(a, tid, w, e)
     exefs, romfs = dump_dirs(a.dump)
-    say('the dump'); tid, bid = title_and_build(exefs); check_version(tid, bid)
+    tid, bid = title_and_build(exefs); check_version(tid, bid)
     for d in (ex / 'ExeFS', b, sh): d.mkdir(parents=True, exist_ok=True)
     say('game files: code modules and the RomFS image (a few minutes; reused when unchanged)')
     for f in exefs.iterdir():
@@ -201,6 +275,7 @@ def refresh(a):
     tf = w / 'title.txt'
     if not tf.exists(): sys.exit('no finished build in ' + str(w) + ': run build first')
     tid = tf.read_text().strip()
+    if 'engine' in GAMES[tid]: sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on switch2mac\'s engine (build again instead)')
     caps = w / 'captures'; caps.mkdir(exist_ok=True); new = []
     for saved in (Path.home() / f'Library/Application Support/nxnative/{tid}/shdump', w / 'run/shdump'):   # the installed app's captures, and run's
         got = [p for p in saved.glob('*') if p.is_file() and not (caps / p.name).exists()] if saved.is_dir() else []
@@ -229,6 +304,7 @@ def run_game(a):
     w = paths(a)[0]; tf = w / 'title.txt'
     if not tf.exists(): sys.exit('no finished build: run build first')
     tid = tf.read_text().strip(); g = GAMES[tid]; r = w / 'run'
+    if 'engine' in g: sys.exit(f'{g["name"]} is built with another engine: open the app instead (its own runner: {w / tid})')
     for d in ('save', 'temp', 'shdump'): (r / d).mkdir(parents=True, exist_ok=True)
     (r / 'ctl.txt').write_text(''); (w / 'logs').mkdir(exist_ok=True)
     e = dict(os.environ, DM_ROOT=str(w), DM_ROMFS=str(w / 'extract/RomFS.img'), DM_SAVE=str(r / 'save'), DM_TEMP=str(r / 'temp'), DM_NVN_SHDUMP=str(r / 'shdump'),

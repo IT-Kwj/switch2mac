@@ -40,6 +40,12 @@ Updates: an update dump's RomFS is the full patched tree. Build from the update'
 
 nxnative's [`dm/games/README.md`](../nxnative/dm/games/README.md) describes every profile file.
 
+### A game another port already runs
+
+When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds switch2mac's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `switch2mac.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
+
+Keeping such a game current: `tools/engine/update.py` says whose build has a newer commit (nxnative: commits that change the game's profile; pokopia-native: any commit), and `--apply --compile` moves the game to it on the `dev` branch: it re-applies the front end, compiles the host as a check, and updates `game.json`, the shader list's header (its rows are kept), the game's page and NOTICE.md, one commit per game. A new commit the front end no longer fits stops that game where it was, with the reason. Nothing is pushed.
+
 ## 3. First runs
 
 Build, then run the game straight from `work/` with a log:
@@ -52,7 +58,7 @@ Build, then run the game straight from `work/` with a log:
 
 Read the log in this order:
 
-- **Crashes** print `SIGSEGV` / `abort` with `pc=main+0x...` and a backtrace in module offsets. `tools/nso_syms.py work/extract/ExeFS/main dis <offset>` disassembles around the offset; `plt <regex>` and `calls <regex>` find imported functions and their callers.
+- **Crashes** print `SIGSEGV` / `abort` with `pc=main+0x...` and a backtrace in module offsets. `tools/porting/nso_syms.py work/extract/ExeFS/main dis <offset>` disassembles around the offset; `plt <regex>` and `calls <regex>` find imported functions and their callers.
 - **`[RED]` lines**: things the host does not handle. Typical ones are unimplemented NVN2 functions, shaders not in the map, and draws skipped.
 - **`not in the shader map`**: a shader the game built at run time. See step 4.
 - **Logs to expect while the game is busy:** `[longframe]` lines give CPU and GPU time for slow frames. Shaders and pipelines missing for the first time cause stutter, but only once.
@@ -68,14 +74,20 @@ Switch 2 games build some shaders while they run, so they are not in the BNSH co
 3. To make it complete for everyone, locate them in the game files:
 
 ```bash
-.venv/bin/python tools/find_runtime_shaders.py work/input/romfs work/shader/main.img games/<game>/runtime_shaders.tsv work/captures
+.venv/bin/python tools/porting/find_runtime_shaders.py work/input/romfs work/shader/main.img games/<game>/runtime_shaders.tsv work/captures
 ```
 
 The table holds only file names and offsets, never game data. Every later `build` extracts them from that person's dump and checks each one by its key, `sha256(control[:0xd8] + code)[:16]`. The search can take an hour.
 
-## 4b. The shared pipeline list (no first-play stutter)
+## 4b. The shared shader list (no first-play stutter)
 
-Metal builds a pipeline for every shader pair and render state the game draws with; the first time is a stall. The app records each one in `pso_user.tsv` (next to its save folder), and the profile's `pso_manifest.tsv` is the shared list every build ships: the app builds its rows before the first frame (progress screen; `DM_PSO_PREPARE=0` builds them in the background instead) and keeps them in its pipeline archive. Rows are `S` (shader library + stage), `C` (compute pipeline) and `R` (render pipeline key: shader keys + render state as hex, pointers cleared): identifiers only. For a new game, play it widely, then seed the list with `tools/pipelines.py new` (an empty list: every row is new) and `merge`. Rows of shaders a build does not have are skipped quietly. (The approach follows MacNativeGames' shared shader list.)
+Metal builds a pipeline for every shader pair and render state the game draws with; the first time is a stall. Each game has a shared list, `games/<game>/shader_list.tsv`, that its build ships as the app's `pso_manifest.tsv` (`tools/shader_list.py ship`, run by `build`; for a game on nxnative after the engine's own seed list): the app builds its rows before the first frame (progress screen; `DM_PSO_PREPARE=0` builds them in the background instead) and keeps them in its pipeline archive. Rows are `S` (shader library + stage), `C` (compute pipeline) and `R` (render pipeline key: shader keys + render state as hex, pointers cleared): identifiers only, in first-use order (rows are only appended, never sorted). Rows of shaders a build does not have are skipped quietly.
+
+A list belongs to one game **and** one engine version: its first line is `# switch2mac shader list<TAB>game=<title ID><TAB>engine=<switch2mac | kind-commit>`. Keys differ between engines, so a game whose `game.json` moves to another engine commit may need its list recorded again.
+
+The app records every row it builds in `pso_user.tsv` (next to its save folder). When the game closes, `nxnative/dm/host/s2m_share.m` writes the rows the shipped list lacks to `shader-list-contribution.txt` under the same header (the engine comes from `S2M_ENGINE`, baked into the app), and every 100 new rows offers to send them: the **Shader list** issue form (`.github/ISSUE_TEMPLATE/shader-list.yml`) plus the file in Finder to drag in. Sent rows go to `.shader-list-contribution.txt.done`. `S2M_SHARE=0` turns the offer off, `S2M_SHARE_EVERY` changes the 100.
+
+Maintainers: `tools/shader_list.py collect` reads the open `shader-list` issues (`gh`), checks each file's game and engine against `games/<game>/game.json` and its shader keys against the game's shader table (Mario Kart World; Donkey Kong Bananza once its engine is fetched), and reports; `--apply` adds the rows, `--close` thanks and closes the issues taken, `--drop-unknown` drops rows of other shaders. A file can be merged by hand with `merge <game> <file>`. For a new game, play it widely, then seed its list with `new <game>` and `merge`. (This follows MacNativeGames' shared shader list for Tears of the Kingdom.)
 
 ## 5. Finding graphics bugs
 
@@ -87,7 +99,7 @@ All of these are host switches (`./switch2mac.py run VAR=value ...`). While the 
 | `burst <n> <folder>` (ctl) | screenshots of the next n frames + a pass dump of each: for flicker |
 | `passdump 1` (ctl) / `DM_NVN_PASSDUMP=<frames>` + `DM_NVN_PASSDUMP_ALL=1` | every render / compute pass of a frame: targets, shaders (`vs` / `fs` keys), bound textures (serials), draws |
 | `texraw <serial> <file>` / `texdump <file with %d>` (ctl), `DM_NVN_TEXSNAP=<pass idx>` + `DM_NVN_SNAPRAW=1` | texture contents, raw floats included. PNG dumps clamp HDR values to white, so check raw values for NaN / inf |
-| `tools/pass_trace.py <frame lines> <serial>` | walks a pass dump back from one texture: who wrote it, with which shader, reading what |
+| `tools/porting/pass_trace.py <frame lines> <serial>` | walks a pass dump back from one texture: who wrote it, with which shader, reading what |
 | `DM_NVN_CBDUMP=<dir>` | the uniform and read-only storage buffers of every draw in a dumped frame |
 | `DM_NVN_HILITE=<fs key>` / `v:<vs key>` / `@file` | draws those shaders in solid magenta: is this draw the thing on screen? |
 | `DM_NVN_SKIP_FS=<key>` / `DM_NVN_EVERY_FS=<key>:<n>` | skip a pixel shader's draws / run them every nth frame: bisect, measure a pass's cost |
@@ -98,7 +110,7 @@ All of these are host switches (`./switch2mac.py run VAR=value ...`). While the 
 | `DM_GPUW_LOG=1` | each distinct GPU writer (storage-buffer writes with shader key, copies, fills), once |
 | `DM_GPU_READWATCH=1` | the CPU code that reads GPU results |
 | `DM_NVN_GPUPROF=every:600` + `nxnative/dm/tools/gpuprof.py` | GPU time per pass |
-| `DM_METAL_HUD=1`, `DM_OVERLAY=detailed`, `tools/perf.sh [log]` | fps, GPU / frame time, memory |
+| `DM_METAL_HUD=1`, `DM_OVERLAY=detailed`, `tools/porting/perf.sh [log]` | fps, GPU / frame time, memory |
 | `DM_FT_DEBUG=WxH`, `DM_NVN_TEXINFO=WxH`, `DM_TEX_BT=WxH` | life of textures of one size: registration, uploads, who creates them |
 
 Method that worked every time: screenshot → pass dump of that frame → the pass that writes the wrong pixels → its inputs (raw) → the first pass whose output is wrong → its shader (MSL in the library folder) or the host's binding of it → the game code that feeds it (probe / watch).
@@ -126,7 +138,7 @@ Upstream nxnative has since merged Switch 2 support of its own into `main`: a na
 
 ## 7. Performance
 
-Measure first: `tools/perf.sh`, the overlay (key 1), `DM_NVN_GPUPROF`, and macOS `sample <pid> 5` or Instruments' Metal System Trace for CPU / GPU time. What paid off for Mario Kart World, from 20 to 58 fps:
+Measure first: `tools/porting/perf.sh`, the overlay (key 1), `DM_NVN_GPUPROF`, and macOS `sample <pid> 5` or Instruments' Metal System Trace for CPU / GPU time. What paid off for Mario Kart World, from 20 to 58 fps:
 
 - The Switch 2 clock fix.
 - Sparse-texture page walks cached.

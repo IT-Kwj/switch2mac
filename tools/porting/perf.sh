@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Summary of a host log: frame rate, slow frames (CPU vs GPU), warnings, memory. Usage: tools/perf.sh [log]  (default: the newest log in ~/Library/Logs/nxnative)
+# Summary of a host log: frame rate, slow frames (CPU vs GPU), warnings, memory. Usage: tools/porting/perf.sh [log]  (default: the newest log in ~/Library/Logs/nxnative)
 L=${1:-$(ls -t ~/Library/Logs/nxnative/*.log | grep -v prev | head -1)}
 echo "Log: $L"
 grep -o '([0-9.]* fps)' "$L" | tr -d '(fps)' | awk '{s+=$1; n++; if(!mn||$1<mn)mn=$1; if($1>mx)mx=$1} END{if(n) printf "Frame rate: average %.1f fps, lowest %.1f, highest %.1f (%d samples, every 300 frames)\n", s/n, mn, mx, n; else print "Frame rate: no samples yet"}'

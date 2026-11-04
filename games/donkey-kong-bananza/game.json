@@ -1,0 +1,6 @@
+{
+ "title_id": "040074A01BF12000",
+ "name": "Donkey Kong Bananza",
+ "version": "update v458752",
+ "engine": {"kind": "nxnative", "repo": "https://github.com/seedds/nxnative", "commit": "aafe01d31dece4fb9dc032d86a566f35fa826f69"}
+}
