@@ -11,6 +11,11 @@
 #include <regex.h>
 
 static NSWindow *s_win;
+// The dialog's "?" button: what is sent, in plain words (the README's "Is sending safe?"); it leaves the dialog open
+@interface S2MShareHelp : NSObject <NSAlertDelegate> @end
+@implementation S2MShareHelp
+- (BOOL)alertShowHelp:(NSAlert *)a { (void)a; [NSWorkspace.sharedWorkspace openURL:[NSURL URLWithString:@"https://github.com/azmasm/switch2mac#is-sending-safe"]]; return YES; }
+@end
 static NSArray<NSString *> *list_rows(NSString *path) {
     NSString *t = path ? [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil] : nil; if (!t) return @[];
     static regex_t re; static int ok = -1;
@@ -42,11 +47,12 @@ static void share_at_close(void) {
     const char *ev = getenv("S2M_SHARE_EVERY"); NSInteger every = ev && atoi(ev) > 0 ? atoi(ev) : 100, next = [u integerForKey:@"s2m.share.next"]; if (next <= 0) next = every;
     if ((NSInteger)rows.count < next) return;
     NSAlert *a = [NSAlert new];
-    a.messageText = [NSString stringWithFormat:@"Send %@'s new shaders and pipelines?", game];
-    a.informativeText = [NSString stringWithFormat:@"This Mac built %lu shaders and pipelines that the shared list doesn't have yet. Sending them lets the next builds prepare them up front, so everyone gets fewer stutters.\n\n"
-                         "Send opens the \"Shader list\" form on GitHub in your browser and shows the file in Finder: drag it into the form and press Submit (a free GitHub account is needed). "
-                         "The game never uploads anything by itself.\n\nThe file holds shader IDs and render settings only: no game files, no save, nothing about you or this Mac.", (unsigned long)rows.count];
+    a.messageText = [NSString stringWithFormat:@"Help others play %@ without stutters?", game];
+    a.informativeText = [NSString stringWithFormat:@"Your Mac prepared %lu shaders the shared list doesn't have yet. Send opens a GitHub form and shows the file: drag it in and press Create.\n\n"
+                         "The file is only a list of shader IDs: no game files, no saves, nothing about you. (? explains more.)", (unsigned long)rows.count];
     [a addButtonWithTitle:@"Send"]; [a addButtonWithTitle:@"Remind me later"]; [a addButtonWithTitle:@"Stop reminding"];
+    static S2MShareHelp *help; if (!help) help = [S2MShareHelp new];
+    a.showsHelp = YES; a.delegate = help;
     if (s_win.styleMask & NSWindowStyleMaskFullScreen) [s_win toggleFullScreen:nil];
     [NSApp activateIgnoringOtherApps:YES];
     NSModalResponse r = [a runModal];

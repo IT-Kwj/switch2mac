@@ -57,7 +57,7 @@ def header(text):   # (title ID, engine) from the first header line, or None
 
 def known_keys(g):   # the game's shader keys, or None when its table is not at hand (its rows are then checked by form only)
     if g['engine_id'] == 'switch2mac':
-        keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', (ROOT / f'nxnative/dm/games/{g["title_id"]}/shader_map.tsv').read_text(), re.M))
+        keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', (ROOT / f'engines/switch2mac/dm/games/{g["title_id"]}/shader_map.tsv').read_text(), re.M))
         rt = g['dir'] / 'runtime_shaders.tsv'
         if rt.exists(): keys |= set(re.findall(r'^([0-9a-f]{16})\t', rt.read_text(), re.M))
         return keys

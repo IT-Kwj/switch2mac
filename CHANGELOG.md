@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-04 (2)
+
+- New: **Build a Game.command**. Double-click it, drag your dump folder in, and the game ends up in Applications. A Quick start at the top of the README walks through it.
+- Clearer setup: anything missing is named with its fix, a new enough Python is found automatically, and the build checks free disk space first.
+- Mario Kart World: a warning that 16 GB Macs may not run it smoothly yet (work on memory is under way), and 477 more shared shaders from the first player submission.
+- Donkey Kong Bananza and Pokopia: statuses now say what their builders and players have verified.
+- Sending a shader list is simpler: a shorter form, a shorter Send dialog with a ? button, and an "Is sending safe?" section.
+
 ## 2026-11-04
 
 - Two more games: **Donkey Kong Bananza** (built with nxnative's build) and **Pokémon Pokopia** (built with xFractals' pokopia-native). Like Mario Kart World, they start straight into the game, with the performance overlay on key 1 and their settings on key 2. Not yet tested in switch2mac. Thanks to seedds (nxnative) and xFractals (pokopia-native).

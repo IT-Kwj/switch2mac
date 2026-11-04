@@ -1,15 +1,17 @@
 # Mario Kart World
 
-Title ID `0400C3F00006E000`. Profile: [`nxnative/dm/games/0400C3F00006E000`](../../nxnative/dm/games/0400C3F00006E000).
+Title ID `0400C3F00006E000`. Profile: [`engines/switch2mac/dm/games/0400C3F00006E000`](../../engines/switch2mac/dm/games/0400C3F00006E000).
 
 | Version | Title version | Status |
 |---|---|---|
 | 1.0.0 | 0 | Tested on an M1 Max (64 GB, macOS 26): title, menus, Grand Prix, free roam, traffic and movies; ~58 fps in races with Performance mode on, 2560x1440. Handheld console mode tested on an M1 Pro (16-core GPU, 32 GB, macOS 27): races at a locked 60 fps (GPU ~14.3 ms a frame); docked on the M1 Pro: ~26 ms, so the game paces at 30 |
 | any update | — | **Untested** |
 
+> **16 GB Macs:** Mario Kart World currently needs about 13-16 GB of memory, up to about 20 GB in long free roam, so on a 16 GB Mac it may not run smoothly. Optimizations are under way ([Known issues](#known-issues)).
+
 ## Build
 
-Built with switch2mac's own engine (`nxnative/` in this repository). Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+Built with switch2mac's own engine (`engines/switch2mac/` in this repository). Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
 ```bash
 ./switch2mac.py build "<your dump folder>"
@@ -70,7 +72,7 @@ If something still looks missing after a while (a shader the list does not cover
 - **Not a locked 60**: about 58 fps in races. The game's own frame-rate controller switches to 30 fps pacing whenever a frame takes longer than 16.7 ms, so heavy moments feel uneven.
 - **Performance mode** skips the update of one environment-reflection chain (pixel shader `83ea368cd702b9de`, ~4 ms a frame on the Mac for reasons not found yet). No visible difference was seen in play; turn it off in the settings for full reflections.
 - **Shadows / detail in the distance** can flicker when driving fast (may be the game's own detail switching).
-- **Memory**: 13-16 GB typical, peaks up to ~18 GB in long free-roam sessions.
+- **Memory: 16 GB Macs may not run it smoothly.** It uses 13-16 GB in races and up to about 20 GB in long free-roam sessions, so a 16 GB Mac can stutter, slow down or ask you to quit other apps. Optimizing it is under way (switch2mac never frees parts of the big terrain textures once loaded: the first fix). Macs with 24 GB or more have run it fine so far (tested on 64 GB, reported on 24 GB).
 - **First start** shows a progress screen while the shared pipeline list (~12,000 entries) is built; a place the list lacks can still stutter once.
 - **First start after each install** waits 1-3 minutes for macOS's scan of the app.
 - Only the US English language list is offered (the dump has no control data).
@@ -87,6 +89,6 @@ An update has other build IDs, and from 1.8.0 on also a `subsdk1` module and a n
 
 1. Pack the update's own `exefs/` and `romfs/` (an update dump's RomFS is the full patched tree) as the dump folder.
 2. Add a `build` line for it in `game.tsv` (the IDs are printed when `build` stops) and the modules in its `modules` line, then run `build` again.
-3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in `nxnative/dm/host`).
+3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in `engines/switch2mac/dm/host`).
 
 Please report what happens (log + screenshots, no game files). Mark such builds as untested.

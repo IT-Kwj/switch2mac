@@ -1,6 +1,6 @@
 // switch2mac's front end for the games built on another engine (upstream nxnative, pokopia-native): Mario Kart World's performance overlay (key 1) and settings panel (key 2)
 // (and, through s2m_share.m, the shared shader list's offer when the game closes),
-// the same code as switch2mac's nxnative/dm/host/front_mac.m. tools/engine/patch.py copies this file into the engine's dm/host and adds the two calls front_mac.m makes:
+// the same code as switch2mac's engines/switch2mac/dm/host/front_mac.m. tools/engine/patch.py copies this file into the engine's dm/host and adds the two calls front_mac.m makes:
 // s2m_ui_attach once the window and layer exist, s2m_ui_key first in its key monitor.
 // Data hooks (nvn_mtl.m / hle_nvn.c): mtl_cur_frame, mtl_gpu_ms, nvn_game_fps, nvn_game_size.
 #import <Cocoa/Cocoa.h>

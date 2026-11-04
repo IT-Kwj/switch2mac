@@ -9,7 +9,7 @@
 
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
-Each supported game has a folder in games/ (game.json names it); its profile is nxnative/dm/games/<title ID>.
+Each supported game has a folder in games/ (game.json names it); its profile is engines/switch2mac/dm/games/<title ID>.
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
 with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
 """
@@ -17,7 +17,7 @@ import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NX = ROOT / 'nxnative'
+NX = ROOT / 'engines/switch2mac'   # Mario Kart World's engine (the others are fetched next to it)
 VENV = ROOT / '.venv'
 ENGINES = ROOT / 'engines'   # pinned checkouts of the other engines some games are built with (game.json "engine")
 GAMES = {g['title_id']: dict(g, dir=p.parent) for p in sorted((ROOT / 'games').glob('*/game.json')) for g in [json.loads(p.read_text())]}
@@ -52,19 +52,48 @@ def macos():   # this Mac's macOS as major.minor (e.g. 26.5): the app is built f
     return f'{v[0]}.{v[1] if len(v) > 1 else 0}'
 
 
+def good_python():   # a Python 3.12 or later for .venv: this one, else the newest Homebrew or python.org one (macOS's own python3 is 3.9)
+    if sys.version_info >= (3, 12): return sys.executable
+    cands = [shutil.which(f'python3.{m}') for m in range(20, 11, -1)] + [f'/opt/homebrew/bin/python3.{m}' for m in range(20, 11, -1)] + ['/opt/homebrew/bin/python3', '/usr/local/bin/python3'] \
+            + [f'/Library/Frameworks/Python.framework/Versions/3.{m}/bin/python3' for m in range(20, 11, -1)]
+    for c in cands:
+        if not c or not os.access(c, os.X_OK): continue
+        r = subprocess.run([c, '-c', 'import sys; print(sys.version_info >= (3, 12))'], capture_output=True, text=True)
+        if r.stdout.strip() == 'True': return c
+    return None
+
+
 def setup(a):
-    say('Python packages (.venv)')
-    if not VENV.exists(): run([sys.executable, '-m', 'venv', VENV])
-    run([py(), '-m', 'pip', 'install', '-q', '-r', ROOT / 'requirements.txt'])
-    say('checks')
-    for tool, why in (('xcrun', 'Xcode'), ('clang++', 'Xcode command line tools')):
-        print(f'  {tool}: {"ok" if shutil.which(tool) else "MISSING (" + why + ")"}')
-    r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
-    print(f'  Metal compiler: {"ok" if r.returncode == 0 else "MISSING (Xcode → Settings → Components → Metal Toolchain)"}')
-    print(f'  .NET: {"ok (" + env()["DOTNET_ROOT"] + ")" if "DOTNET_ROOT" in env() else "MISSING (.NET 10 SDK from dot.net)"}')
-    print(f'  Python {sys.version_info[0]}.{sys.version_info[1]}: ' + ('ok' if sys.version_info >= (3, 12) else 'TOO OLD for the games built with upstream nxnative (3.12 or later)'))
+    say('checks')   # each missing piece with the exact fix; setup stops before anything else when one is missing
+    bad = []
+    def check(name, ok, fix):
+        print(f'  {"ok     " if ok else "MISSING"}  {name}' + ('' if ok else f'\n           fix: {fix}'))
+        if not ok: bad.append(name)
     v = macos()
-    print(f'  macOS {v}: ' + ('ok (the app is built for this version and later)' if int(v.split('.')[0]) >= 26 else 'TOO OLD (macOS 26 or later is needed: the runtime draws with Metal 4)'))
+    check(f'macOS 26 or later (this Mac: {v})', int(v.split('.')[0]) >= 26, 'update macOS in System Settings → General → Software Update (the games draw with Metal 4, new in macOS 26)')
+    xc = subprocess.run(['xcode-select', '-p'], capture_output=True, text=True)
+    check('Xcode', xc.returncode == 0 and 'Xcode' in xc.stdout and shutil.which('clang++') is not None,
+          'install Xcode from the App Store, open it once, then in Terminal: sudo xcode-select -s /Applications/Xcode.app')
+    r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
+    check('Metal Toolchain', r.returncode == 0, 'open Xcode → Settings → Components, and install Metal Toolchain')
+    check('.NET 10', 'DOTNET_ROOT' in env(), 'install the .NET 10 SDK from https://dot.net (or: brew install --cask dotnet-sdk)')
+    gp = good_python()
+    if VENV.exists() and subprocess.run([py(), '-c', 'import sys; sys.exit(sys.version_info < (3, 12))']).returncode: shutil.rmtree(VENV)   # an old .venv made with Python 3.9
+    check('Python 3.12 or later' + (f' ({gp})' if gp else ''), gp is not None, 'install Python from https://www.python.org/downloads (or: brew install python), then run setup again')
+    check('git', shutil.which('git') is not None, 'comes with Xcode: install Xcode first')
+    if bad: sys.exit(f'\nsetup stopped: {len(bad)} thing(s) missing ({", ".join(bad)}). Install them as shown above, then run setup again.')
+    say('Python packages (.venv)')
+    if not VENV.exists(): run([gp, '-m', 'venv', VENV])
+    run([py(), '-m', 'pip', 'install', '-q', '--disable-pip-version-check', '-r', ROOT / 'requirements.txt'])
+    print('\nsetup done: everything is ready to build a game.')
+
+
+def free_space(w, g):   # stop before a build that cannot fit (game.json "disk_gb": the free space a first build needs); S2M_SKIP_DISK_CHECK=1 skips it
+    need = g.get('disk_gb'); w.mkdir(parents=True, exist_ok=True)
+    have = shutil.disk_usage(w).free / 1e9
+    if need and have < need and os.environ.get('S2M_SKIP_DISK_CHECK') != '1':
+        sys.exit(f'not enough free disk space: {g["name"]} needs about {need} GB for its first build, this disk has {have:.0f} GB free.\n'
+                 'Free some space (or build on another disk with --work <folder>), then try again.')
 
 
 def dump_dirs(d):
@@ -254,6 +283,7 @@ def build(a):
     e = env(); w, ex, b, sh, cache = paths(a)
     if 'DOTNET_ROOT' not in e: sys.exit('.NET is missing: run ./switch2mac.py setup for the checks')
     say('the dump'); tid = dump_title(a.dump)
+    if tid in GAMES: print(f'  {GAMES[tid]["name"]} ({tid})'); free_space(w, GAMES[tid])
     if 'engine' in GAMES.get(tid, {}): return engine_build(a, tid, w, e)
     exefs, romfs = dump_dirs(a.dump)
     tid, bid = title_and_build(exefs); check_version(tid, bid)
