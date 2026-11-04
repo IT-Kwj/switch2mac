@@ -9,6 +9,17 @@ Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in switch2mac
 
 > **16 GB Macs:** Mario Kart World currently needs about 13-16 GB of memory, up to about 20 GB in long free roam, so on a 16 GB Mac it may not run smoothly. Optimizations are under way ([Known issues](#known-issues)).
 
+## Two builds
+
+Mario Kart World can be built two ways: on switch2mac's own engine, or on upstream [nxnative](https://github.com/seedds/nxnative) with switch2mac's overlay and key-2 settings added. Same game, same save; each has its own shared shader list.
+
+| Build (`--engine`) | Engine | Suits | Why |
+|---|---|---|---|
+| `switch2mac` | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
+| `nxnative` | upstream nxnative (commit in `game.json`) | M3 and newer, and any Mac with less than 24 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
+
+`./switch2mac.py build` picks the one for your Mac (`game.json` "choose": less than 24 GB of memory or an M3 and newer get nxnative's, the rest switch2mac's); `./switch2mac.py builds mario-kart-world` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine nxnative` or `--engine switch2mac` builds the other one; the switch2mac app has a Build menu for it. Installing the other build keeps your save; the old build's pipeline record is put aside, since the two engines name shaders differently.
+
 ## Build
 
 Built with switch2mac's own engine, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
@@ -61,7 +72,9 @@ If something still looks missing after a while (a shader the list does not cover
 
 | File | What |
 |---|---|
-| `game.json` | title ID, name, version and RomFS marker: how `switch2mac.py` knows this game |
+| `game.json` | title ID, name, version and RomFS marker: how `switch2mac.py` knows this game; its two builds (`builds`: engine, commit, shader list) and which Mac gets which (`choose`) |
+| `reports.tsv` | how the game ran on players' Macs, per build (Mac, chip, memory, macOS, fps, peak memory, notes, source): what `choose` is decided from. Only reports that name the Mac |
+| `shader_list.tsv`, `shader_list-nxnative.tsv` | the shared shader list of each build |
 | `launcher.py` | writes the app's settings list (`Resources/dm/launcher.json`): nxnative's generic settings plus Performance overlay, Performance mode and this game's defaults |
 | `runtime_shaders.tsv` | where each of the 321 shaders the game builds at run time sits in the dump (file, offset, size, checked by its key); `build` extracts them so the first launch has no black screen, black minimap, frozen intro movie or missing models |
 | `env.txt` | switches baked into the app (`DM_FPS=60`: frame pacing statistics fixed at 60 so macOS's 30 Hz power-saving pacing never starts) |

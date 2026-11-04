@@ -52,6 +52,10 @@ Everything below is more detail, for when you want it.
 - Controllers (Xbox, PlayStation, Switch Pro and others macOS recognises) and the keyboard.
 - Saves in `~/Library/Application Support/nxnative/<title ID>/save`, the log in `~/Library/Logs/nxnative/<title ID>.log`.
 
+## The switch2mac app (preview)
+
+A Mac app that does the same with buttons: choose your dump folder, press Build, and the game lands in Applications, with a library of your built games (their eShop banners are downloaded onto your Mac at run time; none are in this repository). It reads your Mac's chip and memory and picks the build of each game that suits it: Mario Kart World has two, and the app says which one it recommends and why, with how each ran on players' Macs. A download comes with the first release; for now, build it from `app/` with `app/tools/make_app.sh` (needs Xcode). Its design comes from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT).
+
 ## What you need
 
 - A Mac with Apple silicon and **macOS 26 or later** (the runtime draws with Metal 4, new in macOS 26). The app is built for the macOS version of the Mac that builds it (tested: M1 Max, 64 GB, macOS 26.6; reported working: M4 Pro, 24 GB, macOS 26.5).
@@ -122,8 +126,9 @@ The runtime loads the game's modules into memory, rewrites their system calls an
 |---|---|
 | `Build a Game.command` | double-click: setup, build and install in one go (Quick start) |
 | `switch2mac.py` | setup, build, run, refresh, install |
-| `games/<game>/` | one folder per game: `game.json` (title ID, name, version; the engine and its commit for a game built with another engine), its page (`README.md`: dump, build, settings, known issues) and, for Mario Kart World, the app's settings (`launcher.py`, `env.txt`) and the run-time shader list (`runtime_shaders.tsv`) |
-| `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game, for the engine its app is built with |
+| `games/<game>/` | one folder per game: `game.json` (title ID, name, version; the engine and its commit for a game built with another engine, or several builds and which Mac gets which, as for Mario Kart World), its page (`README.md`: dump, build, settings, known issues) and, for Mario Kart World, the app's settings (`launcher.py`, `env.txt`) and the run-time shader list (`runtime_shaders.tsv`) |
+| `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game and build, for the engine its app is built with (a second build's: `shader_list-<build>.tsv`) |
+| `app/` | the switch2mac app (SwiftPM; `app/tools/make_app.sh` makes `app/build/switch2mac.app`), adapted from NX2Apple |
 | `tools/shader_list.py` | the shared shader lists: stats, merge, collect the lists players send, ship each build's list |
 | `tools/engine/` | switch2mac's front end for the games built with another engine: the overlay and settings panel (`s2m_ui.m`), the script that adds it to that engine (`patch.py`) and the one that moves those games to their build's newest commit (`update.py`) |
 | `tools/porting/` | helpers for bringing up a game: run-time shader finder, NSO disassembly helper, pass tracer, performance summary |

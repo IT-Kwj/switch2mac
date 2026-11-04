@@ -27,7 +27,8 @@ switch2mac builds native Mac apps of Nintendo Switch 2 games from the user's own
 - **`run`**: runs the build from `work/` with a log in `work/logs/`, and writes control commands to `work/run/ctl.txt`.
 - **App log:** `~/Library/Logs/nxnative/<title ID>.log`.
 - **Performance summary:** `tools/porting/perf.sh [log]`.
-- **Shared shader lists:** one per game, `games/<game>/shader_list.tsv`; `tools/shader_list.py stats` / `new` / `merge` / `collect` / `ship` (docs/porting.md § 4b). Never mix lists: each is for one game and one engine version.
+- **Several builds of a game:** `game.json` `builds` + `choose` (by chip generation and memory, from `games/<game>/reports.tsv`); `build --engine <id>` overrides, `builds <game>` explains. Mario Kart World: `switch2mac` (M1/M2) and `nxnative` (M3+).
+- **Shared shader lists:** one per game and build, `games/<game>/shader_list.tsv` (another build's: its `shader_list` file); `tools/shader_list.py stats` / `new` / `merge` / `collect` / `ship` (docs/porting.md § 4b). Never mix lists: each is for one game and one engine version.
 
 ## Where things are
 

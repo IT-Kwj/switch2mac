@@ -32,11 +32,14 @@ def api(path):   # GitHub REST, through gh when it is signed in (higher rate lim
         return json.load(f)
 
 
-def games():
+def games():   # one entry a game and build (Mario Kart World has two: switch2mac's engine and nxnative's), each with its engine and shader list
     out = []
     for p in sorted((ROOT / 'games').glob('*/game.json')):
         g = json.loads(p.read_text())
-        if g.get('engine'): g.update(dir=p.parent, json=p); out.append(g)
+        bs = g.get('builds') or ([{'id': g['engine']['kind'], 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if g.get('engine') else [])
+        for b in bs:
+            out.append(dict(g, engine=b['engine'], dir=p.parent, json=p, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
+                            name=g['name'] + (f' ({b["id"]} build)' if len(bs) > 1 else '')))
     return out
 
 
@@ -104,7 +107,7 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
 def bump(g, sha):   # the repository's files name the new commit
     old = g['engine']['commit']; kind = g['engine']['kind']
     j = g['json']; j.write_text(j.read_text().replace(old, sha))
-    sl = g['dir'] / 'shader_list.tsv'
+    sl = g['list']
     if sl.exists():
         lines = sl.read_text().split('\n')
         for i in range(min(5, len(lines))):

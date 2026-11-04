@@ -10,3 +10,7 @@ __pycache__/
 .DS_Store
 # the engines builds download, one per game's pinned commit (switch2mac-engine, nxnative, pokopia-native)
 /engines/
+# the app's build output
+/app/.build/
+/app/.swiftpm/
+/app/build/
