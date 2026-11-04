@@ -2,7 +2,7 @@
 
 ## 2026-11-05
 
-- New: the **switch2mac app** (preview). Choose your dump folder, press Build, and the game lands in Applications, with a library of your built games and their eShop banners (downloaded onto your Mac, never stored here). It shows your Mac's chip, memory and macOS. No download yet: build it from `app/` with `app/tools/make_app.sh`. Its design comes from NX2Apple (MIT), with thanks to LNPANDY and its contributors.
+- New: the **switch2mac app** (preview). Choose your dump folder, press Build, and the game lands in Applications, with a library of your built games and their eShop banners (downloaded onto your Mac, never stored here). It shows your Mac's chip, memory and macOS. Download it from [Releases](https://github.com/azmasm/switch2mac/releases/latest) (version 0.1.0; the README says how to open it the first time). Its design comes from NX2Apple (MIT), with thanks to LNPANDY and its contributors.
 - **Mario Kart World now has two builds**: switch2mac's engine, and nxnative's (with switch2mac's overlay and key-2 settings). Macs with less than 24 GB of memory, and M3 or newer Macs, get nxnative's build; M1 and M2 Macs with 24 GB or more get switch2mac's. `./switch2mac.py builds mario-kart-world` shows which one your Mac gets and why, and `--engine` builds the other. In the app, a Build card shows the same, and Manage → "Build with …" switches. Your save is kept when you switch.
 - How each build ran on players' Macs is now kept in `games/mario-kart-world/reports.tsv`, and the choice above is based on it.
 - Each build has its own shared shader list. The two engines name shaders differently, so their lists can't be mixed.

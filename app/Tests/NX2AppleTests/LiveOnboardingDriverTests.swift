@@ -300,7 +300,7 @@ import NXModel
         await finish("brew"); XCTAssertEqual(fake.installed, ["python", "dotnet", "brew", "brew:xcodegen"])
         await finish("brew:xcodegen")
         XCTAssertTrue(driver.state.backgroundReady)
-        XCTAssertEqual(driver.state.step, .keys, "Xcode and the tools are done: the step moves on by itself")
+        XCTAssertEqual(driver.state.step, .games, "Xcode and the tools are done: the step moves on by itself (switch2mac: no keys step)")
     }
 
     func testToolsStayQueuedUntilXcodeIsReady() async {
@@ -332,11 +332,10 @@ import NXModel
 
     func testResumeKeepsTheStepOnlyWhileXcodeStillHolds() async {
         let ok = Fake()
-        let (driver, _) = make(ok, deps: [dep("metal", present: true), dep("xcode", present: true)], step: .keys, platform: .mac)
-        XCTAssertEqual(driver.state.step, .keys)
-        XCTAssertEqual(driver.state.selectedPlatform, .mac)
+        let (driver, _) = make(ok, deps: [dep("metal", present: true), dep("xcode", present: true)], step: .games, platform: .mac)
+        XCTAssertEqual(driver.state.step, .games)
         await driver.revalidate()
-        XCTAssertEqual(driver.state.step, .keys)
+        XCTAssertEqual(driver.state.step, .games)
 
         let gone = Fake(); gone.probe = XcodeProbe()
         let (second, _) = make(gone, deps: [dep("metal", present: true)], step: .games, platform: .mac)
@@ -345,52 +344,16 @@ import NXModel
         XCTAssertEqual(second.state.step, .xcode, "Xcode is gone: back to the Xcode step")
     }
 
-    func testStoredStepWithoutAPlatformResumesAtThePlatformChoice() {
-        defaults.set(OnboardingStep.keys.rawValue, forKey: OnboardingDefaults.step); defaults.set(true, forKey: OnboardingDefaults.inProgress)
-        let (driver, _) = make(Fake(), deps: [])
-        XCTAssertEqual(driver.state.step, .platform)
-    }
-
-    func testSkipForLaterStoresStepAndPlatformAndCloses() {
-        let (driver, _) = make(Fake(), deps: [], step: .platform)
+    func testSkipForLaterStoresTheStepAndCloses() {
+        let (driver, _) = make(Fake(), deps: [], step: .xcode, platform: .mac)
         var exits: [OnboardingState.Exit] = []
         driver.onExit = { exits.append($0) }
-        driver.choosePlatform(.iphone)
         driver.skipForLater()
         XCTAssertEqual(exits, [.later])
         XCTAssertEqual(driver.state.exit, .later)
-        XCTAssertEqual(defaults.string(forKey: OnboardingDefaults.step), "platform")
-        XCTAssertEqual(defaults.string(forKey: OnboardingDefaults.platform), "iphone")
+        XCTAssertEqual(defaults.string(forKey: OnboardingDefaults.step), "xcode")
         XCTAssertTrue(defaults.bool(forKey: OnboardingDefaults.inProgress))
         XCTAssertFalse(defaults.bool(forKey: OnboardingDefaults.completed))
-    }
-
-    func testChoosingMacOnlyPointsTheBuildsPageAtTheMac() {
-        let (driver, model) = make(Fake(), deps: [], step: .platform)
-        driver.choosePlatform(.mac)
-        XCTAssertEqual(model.target, "mac-app")
-        XCTAssertEqual(defaults.string(forKey: OnboardingDefaults.platform), "mac")
-    }
-
-    func testKeysAreCheckedAndOnlyTheirPathIsKept() async throws {
-        let fake = Fake()
-        let keys = home.appendingPathComponent(".switch/prod.keys")
-        try FileManager.default.createDirectory(at: keys.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try "header_key = 00\n".write(to: keys, atomically: true, encoding: .utf8)
-        let (driver, model) = make(fake, deps: [], step: .keys, platform: .mac)
-        await driver.searchKeys()
-        XCTAssertEqual(driver.state.keys, .found(keys))
-        driver.confirmKeys()
-        await driver.settle()
-        XCTAssertEqual(driver.state.keys, .valid)
-        XCTAssertEqual(model.keysPath, keys.path, "the same slot the Builds page uses")
-
-        driver.back()   // the step moved on by itself; back to the keys
-        fake.keyOutcome = .noHeaderKey
-        driver.chooseKeys(keys)
-        await driver.settle()
-        guard case let .invalid(message) = driver.state.keys else { return XCTFail() }
-        XCTAssertFalse(message.contains("00"), "a message never carries key material")
     }
 
     func testGamesFolderFillsTheSameSlotsAndLibrary() async throws {

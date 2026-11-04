@@ -54,7 +54,9 @@ Everything below is more detail, for when you want it.
 
 ## The switch2mac app (preview)
 
-A Mac app that does the same with buttons: choose your dump folder, press Build, and the game lands in Applications, with a library of your built games (their eShop banners are downloaded onto your Mac at run time; none are in this repository). It reads your Mac's chip and memory and picks the build of each game that suits it: Mario Kart World has two, and the app says which one it recommends and why, with how each ran on players' Macs. A download comes with the first release; for now, build it from `app/` with `app/tools/make_app.sh` (needs Xcode). Its design comes from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT).
+A Mac app that does the same with buttons: choose your dump folder, press Build, and the game lands in Applications, with a library of your built games (their eShop banners are downloaded onto your Mac at run time; none are in this repository). It reads your Mac's chip and memory and picks the build of each game that suits it: Mario Kart World has two, and the app says which one it recommends and why, with how each ran on players' Macs. Python and the build tools are inside it; you need Xcode (with its Metal toolchain) and the .NET 10 SDK, and the app tells you what is missing. Its design comes from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT).
+
+**Download:** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to Applications. It is not signed with a paid Apple Developer ID, so the first time macOS says it cannot verify it: click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. After that it opens normally, and it updates itself when a new version is out. (To build it yourself instead: `app/tools/make_app.sh`.)
 
 ## What you need
 

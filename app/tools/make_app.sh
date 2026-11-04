@@ -11,9 +11,12 @@ for a in "$@"; do case "$a" in --bundle-tools) TOOLS=1 ;; *) OUT="$a" ;; esac; d
 VERSION=$(sed -n 's/.*nonisolated package static let appVersion = "\(.*\)".*/\1/p' Sources/NXModel/AppUpdateStore.swift)
 APP="$OUT/switch2mac.app"
 
-swift build -c release
+# the source folder's path is mapped to /switch2mac, so no path of the Mac that builds it (#filePath, debug info) ends up in the app
+MAP=(-Xswiftc -file-prefix-map -Xswiftc "$PWD=/switch2mac")
+swift build -c release "${MAP[@]}"
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$(swift build -c release --show-bin-path)/NX2Apple" "$APP/Contents/MacOS/switch2mac"
+cp "$(swift build -c release "${MAP[@]}" --show-bin-path)/NX2Apple" "$APP/Contents/MacOS/switch2mac"
+strip -S "$APP/Contents/MacOS/switch2mac"   # the debug map names each object file by its full path on the Mac that built it
 cp -R l10n "$APP/Contents/Resources/l10n"
 
 ICONSET=$(mktemp -d)/AppIcon.iconset; mkdir -p "$ICONSET"
@@ -45,5 +48,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 if [ "$TOOLS" = 1 ]; then tools/bundle_tools.sh "$APP/Contents/Resources"; fi
+find "$APP" -name __pycache__ -type d -prune -exec rm -rf {} +   # compiled Python caches name the folder they were made in
+if grep -rlaq "$HOME" "$APP"; then echo "stopped: the app holds this Mac's home folder path:"; grep -rla "$HOME" "$APP"; exit 1; fi
 codesign --force --deep --sign - "$APP"
 echo "app: $APP ($VERSION)"

@@ -20,8 +20,8 @@ for t in zstd glslangValidator spirv-cross xcodegen; do
     p=$(env -i PATH="$T:/usr/bin:/bin" /usr/bin/which "$t") && [ "$p" = "$T/$t" ] && ok "PATH finds $t in the bundle" || bad "PATH finds $t at '$p'"
 done
 PY="$RES/python/bin/python3"
-v=$(clean "$PY" -I -c "import sys, lz4.block, capstone, fontTools, zbic, nsz; from compression import zstd" 2>&1 \
-    || clean "$PY" -I -c "import lz4.block, capstone, fontTools, zbic, nsz; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, nsz, zstd" || bad "python imports: $v"
+v=$(clean "$PY" -I -c "import sys, lz4.block, capstone, fontTools, zbic, zstandard; from compression import zstd" 2>&1 \
+    || clean "$PY" -I -c "import lz4.block, capstone, fontTools, zbic, zstandard; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, zstandard, zstd (switch2mac: no nsz)" || bad "python imports: $v"
 v=$(clean "$PY" -I -c "import sys; print(sys.version.split()[0], sys.prefix)" 2>&1); echo "$v" | grep -q "$RES/python" && ok "python runs from the bundle: $v" || bad "python prefix is not the bundle: $v"
 
 # load paths: only the system's (a library's or extension's own install name is not a dependency)
@@ -38,13 +38,13 @@ done < <(find "$RES/tools" "$RES/python" -type f -print0)
 
 # the icon: Assets.car (macOS 26 and later) and AppIcon.icns (13 to 25), and the two Info.plist keys that point at them
 if [ -d "$APP/Contents" ]; then
-    for f in Assets.car AppIcon.icns; do [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"; done
+    for f in AppIcon.icns; do   # switch2mac: the icon is an .icns (tools/make_app.sh), no asset catalog [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"; done
     # the launcher's texts (#388): Contents/Resources/l10n, one JSON file per language, each a JSON object with an English text of its own
-    for c in en zh sv de fr; do
+    for c in en; do   # switch2mac: English only for now
         v=$(clean "$PY" -I -c "import json, sys; d = json.load(open(sys.argv[1], encoding='utf-8')); assert isinstance(d, dict) and len(d) > 1 and '_language' in d" "$RES/l10n/$c.json" 2>&1) \
             && ok "l10n/$c.json is in the bundle and reads as JSON" || bad "l10n/$c.json is missing or broken: $v"
     done
-    for k in CFBundleIconName CFBundleIconFile; do
+    for k in CFBundleIconFile; do
         v=$(/usr/libexec/PlistBuddy -c "Print :$k" "$APP/Contents/Info.plist" 2>&1)
         [ "$v" = AppIcon ] && ok "Info.plist $k = $v" || bad "Info.plist $k is '$v', not AppIcon"
     done

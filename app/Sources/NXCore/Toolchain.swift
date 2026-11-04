@@ -118,8 +118,8 @@ package enum Toolchain {
     /// nsz is always installed: NSZ / XCZ dumps are accepted by the pipeline now, and a player who
     /// downloads one should not have to run pip by hand (it is a few hundred KB).
     package static func pipPackages(_ version: (Int, Int)) -> [String] {
-        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "nsz"]
-                          : ["lz4", "capstone", "fonttools", "zbic", "nsz"]
+        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "zstandard"]   // switch2mac: no nsz (console keys); zstandard for switch2mac.py
+                          : ["lz4", "capstone", "fonttools", "zbic", "zstandard"]
     }
 
     /// Create the venv (reusing an existing one) and install the packages into it. Returns the

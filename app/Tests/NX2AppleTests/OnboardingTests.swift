@@ -9,19 +9,13 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
         var s = OnboardingState()
         XCTAssertTrue(s.primaryEnabled)
         s.back(); XCTAssertEqual(s.step, .welcome)
-        s.next(); XCTAssertEqual(s.step, .platform)
-        XCTAssertFalse(s.primaryEnabled)
-        s.next(); XCTAssertEqual(s.step, .platform)
-        s.platform = .selected(.mac)
-        s.next(); XCTAssertEqual(s.step, .xcode)
+        s.next(); XCTAssertEqual(s.step, .xcode)   // switch2mac: Mac only, so no platform step
         XCTAssertFalse(s.primaryEnabled)
         s.xcode = .ready
         XCTAssertFalse(s.canAdvance, "Xcode alone does not finish background preparation")
         s.background = Dictionary(uniqueKeysWithValues: OnboardingBackgroundTask.allCases.map { ($0, .done) })
         XCTAssertTrue(s.canAdvance)
-        s.next(); XCTAssertEqual(s.step, .keys)
-        s.keys = .valid
-        s.next(); XCTAssertEqual(s.step, .games)
+        s.next(); XCTAssertEqual(s.step, .games)   // switch2mac: no keys step
         s.games = .found([])
         XCTAssertFalse(s.primaryEnabled)
         s.games = .found([.init(id: "sample", title: "Sample", version: "1")])
@@ -57,18 +51,8 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
         XCTAssertFalse(s.canAdvance)
     }
 
-    func testKeysAndGamesNeverAdvanceBeforeValidation() {
+    func testGamesNeverAdvanceBeforeAGameIsFound() {
         var s = OnboardingState()
-        s.step = .keys
-        for value: OnboardingState.Keys in [.empty, .searching, .validating, .invalid("Invalid")] {
-            s.keys = value
-            XCTAssertFalse(s.primaryEnabled)
-            s.next(); XCTAssertEqual(s.step, .keys)
-        }
-        s.keys = .found(URL(fileURLWithPath: "/Demo/prod.keys"))
-        XCTAssertEqual(s.primary, .confirmKeys)
-        XCTAssertTrue(s.primaryEnabled)
-        XCTAssertFalse(s.canAdvance, "Confirming a found file still needs validation")
         s.step = .games
         for value: OnboardingState.Games in [.empty, .scanning, .none, .found([])] {
             s.games = value
@@ -105,25 +89,11 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
             XCTAssertEqual(restored.state, snapshot)
             d.resume()
             XCTAssertEqual(d.state, snapshot)
-            restored.back(); XCTAssertEqual(restored.state.step, .keys)
+            restored.back(); XCTAssertEqual(restored.state.step, .xcode)
             d.next(); d.openLibrary()
             XCTAssertEqual(d.state.exit, .library)
             d.resume()
             XCTAssertEqual(d.state.exit, .library, "A completed flow cannot resume an older paused snapshot")
-        }
-    }
-
-    func testReturningToPlatformAddsIOSWork() async {
-        await MainActor.run {
-            var s = OnboardingState()
-            s.step = .platform
-            s.platform = .selected(.mac)
-            s.xcode = .ready
-            let d = MockOnboardingDriver(state: s, animated: false)
-            d.choosePlatform(.both)
-            XCTAssertEqual(d.state.xcode, .needsSetup)
-            XCTAssertEqual(d.state.setup[.ios], .queued)
-            XCTAssertTrue(d.state.setupTasks.contains(.ios))
         }
     }
 

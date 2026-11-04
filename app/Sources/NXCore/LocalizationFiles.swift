@@ -65,7 +65,7 @@ package enum LocalizationFiles {
     package static func directory(environment: [String: String] = ProcessInfo.processInfo.environment,
                                   resources: URL? = BundledTools.resources,
                                   executable: URL? = Bundle.main.executableURL,
-                                  sourceFile: String = #filePath) -> URL? {
+                                  sourceFile: String? = nil) -> URL? {   // switch2mac: no #filePath default, which would write the building Mac's path into the app
         var candidates: [URL] = []
         if let named = environment["NX_L10N_DIR"], !named.isEmpty { candidates.append(URL(fileURLWithPath: named)) }
         if let resources { candidates.append(resources.appendingPathComponent("l10n")) }
@@ -76,9 +76,11 @@ package enum LocalizationFiles {
             if ["frontend", "app"].contains(current.lastPathComponent) { candidates.append(current.appendingPathComponent("l10n")) }
             folder = current.deletingLastPathComponent()
         }
-        // Sources/NXCore/<this file> sits two folders below frontend.
-        candidates.append(URL(fileURLWithPath: sourceFile).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("l10n"))
+        // Sources/NXCore/<this file> sits two folders below frontend (a run from .build finds app/l10n by the walk above).
+        if let sourceFile {
+            candidates.append(URL(fileURLWithPath: sourceFile).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+                .appendingPathComponent("l10n"))
+        }
         return candidates.first { FileManager.default.fileExists(atPath: $0.appendingPathComponent("en.json").path) }
     }
 

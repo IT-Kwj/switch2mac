@@ -14,3 +14,4 @@ __pycache__/
 /app/.build/
 /app/.swiftpm/
 /app/build/
+/app/release/
