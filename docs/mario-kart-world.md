@@ -1,6 +1,6 @@
 # Mario Kart World on the Mac: how the port was made
 
-A record of the problems found on the way from the first boot to a playable app, for anyone porting the next Switch 2 game. Version 1.0.0, Apple M1 Max. All fixes are in `nxnative/`.
+A record of the problems found on the way from the first boot to a playable app, for anyone porting the next Switch 2 game. Version 1.0.0, Apple M1 Max. All fixes are in switch2mac-engine's ``.
 
 ## Starting point
 

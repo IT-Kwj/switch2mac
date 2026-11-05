@@ -3,20 +3,27 @@
 
   ./switch2mac.py setup                       Python packages into .venv (once)
   ./switch2mac.py build <dump folder>         the whole build: game files, code, shaders, host, app
+  ./switch2mac.py build <dump> --engine <id>  a game with several builds (Mario Kart World: switch2mac, nxnative): that one, not the one chosen for this Mac
+  ./switch2mac.py builds <dump folder>        which builds the game has, which one this Mac gets and why, and how they ran on players' Macs
   ./switch2mac.py refresh                     take in the shaders the app saved while you played, and pack the app again
   ./switch2mac.py install                     move the finished app to /Applications (replacing the old one)
   ./switch2mac.py run [VAR=value ...]         run the build straight from ./work with a log in work/logs (for porting and debugging: docs/porting.md)
 
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
-Each supported game has a folder in games/ (game.json names it); its profile is nxnative/dm/games/<title ID>.
+Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: switch2mac-engine's dm/games/<title ID>).
+A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
+with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
+A game can have several builds (game.json "builds", each with its own engine and shader list): game.json "choose" picks one for this Mac (its chip and memory),
+from what players reported (games/<game>/reports.tsv); --engine overrides it.
 """
-import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys
+import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NX = ROOT / 'nxnative'
+NX = None   # the engine of the game being built on switch2mac's engine: engines/switch2mac-<commit> (use_engine)
 VENV = ROOT / '.venv'
+ENGINES = ROOT / 'engines'   # pinned checkouts of the other engines some games are built with (game.json "engine")
 GAMES = {g['title_id']: dict(g, dir=p.parent) for p in sorted((ROOT / 'games').glob('*/game.json')) for g in [json.loads(p.read_text())]}
 SKIP = {'.listing', '.DS_Store'}   # a dump tool's FTP listings and Finder's files: never game files
 
@@ -24,10 +31,121 @@ SKIP = {'.listing', '.DS_Store'}   # a dump tool's FTP listings and Finder's fil
 def say(msg): print(f'\n== {msg}', flush=True)
 
 
-def run(cmd, env=None, cwd=None):
+def builds(g):   # a game's builds (game.json "builds"); a game with one "engine" has one build, named after its engine
+    return g.get('builds') or [{'id': g['engine']['kind'], 'name': f'{g["engine"]["kind"]}\'s engine', 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}]
+
+
+def this_mac():   # what the build choice reads: the chip (its generation: 1 for M1, ...) and memory
+    def sysctl(k): return subprocess.run(['sysctl', '-n', k], capture_output=True, text=True).stdout.strip()
+    chip = sysctl('machdep.cpu.brand_string'); m = re.search(r'\bM(\d+)\b', chip)
+    return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'macos': macos()}
+
+
+def recommend(g, mac):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max), else the first build
+    for r in g.get('choose', []):
+        if mac['generation'] < r.get('chip_min', 0) or mac['generation'] > r.get('chip_max', 99): continue
+        if mac['memory_gb'] < r.get('memory_min', 0) or mac['memory_gb'] > r.get('memory_max', 1 << 20): continue
+        return r['build'], r.get('why', '')
+    return builds(g)[0]['id'], ''
+
+
+def with_build(g, bid=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac)
+    bs = builds(g)
+    if not bid: bid = recommend(g, this_mac())[0]
+    b = next((b for b in bs if b['id'] == bid), None)
+    if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
+    return dict(g, engine=b['engine'], build=b)
+
+
+def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
+    f = g['dir'] / 'reports.tsv'; keys = ('mac', 'chip', 'memory_gb', 'macos', 'build', 'fps', 'peak_gb', 'notes', 'source')
+    return [dict(zip(keys, l.split('\t'))) for l in (f.read_text().splitlines() if f.exists() else []) if l.strip() and not l.startswith('#')]
+
+
+def built_game(w):   # the game a finished build in w is, as the build it was made with (title.txt, build.txt)
+    tf = w / 'title.txt'
+    if not tf.exists(): sys.exit('no finished build in ' + str(w) + ': run build first')
+    tid = tf.read_text().strip(); bf = w / 'build.txt'
+    GAMES[tid] = with_build(GAMES[tid], bf.read_text().strip() if bf.exists() else builds(GAMES[tid])[0]['id'])
+    return tid
+
+
+class Progress:
+    """The build's stages. --progress json writes one event per line, the form the switch2mac app reads (NX2Apple's launcher, from nxnative's build script):
+    {"ev": "stage", "k": 2, "n": 7, "name": ...}, {"ev": "step", "k", "step"}, {"ev": "stage_end", "k", "name", "ok", "elapsed", "summary"}, {"ev": "say", "msg"}.
+    Anything else on the output (the tools' own lines) is log text. Without it, a stage is the usual '== name' line."""
+    # Time left: each stage's expected length is how long it took the last time (history: <work>/stage_times.json), else a first-build guess
+    # (FIRST: Mario Kart World on an M1 Max with nothing cached). While a stage runs, a progress event a second gives its share done and the
+    # seconds left (marked as an estimate); the app shows them as the bar and the time left. The history is written when a stage ends well.
+    FIRST = {'the dump': 1, 'game files': 140, 'code': 90, 'shader split': 15, 'Metal shaders': 900, 'host': 30, 'app': 160, 'engine': 60}
+    order = []   # the stages still to come after the running one, for the time left in all (Mario Kart World's build sets them)
+    def __init__(self): self.json, self.k, self.n, self.name, self.t0, self.open, self.step_text, self.hist, self.hist_path = False, 0, 0, '', 0.0, False, '', {}, None
+    def history(self, path):
+        self.hist_path = Path(path)
+        try: self.hist = json.loads(self.hist_path.read_text())
+        except (OSError, ValueError): self.hist = {}
+    def _tick(self, k):
+        exp = self.hist.get(self.name) or self.FIRST.get(self.name)
+        if not exp: return
+        while self.open and self.k == k:
+            t = time.time() - self.t0; left = max(1.0, exp - t)
+            later = sum(self.hist.get(n) or self.FIRST.get(n, 0) for n in self.order[self.order.index(self.name) + 1:]) if self.name in self.order else 0
+            total = left + later; mins = round(total / 60)
+            note = f'about {mins} min left in all' if mins >= 2 else 'about a minute left in all' if total > 30 else 'almost done'
+            self.emit('progress', k=k, frac=round(min(0.99, t / exp), 3), eta=round(left), step=self.step_text, note=note, est=True)
+            time.sleep(1)
+    def emit(self, ev, **kw):
+        if self.json: print(json.dumps(dict(ev=ev, **kw), ensure_ascii=False), flush=True)
+    def plan(self, n): self.n = n
+    def stage(self, name, step=''):   # ends the stage before it (done) and starts the next
+        if self.open: self.end()
+        self.k += 1; self.name, self.t0, self.open, self.step_text = name, time.time(), True, step
+        if self.json:
+            self.emit('stage', k=self.k, n=max(self.n, self.k), name=name, step=step)
+            import threading; threading.Thread(target=self._tick, args=(self.k,), daemon=True).start()
+        else: say(name + (f' ({step})' if step else ''))
+    def step(self, text):
+        if self.json and self.open: self.emit('step', k=self.k, step=text)
+        else: print(f'  {text}', flush=True)
+    def end(self, ok=True, summary=''):
+        if not self.open: return
+        self.open = False
+        took = round(time.time() - self.t0, 1)
+        self.emit('stage_end', k=self.k, name=self.name, ok=ok, elapsed=took, summary=summary)
+        if ok and self.hist_path:
+            self.hist[self.name] = took
+            try: self.hist_path.parent.mkdir(parents=True, exist_ok=True); self.hist_path.write_text(json.dumps(self.hist, indent=1))
+            except OSError: pass
+
+
+P = Progress()
+
+
+def run(cmd, env=None, cwd=None, shift=None):   # shift: the tool writes --progress json events of its own: number its stages after ours (shift = our stages before it)
     print('$', ' '.join(str(c) for c in cmd), flush=True)
-    r = subprocess.run([str(c) for c in cmd], env=env, cwd=cwd)
-    if r.returncode: sys.exit(f'\nstopped: {Path(str(cmd[0])).name} failed ({r.returncode})')
+    if shift is None:
+        r = subprocess.run([str(c) for c in cmd], env=env, cwd=cwd); rc = r.returncode
+    else:
+        pr = subprocess.Popen([str(c) for c in cmd], env=env, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace')
+        for line in pr.stdout:
+            ev = None
+            if line.startswith('{'):
+                try: ev = json.loads(line)
+                except ValueError: pass
+            if isinstance(ev, dict) and 'ev' in ev:
+                if 'k' in ev: ev['k'] += shift
+                if 'n' in ev: ev['n'] += shift; P.plan(ev['n'])
+                line = json.dumps(ev, ensure_ascii=False) + '\n'
+            sys.stdout.write(line); sys.stdout.flush()
+        rc = pr.wait()
+    if rc:
+        P.end(False, f'{Path(str(cmd[1] if len(cmd) > 1 and str(cmd[0]).endswith("python") else cmd[0])).name} failed ({rc})')
+        sys.exit(f'\nstopped: {Path(str(cmd[0])).name} failed ({rc})')
+
+
+def has_packages():   # the build's Python packages are importable here (the switch2mac app's bundled Python): no .venv needed
+    import importlib.util
+    return sys.version_info >= (3, 12) and all(importlib.util.find_spec(m) for m in ('capstone', 'lz4', 'fontTools', 'zstandard'))
 
 
 def py():
@@ -49,18 +167,48 @@ def macos():   # this Mac's macOS as major.minor (e.g. 26.5): the app is built f
     return f'{v[0]}.{v[1] if len(v) > 1 else 0}'
 
 
+def good_python():   # a Python 3.12 or later for .venv: this one, else the newest Homebrew or python.org one (macOS's own python3 is 3.9)
+    if sys.version_info >= (3, 12): return sys.executable
+    cands = [shutil.which(f'python3.{m}') for m in range(20, 11, -1)] + [f'/opt/homebrew/bin/python3.{m}' for m in range(20, 11, -1)] + ['/opt/homebrew/bin/python3', '/usr/local/bin/python3'] \
+            + [f'/Library/Frameworks/Python.framework/Versions/3.{m}/bin/python3' for m in range(20, 11, -1)]
+    for c in cands:
+        if not c or not os.access(c, os.X_OK): continue
+        r = subprocess.run([c, '-c', 'import sys; print(sys.version_info >= (3, 12))'], capture_output=True, text=True)
+        if r.stdout.strip() == 'True': return c
+    return None
+
+
 def setup(a):
-    say('Python packages (.venv)')
-    if not VENV.exists(): run([sys.executable, '-m', 'venv', VENV])
-    run([py(), '-m', 'pip', 'install', '-q', '-r', ROOT / 'requirements.txt'])
-    say('checks')
-    for tool, why in (('xcrun', 'Xcode'), ('clang++', 'Xcode command line tools')):
-        print(f'  {tool}: {"ok" if shutil.which(tool) else "MISSING (" + why + ")"}')
-    r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
-    print(f'  Metal compiler: {"ok" if r.returncode == 0 else "MISSING (Xcode → Settings → Components → Metal Toolchain)"}')
-    print(f'  .NET: {"ok (" + env()["DOTNET_ROOT"] + ")" if "DOTNET_ROOT" in env() else "MISSING (.NET 10 SDK from dot.net)"}')
+    say('checks')   # each missing piece with the exact fix; setup stops before anything else when one is missing
+    bad = []
+    def check(name, ok, fix):
+        print(f'  {"ok     " if ok else "MISSING"}  {name}' + ('' if ok else f'\n           fix: {fix}'))
+        if not ok: bad.append(name)
     v = macos()
-    print(f'  macOS {v}: ' + ('ok (the app is built for this version and later)' if int(v.split('.')[0]) >= 26 else 'TOO OLD (macOS 26 or later is needed: the runtime draws with Metal 4)'))
+    check(f'macOS 26 or later (this Mac: {v})', int(v.split('.')[0]) >= 26, 'update macOS in System Settings → General → Software Update (the games draw with Metal 4, new in macOS 26)')
+    xc = subprocess.run(['xcode-select', '-p'], capture_output=True, text=True)
+    check('Xcode', xc.returncode == 0 and 'Xcode' in xc.stdout and shutil.which('clang++') is not None,
+          'install Xcode from the App Store, open it once, then in Terminal: sudo xcode-select -s /Applications/Xcode.app')
+    r = subprocess.run(['xcrun', '-sdk', 'macosx', 'metal', '--version'], capture_output=True, text=True)
+    check('Metal Toolchain', r.returncode == 0, 'open Xcode → Settings → Components, and install Metal Toolchain')
+    check('.NET 10', 'DOTNET_ROOT' in env(), 'install the .NET 10 SDK from https://dot.net (or: brew install --cask dotnet-sdk)')
+    gp = good_python()
+    if VENV.exists() and subprocess.run([py(), '-c', 'import sys; sys.exit(sys.version_info < (3, 12))']).returncode: shutil.rmtree(VENV)   # an old .venv made with Python 3.9
+    check('Python 3.12 or later' + (f' ({gp})' if gp else ''), gp is not None, 'install Python from https://www.python.org/downloads (or: brew install python), then run setup again')
+    check('git', shutil.which('git') is not None, 'comes with Xcode: install Xcode first')
+    if bad: sys.exit(f'\nsetup stopped: {len(bad)} thing(s) missing ({", ".join(bad)}). Install them as shown above, then run setup again.')
+    say('Python packages (.venv)')
+    if not VENV.exists(): run([gp, '-m', 'venv', VENV])
+    run([py(), '-m', 'pip', 'install', '-q', '--disable-pip-version-check', '-r', ROOT / 'requirements.txt'])
+    print('\nsetup done: everything is ready to build a game.')
+
+
+def free_space(w, g):   # stop before a build that cannot fit (game.json "disk_gb": the free space a first build needs); S2M_SKIP_DISK_CHECK=1 skips it
+    need = g.get('disk_gb'); w.mkdir(parents=True, exist_ok=True)
+    have = shutil.disk_usage(w).free / 1e9
+    if need and have < need and os.environ.get('S2M_SKIP_DISK_CHECK') != '1':
+        sys.exit(f'not enough free disk space: {g["name"]} needs about {need} GB for its first build, this disk has {have:.0f} GB free.\n'
+                 'Free some space (or build on another disk with --work <folder>), then try again.')
 
 
 def dump_dirs(d):
@@ -70,12 +218,90 @@ def dump_dirs(d):
     sys.exit(f'no exefs/main and romfs/ in {d} (or in {d}/base)')
 
 
-def title_and_build(exefs):
-    npdm = (exefs / 'main.npdm').read_bytes()
+def title_id(npdm):
+    npdm = npdm.read_bytes()
     aci = struct.unpack_from('<I', npdm, 0x70)[0]   # ACI0 offset in the META header
-    tid = f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
+    return f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
+
+
+def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/)
+    d = Path(d).expanduser().resolve()
+    for base in (d, d / 'base'):
+        if (base / 'exefs/main.npdm').is_file(): return title_id(base / 'exefs/main.npdm')
+    sys.exit(f'no exefs/main.npdm in {d} (or in {d}/base)')
+
+
+def title_and_build(exefs):
     sys.path.insert(0, str(NX / 'dm/tools')); import nso
-    return tid, nso.read(exefs / 'main').build_id[:16].hex()
+    return title_id(exefs / 'main.npdm'), nso.read(exefs / 'main').build_id[:16].hex()
+
+
+def own_engine(g): return g.get('engine', {}).get('kind') == 'switch2mac'   # built step by step here (Mario Kart World), not by another builder
+
+
+def use_engine(g):   # switch2mac's engine at the commit the game pins, fetched once: every step below reads it through NX
+    global NX
+    NX = engine_dir(g)
+    return NX
+
+
+def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine": upstream nxnative or pokopia-native), fetched once: that commit only, no history
+    eng = g['engine']; d = ENGINES / f'{eng["kind"]}-{eng["commit"][:12]}'
+    if (d / '.git').is_dir() and not d.with_name(d.name + '.part').exists(): return d
+    say(f'engine: {eng["kind"]} {eng["commit"][:12]} from {eng["repo"]} (once)')
+    tmp = d.with_name(d.name + '.part'); shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
+    for c in (['init', '-q'], ['remote', 'add', 'origin', eng['repo']], ['fetch', '-q', '--depth', '1', 'origin', eng['commit']], ['checkout', '-q', 'FETCH_HEAD']): run(['git', '-C', tmp] + c)
+    tmp.rename(d)
+    return d
+
+
+# Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
+# with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
+# S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
+def app_switches(g): return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-{g["engine"]["commit"][:12]}'
+
+
+def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
+    g = GAMES[tid]; eng = g['engine']; d = engine_dir(g); dump = Path(a.dump).expanduser().resolve()
+    if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
+    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}; UNTESTED in switch2mac')
+    e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
+    w.mkdir(parents=True, exist_ok=True); app = w / f'{g["name"]}.app'
+    if eng['kind'] == 'nxnative':
+        P.plan(2); P.stage('engine', f'nxnative {eng["commit"][:12]} with switch2mac\'s overlay and settings')
+        run([py(), ROOT / 'tools/engine/patch.py', d], env=e)
+        seed = w / f'{tid}-engine-seed.tsv'   # the engine's own seed list at its pinned commit, then the game's shared list after it
+        seed.write_text(subprocess.run(['git', '-C', d, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
+        ship_list(tid, d / f'dm/games/{tid}/pso_manifest.tsv', seed)
+        sw = w / 'app_switches.txt'; sw.write_text(app_switches(g) + '\n')
+        P.end()
+        run([py(), d / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
+             '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + eng.get('args', []), env=e, cwd=d, shift=P.k if P.json else None)
+    elif eng['kind'] == 'pokopia-native':
+        nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
+        P.stage('engine', f'pokopia-native {eng["commit"][:12]} with switch2mac\'s overlay and settings')
+        run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=e, cwd=d)   # nxnative at its pinned commit with pokopia-native's Switch 2 patch, and its shader lowering
+        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e)
+        ship_list(tid, d / f'profile/{tid}/pso_manifest.tsv')   # pokopia-native ships no list of its own: the game's shared list is the app's
+        script = d / 'nxs2.py'; t = script.read_text()   # once: its app's baked switches (APP_ENV) get switch2mac's, and its profile step copies the list
+        if 'S2M_ENGINE=' not in t:
+            k = "DM_NVN_SHDUMP=shdump\\n'\n"
+            if t.count(k) != 1: sys.exit(f'{script}: its APP_ENV line is not the one switch2mac knows')
+            t = t.replace(k, k[:-2] + app_switches(g).replace('\n', '\\n') + "\\n'   # (switch2mac)\n", 1)
+        if "'shader_facts.seed.tsv', 'pso_manifest.tsv')" not in t:
+            k = "'shader_facts.seed.tsv'):"
+            if t.count(k) != 1: sys.exit(f'{script}: its profile step is not the one switch2mac knows')
+            t = t.replace(k, "'shader_facts.seed.tsv', 'pso_manifest.tsv'):", 1)
+        script.write_text(t)
+        P.stage('build', 'game files, code, shaders (the long step) and host, by pokopia-native')
+        run([py(), script, 'build', dump, '--out', w / tid, '--mac-app', '--no-ios'], env=e, cwd=d)
+        P.stage('app')
+        if app.exists(): shutil.rmtree(app)
+        shutil.move(str(w / tid / 'out' / f'{g["name"]}.app'), app)
+    else: sys.exit(f'{g["dir"]}/game.json: engine kind {eng["kind"]!r} is not one switch2mac builds with')
+    (w / 'title.txt').write_text(tid + '\n'); (w / 'build.txt').write_text(g['build']['id'] + '\n')
+    P.end(summary=str(app))
+    print(f'\nbuilt: {app}\n./switch2mac.py install moves it to /Applications.')
 
 
 def check_version(tid, bid):
@@ -110,7 +336,13 @@ def profile(w, tid):   # a fresh copy of the repo's profile in work/profile: the
     prof = w / 'profile' / tid
     if prof.exists(): shutil.rmtree(prof)
     shutil.copytree(NX / f'dm/games/{tid}', prof)
+    ship_list(tid, prof / 'pso_manifest.tsv')
     return prof
+
+
+def ship_list(tid, out, base=None):   # the build's shared shader list (games/<game>/shader_list.tsv, or the build's own) as the pso_manifest.tsv its app ships, after the engine's own rows when it has some
+    b = GAMES[tid].get('build')
+    run([py(), ROOT / 'tools/shader_list.py', 'ship', tid, out] + (['--base', base] if base else []) + (['--build', b['id']] if b else []))
 
 
 def runtime_shaders(tid, w):
@@ -143,16 +375,16 @@ def shaders(a, tid, w, sh, cache, e):
     e.update(DM_GAMES_DIR=str(w / 'profile'), DM_GAMES_FIRST='1')   # every tool (and the host build) takes the work copy
     lower = tools / 'nx2_lower/nx2_lower'
     if not lower.exists():
-        say('the shader lowering tool (nx2_lower)')
+        P.step('building the shader lowering tool (nx2_lower)')
         run(['clang++', '-std=c++20', '-O2', '-w', '-Wno-c++11-narrowing', '-I.', 'nx2_lower.cpp', '-o', 'nx2_lower'], cwd=tools / 'nx2_lower')
     e = dict(e, DM_GAME=tid)
     run([py(), NX / 'dm/tools/nso.py', w / 'extract/ExeFS/main', sh / 'main.img'], env=e)
-    say('shaders: split (with the run-time shaders listed for this game' + (', and those the app saved while you played)' if (w / 'captures').is_dir() and any((w / 'captures').iterdir()) else ')'))
+    P.stage('shader split', 'with the run-time shaders listed for this game' + (' and those the app saved while you played' if (w / 'captures').is_dir() and any((w / 'captures').iterdir()) else ''))
     rt = runtime_shaders(tid, w)
     caps = [str(p) for p in (rt, w / 'captures') if p and p.is_dir() and any(p.iterdir())]
     e = dict(e, NX2_DUMPS=':'.join(caps))
     run([py(), tools / 'nx2_split.py', w / 'input/romfs', sh / 'main.img', sh / 'pkg', prof / 'shader_map.tsv', prof / 'shader_facts.tsv', prof / 'shader_pairs.tsv', sh / 'rejects.tsv'], env=e)
-    say('shaders: Metal libraries (the long step: 10-20 minutes the first time, all cores)')
+    P.stage('Metal shaders', 'the long step: 10-20 minutes the first time, all cores')
     run([py(), tools / 'own_compilers.py', sh / 'pkg', cache], env=e)
     chain = re.search(r'"([0-9a-f]{12})"', (NX / 'dm/gfx/nvn/dmsh_chain.h').read_text())[1]   # the translator chain version names the library folder
     lib = cache / f'b-{chain}'
@@ -163,33 +395,44 @@ def shaders(a, tid, w, sh, cache, e):
 
 def host_and_app(a, tid, w, lib, e):
     g = GAMES[tid]; prof = w / 'profile' / tid
-    say('host (the native runtime)')
+    P.stage('host', 'the native runtime')
     run(['make', '-C', NX / 'dm/host', f'GAME={tid}', f'MACOS_MIN={macos()}', 'dmhost'], env=e)   # for this Mac's macOS, not nxnative's fixed 26.6
     font = w / 'build/font'
     if not (font / 'nintendo_ext.ttf').exists():
         font.mkdir(parents=True, exist_ok=True); run([py(), NX / 'dm/tools/make_ext_font.py', font / 'nintendo_ext.ttf'], env=e)
-    say('app')
+    P.stage('app')
     run([py(), g['dir'] / 'launcher.py', NX, w / 'build/patched', w / 'build/launcher.json'], env=e)
     app = w / f'{g["name"]}.app'
     run([py(), NX / 'dm/mac/pack_app.py', app, '--host', NX / 'dm/host/dmhost', '--patched', w / 'build/patched', '--romfs', w / 'extract/RomFS.img',
          '--msl', lib, '--tables', prof, '--font', font, '--env-file', g['dir'] / 'env.txt', '--settings', w / 'build/launcher.json', '--launcher-window', 'off',
          '--title-id', tid, '--name', g['name'], '--version', g['version'], '--lang', 'en-US', '--marker', g['marker']], env=e)
-    (w / 'title.txt').write_text(tid)
+    (w / 'title.txt').write_text(tid); (w / 'build.txt').write_text(g['build']['id'] + '\n')
+    P.end(summary=str(app))
     print(f'\ndone: {app}\nnext: ./switch2mac.py install')
 
 
 def build(a):
     e = env(); w, ex, b, sh, cache = paths(a)
     if 'DOTNET_ROOT' not in e: sys.exit('.NET is missing: run ./switch2mac.py setup for the checks')
+    P.json = getattr(a, 'progress', None) == 'json'; P.plan(7); P.history(w / 'stage_times.json')
+    P.order = ['the dump', 'game files', 'code', 'shader split', 'Metal shaders', 'host', 'app']
+    P.stage('the dump'); tid = dump_title(a.dump)
+    if tid in GAMES:
+        GAMES[tid] = with_build(GAMES[tid], a.engine); b = GAMES[tid]['build']
+        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {b["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        free_space(w, GAMES[tid])
+    if not own_engine(GAMES.get(tid, {'engine': {'kind': 'switch2mac'}})): return engine_build(a, tid, w, e)
+    if tid in GAMES: use_engine(GAMES[tid])
+    else: sys.exit(f'title {tid} is not supported yet (this repository has: {", ".join(g["name"] + " " + t for t, g in GAMES.items())}).\nAdding a game: docs/porting.md')
     exefs, romfs = dump_dirs(a.dump)
-    say('the dump'); tid, bid = title_and_build(exefs); check_version(tid, bid)
+    tid, bid = title_and_build(exefs); check_version(tid, bid)
     for d in (ex / 'ExeFS', b, sh): d.mkdir(parents=True, exist_ok=True)
-    say('game files: code modules and the RomFS image (a few minutes; reused when unchanged)')
+    P.stage('game files', 'code modules and the RomFS image (a few minutes; reused when unchanged)')
     for f in exefs.iterdir():
         if f.is_file() and f.name not in SKIP: run(['cp', '-c', f, ex / 'ExeFS' / f.name])
     stage(romfs, w / 'input/romfs')
     run([py(), NX / 'dm/tools/romfs_image.py', '--reuse', w / 'input/romfs', ex / 'RomFS.img'], env=e)
-    say('code: rewrite the game modules for the Mac')
+    P.stage('code', 'the game modules rewritten for the Mac')
     mods = subprocess.run([py(), NX / 'dm/games/game.py', tid, 'modules'], capture_output=True, text=True, check=True).stdout.split()
     for m in mods: run([py(), NX / 'dm/tools/patch_nso.py', ex / 'ExeFS' / m, b / 'patched', m], env=e)
     lib = shaders(a, tid, w, sh, cache, e)
@@ -198,9 +441,9 @@ def build(a):
 
 def refresh(a):
     e = env(); w, ex, b, sh, cache = paths(a)
-    tf = w / 'title.txt'
-    if not tf.exists(): sys.exit('no finished build in ' + str(w) + ': run build first')
-    tid = tf.read_text().strip()
+    tid = built_game(w)
+    if not own_engine(GAMES[tid]): sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on switch2mac\'s engine (build again instead)')
+    use_engine(GAMES[tid])
     caps = w / 'captures'; caps.mkdir(exist_ok=True); new = []
     for saved in (Path.home() / f'Library/Application Support/nxnative/{tid}/shdump', w / 'run/shdump'):   # the installed app's captures, and run's
         got = [p for p in saved.glob('*') if p.is_file() and not (caps / p.name).exists()] if saved.is_dir() else []
@@ -208,17 +451,83 @@ def refresh(a):
         print(f'{len(got)} new files from {saved}'); new += got
     print(f'{sum(1 for _ in caps.glob("*.ctl"))} shaders captured in all')
     if not new and not a.force: sys.exit('nothing new to build in (play the game a while first, or --force)')
+    P.json = getattr(a, 'progress', None) == 'json'; P.plan(4); P.history(w / 'stage_times.json'); P.order = ['shader split', 'Metal shaders', 'host', 'app']
     lib = shaders(a, tid, w, sh, cache, e)
     host_and_app(a, tid, w, lib, e)
 
 
+def damaged_modules(d):   # code modules (NSO) of a dump whose segments reach past the end of the file: a copy cut short, as an FTP copy in text mode leaves them
+    d = Path(d).expanduser().resolve(); bad = []
+    for exefs in [d / 'exefs', d / 'base/exefs'] + sorted(d.glob('updates/*/exefs')) + sorted(d.glob('updates/exefs')):
+        if not exefs.is_dir(): continue
+        for f in sorted(exefs.iterdir()):
+            if not f.is_file() or f.name in SKIP: continue
+            with f.open('rb') as h: head = h.read(0x100)
+            if len(head) < 0x100 or head[:4] != b'NSO0': continue
+            size = f.stat().st_size
+            for i in range(3):   # text, ro, data: file offset at 0x10 + 0x10 * i, size in the file at 0x60 + 4 * i
+                off = struct.unpack_from('<I', head, 0x10 + 0x10 * i)[0]; n = struct.unpack_from('<I', head, 0x60 + 4 * i)[0]
+                if off + n > size: bad.append(str(f.relative_to(d))); break
+    return bad
+
+
+def identify(a):   # for the app: which game a dump folder is, as one JSON line (nothing is copied or built)
+    out = {'ok': False, 'folder': str(Path(a.dump).expanduser())}
+    try:
+        tid = dump_title(a.dump); out['title_id'] = tid
+    except SystemExit as x:
+        out['problem'] = 'This isn\'t a game dump: ' + str(x); print(json.dumps(out)); return
+    bad = damaged_modules(a.dump)
+    if bad:
+        g = GAMES.get(tid); out.update(name=g['name'] if g else '', damaged=bad,
+            problem=f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
+        print(json.dumps(out, ensure_ascii=False)); return
+    g = GAMES.get(tid)
+    if not g: out['problem'] = f'title {tid} is not a game switch2mac builds (yet)'; print(json.dumps(out)); return
+    mac = this_mac(); rec, why = recommend(g, mac); eng = with_build(g, rec)['engine']
+    out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
+               disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md', untested='switch2mac' != eng.get('kind'),
+               mac=mac, recommended=rec, why=why, reports=reports(g),
+               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', '')} for b in builds(g)])
+    print(json.dumps(out, ensure_ascii=False))
+
+
+def builds_cmd(a):   # the builds a game has and which one this Mac gets, for people (identify gives the same to the app)
+    tid = dump_title(a.dump) if Path(a.dump).expanduser().exists() else a.dump.upper()
+    g = GAMES.get(tid) or next((g for g in GAMES.values() if g['dir'].name == a.dump), None)
+    if not g: sys.exit(f'{a.dump}: not a game switch2mac builds')
+    mac = this_mac(); rec, why = recommend(g, mac); rs = reports(g)
+    print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}')
+    for b in builds(g):
+        print(f'\n  {"*" if b["id"] == rec else " "} {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})' + (f'  <- this Mac: {why}' if b['id'] == rec and why else ''))
+        if b.get('about'): print(f'      {b["about"]}')
+        for r in rs:
+            if r['build'].split()[0] == b['id']:
+                print(f'      {r["mac"]} {r["chip"]}, {r["memory_gb"]} GB: {r["fps"] or "?"} fps' + (f', {r["peak_gb"]} GB peak' if r['peak_gb'] else '') + f' ({r["notes"]}; {r["source"]})')
+    if len(builds(g)) > 1: print(f'\n./switch2mac.py build <dump> builds {rec}; --engine <id> builds another.')
+
+
+def switched_build(g):
+    """The game's data folder notes which build is installed (s2m_build.txt). When it changes (Mario Kart World from switch2mac's engine to nxnative's, or back), the
+    old build's record of the pipelines it built (pso_user.tsv) and its shader list contribution are put aside with the old build's name: the two engines name their
+    shaders differently, so the new build would offer the old one's rows as its own. Saves are the game's own and stay as they are."""
+    data = Path.home() / f'Library/Application Support/nxnative/{g["title_id"]}'; note = data / 's2m_build.txt'; new = g['build']['id']
+    old = note.read_text().strip() if note.exists() else (builds(g)[0]['id'] if (data / 'pso_user.tsv').exists() else '')
+    if old and old != new:
+        for f in ('pso_user.tsv', 'shader-list-contribution.txt', '.shader-list-contribution.txt.done'):
+            p = data / f
+            if p.exists(): p.rename(data / f'{f.removesuffix(".tsv").removesuffix(".txt")}.{old}{p.suffix}')
+        print(f'  {g["name"]} was on the {old} build: its pipeline record and shader list contribution are kept aside as *.{old}.* (saves stay)')
+    if data.is_dir(): note.write_text(new + '\n')
+
+
 def install(a):
-    w = paths(a)[0]; tf = w / 'title.txt'
-    if not tf.exists(): sys.exit('no finished build: run build first')
-    g = GAMES[tf.read_text().strip()]; app = w / f'{g["name"]}.app'; dst = Path('/Applications') / app.name
+    w = paths(a)[0]; tid = built_game(w)
+    g = GAMES[tid]; app = w / f'{g["name"]}.app'; dst = Path(a.to).expanduser() / app.name
     if subprocess.run(['pgrep', '-f', f'{dst}/Contents/MacOS'], capture_output=True).returncode == 0: sys.exit(f'{g["name"]} is running: quit it first')
     if dst.exists(): shutil.rmtree(dst)
     shutil.move(str(app), dst); Path(str(app) + '.key').unlink(missing_ok=True)
+    switched_build(g)
     print(f'installed: {dst}\nThe first start after each install waits 1-3 minutes while macOS scans the app (no window, no Dock icon yet): wait, do not open it twice.')
 
 
@@ -226,9 +535,9 @@ def run_game(a):
     """The build straight from ./work, without packing an app: the way to try a new game or a fix. Output goes to the terminal and work/logs/run-<time>.log;
     VAR=value arguments add host switches (docs/porting.md lists the useful ones). work/run/ctl.txt is the host's control file (DM_CTL): write a command
     line into it while the game runs (shot, passdump, texraw, memdump, ...). Shaders the game meets that the build lacks are saved to work/run/shdump."""
-    w = paths(a)[0]; tf = w / 'title.txt'
-    if not tf.exists(): sys.exit('no finished build: run build first')
-    tid = tf.read_text().strip(); g = GAMES[tid]; r = w / 'run'
+    w = paths(a)[0]; tid = built_game(w); g = GAMES[tid]; r = w / 'run'
+    if not own_engine(g): sys.exit(f'{g["name"]} is built with another engine: open the app instead (its own runner: {w / tid})')
+    use_engine(g)
     for d in ('save', 'temp', 'shdump'): (r / d).mkdir(parents=True, exist_ok=True)
     (r / 'ctl.txt').write_text(''); (w / 'logs').mkdir(exist_ok=True)
     e = dict(os.environ, DM_ROOT=str(w), DM_ROMFS=str(w / 'extract/RomFS.img'), DM_SAVE=str(r / 'save'), DM_TEMP=str(r / 'temp'), DM_NVN_SHDUMP=str(r / 'shdump'),
@@ -256,13 +565,17 @@ def main():
     ap.add_argument('--work', default=str(ROOT / 'work'), help='build folder (default ./work)')
     sub = ap.add_subparsers(dest='cmd', required=True)
     sub.add_parser('setup'); bp = sub.add_parser('build'); bp.add_argument('dump')
+    bp.add_argument('--engine', help='a game with several builds: build this one (see: builds <dump>) instead of the one chosen for this Mac')
+    sp = sub.add_parser('builds'); sp.add_argument('dump', help='a dump folder, a title ID or a games/ folder name')
     rp = sub.add_parser('refresh'); rp.add_argument('--force', action='store_true', help='rebuild even with no new shaders')
-    sub.add_parser('install')
+    for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the switch2mac app')
+    ip = sub.add_parser('install'); ip.add_argument('--to', default='/Applications', help='the folder the app goes to (default /Applications)')
+    dp = sub.add_parser('identify'); dp.add_argument('dump')
     gp = sub.add_parser('run'); gp.add_argument('vars', nargs='*', help='host switches, VAR=value'); gp.add_argument('--print', action='store_true', help='show the command only')
     a = ap.parse_args()
-    if a.cmd != 'setup' and Path(sys.prefix).resolve() != VENV.resolve():   # run inside .venv
+    if a.cmd not in ('setup', 'identify', 'builds') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
         os.execv(py(), [str(py()), __file__] + sys.argv[1:])
-    {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game}[a.cmd](a)
+    {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
 
 
 if __name__ == '__main__':

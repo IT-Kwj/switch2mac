@@ -1,0 +1,28 @@
+name: Shader list
+description: Send the list your app made when you pressed Send (shader IDs only), so everyone gets fewer stutters.
+title: "[Shader list] "
+labels: ["shader-list"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thanks!** This file is just a list of shader IDs: no game files, no saves, nothing about you.
+
+        <details><summary>What's in the file?</summary>
+
+        Each line is a short code (letters and numbers) that names a shader or a render setup, like a library book number instead of the book. Other players' apps look those codes up in their own copy of the game and prepare them before they play. Nobody can rebuild anything from the codes, and only lines of that form are ever read: anything else is thrown away. [More in the README](https://github.com/azmasm/switch2mac#is-sending-safe).
+        </details>
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: Filled in by the app.
+    validations:
+      required: true
+  - type: textarea
+    id: file
+    attributes:
+      label: The file
+      description: Drag in the file the app showed in Finder.
+    validations:
+      required: true

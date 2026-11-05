@@ -2,5 +2,46 @@
  "title_id": "0400C3F00006E000",
  "name": "Mario Kart World",
  "version": "1.0.0",
- "marker": "Movie/StaffRoll_00.webm"
+ "marker": "Movie/StaffRoll_00.webm",
+ "disk_gb": 50,
+ "builds": [
+  {
+   "id": "switch2mac",
+   "name": "switch2mac's engine",
+   "engine": {
+    "kind": "switch2mac",
+    "repo": "https://github.com/azmasm/switch2mac-engine",
+    "commit": "d0745f0455b5b08df690116714ab32351ca18634"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "switch2mac's own engine: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "975bb4c14456d145eb3d969814534eecdd996ce9"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: its own Switch 2 shader translator and shared terrain tiles (less memory). Suits M3 and newer."
+  }
+ ],
+ "choose": [
+  {
+   "memory_max": 23,
+   "build": "nxnative",
+   "why": "Macs with less than 24 GB of memory: nxnative's build needs much less memory (switch2mac's grows past 20 GB in long sessions)"
+  },
+  {
+   "chip_min": 3,
+   "build": "nxnative",
+   "why": "M3 and newer Macs run nxnative's shaders better"
+  },
+  {
+   "build": "switch2mac",
+   "why": "M1 and M2 Macs with 24 GB or more run switch2mac's build faster (about 58 fps against 47 on an M1 Max)"
+  }
+ ]
 }
