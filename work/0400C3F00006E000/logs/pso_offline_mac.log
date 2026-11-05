@@ -1,0 +1,2 @@
+pso_offline: 9548 pairs: 9547 bases, 0 left to the device (function constants), left out as the host leaves them: reflection 0, stage inputs 0, library 0, layer 1, primitive ID 0, entry 0 (3.5 s)
+pso_offline: applegpu_g15s: reused (478 MB)

@@ -1,0 +1,480 @@
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
+struct dm_border_t { uint mask; float4 k[32]; };
+static inline __attribute__((always_inline)) float4 dm_bmix(float4 r, float4 w, float4 k) { return r + (w - r) * k; }
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+template<typename V, typename T, typename... A> static inline __attribute__((always_inline)) V dm_bs(V r, constant dm_border_t* b, uint i, T t, sampler w, A... a)
+{
+    if (b->mask >> i & 1u) r = dm_bmix(r, t.sample(w, a...), b->k[i]);
+    return r;
+}
+
+struct _10
+{
+    uint _m0;
+    uint _m1[8];
+    float4 _m2;
+    float4 _m3;
+    int _m4;
+    float _m5[73];
+    int4 _m6;
+    int _m7;
+};
+
+struct _16
+{
+    float4 _m0[4096];
+};
+
+struct _23
+{
+    uint _m0[1];
+};
+
+struct spvDescriptorSetBuffer0
+{
+    constant _16* vp_c3 [[id(0)]];
+    device _23* vp_s0 [[id(1)]];
+    texture2d<float> vp_t_tcb_8 [[id(2)]];
+    sampler vp_t_tcb_8Smplr [[id(3)]];
+    sampler vp_t_tcb_8Smplr_w [[id(4)]];
+    constant dm_border_t* dm_border [[id(5)]];
+};
+
+struct main0_out
+{
+    float4 gl_Position [[position, invariant]];
+    float gl_PointSize [[point_size]];
+};
+
+vertex main0_out main0(constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], uint gl_VertexIndex [[vertex_id]])
+{
+    main0_out out = {};
+    out.gl_PointSize = 1.0;
+    out.gl_Position.x = 0.0;
+    out.gl_Position.y = 0.0;
+    out.gl_Position.z = 0.0;
+    out.gl_Position.w = 1.0;
+    float _48 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _50 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _52 = -(*spvDescriptorSet0.vp_c3)._m0[1].y;
+    float _54 = fma(_52, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _56 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _58 = fma(_56, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _227 = float2(_48, _50);
+    float _60 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_227, float2(0.0), isnan(_227)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_227, float2(0.0), isnan(_227)), level(0.0)).x;
+    float _62 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _64 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _249 = float2(_58, _50);
+    float _66 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_249, float2(0.0), isnan(_249)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_249, float2(0.0), isnan(_249)), level(0.0)).x;
+    float2 _258 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _50);
+    float _68 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_258, float2(0.0), isnan(_258)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_258, float2(0.0), isnan(_258)), level(0.0)).x;
+    float2 _266 = float2(_62, _50);
+    float _70 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_266, float2(0.0), isnan(_266)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_266, float2(0.0), isnan(_266)), level(0.0)).x;
+    float2 _274 = float2(_64, _50);
+    float _72 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_274, float2(0.0), isnan(_274)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_274, float2(0.0), isnan(_274)), level(0.0)).x;
+    float _74 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _76 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _78 = fma(2.0, _76, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _294 = float2(_74, _54);
+    float _80 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_294, float2(0.0), isnan(_294)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_294, float2(0.0), isnan(_294)), level(0.0)).x;
+    float2 _302 = float2(_78, _54);
+    float _82 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_302, float2(0.0), isnan(_302)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_302, float2(0.0), isnan(_302)), level(0.0)).x;
+    float2 _311 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _54);
+    float _84 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_311, float2(0.0), isnan(_311)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_311, float2(0.0), isnan(_311)), level(0.0)).x;
+    float2 _319 = float2(_62, _54);
+    float _86 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_319, float2(0.0), isnan(_319)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_319, float2(0.0), isnan(_319)), level(0.0)).x;
+    float2 _327 = float2(_64, _54);
+    float _88 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_327, float2(0.0), isnan(_327)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_327, float2(0.0), isnan(_327)), level(0.0)).x;
+    float2 _336 = float2(_74, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _90 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_336, float2(0.0), isnan(_336)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_336, float2(0.0), isnan(_336)), level(0.0)).x;
+    float2 _345 = float2(_78, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _92 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_345, float2(0.0), isnan(_345)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_345, float2(0.0), isnan(_345)), level(0.0)).x;
+    float2 _355 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _94 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_355, float2(0.0), isnan(_355)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_355, float2(0.0), isnan(_355)), level(0.0)).x;
+    float2 _364 = float2(_62, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _96 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_364, float2(0.0), isnan(_364)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_364, float2(0.0), isnan(_364)), level(0.0)).x;
+    float2 _373 = float2(_64, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _98 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_373, float2(0.0), isnan(_373)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_373, float2(0.0), isnan(_373)), level(0.0)).x;
+    float _100 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _102 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float2 _391 = float2(_74, _100);
+    float _104 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_391, float2(0.0), isnan(_391)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_391, float2(0.0), isnan(_391)), level(0.0)).x;
+    float2 _399 = float2(_78, _100);
+    float _106 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_399, float2(0.0), isnan(_399)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_399, float2(0.0), isnan(_399)), level(0.0)).x;
+    float2 _408 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _100);
+    float _108 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_408, float2(0.0), isnan(_408)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_408, float2(0.0), isnan(_408)), level(0.0)).x;
+    float2 _416 = float2(_62, _100);
+    float _110 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_416, float2(0.0), isnan(_416)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_416, float2(0.0), isnan(_416)), level(0.0)).x;
+    float2 _424 = float2(_64, _100);
+    float _112 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_424, float2(0.0), isnan(_424)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_424, float2(0.0), isnan(_424)), level(0.0)).x;
+    float2 _432 = float2(_74, _102);
+    float _114 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_432, float2(0.0), isnan(_432)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_432, float2(0.0), isnan(_432)), level(0.0)).x;
+    float2 _440 = float2(_78, _102);
+    float _116 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_440, float2(0.0), isnan(_440)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_440, float2(0.0), isnan(_440)), level(0.0)).x;
+    float2 _449 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _102);
+    float _118 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_449, float2(0.0), isnan(_449)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_449, float2(0.0), isnan(_449)), level(0.0)).x;
+    float2 _457 = float2(_62, _102);
+    float _120 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_457, float2(0.0), isnan(_457)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_457, float2(0.0), isnan(_457)), level(0.0)).x;
+    float2 _465 = float2(_64, _102);
+    float _122 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_465, float2(0.0), isnan(_465)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_465, float2(0.0), isnan(_465)), level(0.0)).x;
+    float _124 = as_type<float>(int(gl_VertexIndex));
+    int _127 = as_type<int>(_124) << 5;
+    int _129 = _127 + 24;
+    float _131 = precise::min(_60, 1000000.0);
+    float _133 = precise::min(_131, _66);
+    float _135 = precise::min(_133, _68);
+    float _137 = precise::min(_135, _70);
+    float _139 = precise::min(_137, _72);
+    float _141 = precise::min(_139, _80);
+    float _143 = precise::min(_141, _82);
+    float _145 = precise::min(_143, _84);
+    float _147 = precise::min(_145, _86);
+    float _149 = precise::min(_147, _88);
+    float _151 = precise::min(_149, _90);
+    float _153 = precise::min(_151, _92);
+    float _155 = precise::min(_153, _94);
+    float _157 = precise::min(_155, _96);
+    float _159 = precise::min(_157, _98);
+    float _161 = precise::min(_159, _104);
+    float _163 = precise::min(_161, _106);
+    float _165 = precise::min(_163, _108);
+    float _167 = precise::min(_165, _110);
+    float _169 = precise::min(_167, _112);
+    float _171 = precise::min(_114, _169);
+    float _173 = precise::min(_171, _116);
+    float _175 = precise::min(_173, _118);
+    float _177 = precise::min(_175, _120);
+    float _179 = precise::min(_122, _177);
+    uint _182 = uint(int(uint(_129) >> uint(2)));
+    (*spvDescriptorSet0.vp_s0)._m0[int(_182)] = as_type<uint>(_179);
+    out.gl_Position.z = fma(out.gl_Position.z, 0.5, out.gl_Position.w * 0.5);
+    return out;
+}
+
+
+vertex main0_out main0_z(constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], uint gl_VertexIndex [[vertex_id]])
+{
+    main0_out out = {};
+    out.gl_PointSize = 1.0;
+    out.gl_Position.x = 0.0;
+    out.gl_Position.y = 0.0;
+    out.gl_Position.z = 0.0;
+    out.gl_Position.w = 1.0;
+    float _48 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _50 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _52 = -(*spvDescriptorSet0.vp_c3)._m0[1].y;
+    float _54 = fma(_52, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _56 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _58 = fma(_56, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _227 = float2(_48, _50);
+    float _60 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_227, float2(0.0), isnan(_227)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_227, float2(0.0), isnan(_227)), level(0.0)).x;
+    float _62 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _64 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _249 = float2(_58, _50);
+    float _66 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_249, float2(0.0), isnan(_249)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_249, float2(0.0), isnan(_249)), level(0.0)).x;
+    float2 _258 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _50);
+    float _68 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_258, float2(0.0), isnan(_258)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_258, float2(0.0), isnan(_258)), level(0.0)).x;
+    float2 _266 = float2(_62, _50);
+    float _70 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_266, float2(0.0), isnan(_266)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_266, float2(0.0), isnan(_266)), level(0.0)).x;
+    float2 _274 = float2(_64, _50);
+    float _72 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_274, float2(0.0), isnan(_274)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_274, float2(0.0), isnan(_274)), level(0.0)).x;
+    float _74 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _76 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _78 = fma(2.0, _76, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _294 = float2(_74, _54);
+    float _80 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_294, float2(0.0), isnan(_294)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_294, float2(0.0), isnan(_294)), level(0.0)).x;
+    float2 _302 = float2(_78, _54);
+    float _82 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_302, float2(0.0), isnan(_302)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_302, float2(0.0), isnan(_302)), level(0.0)).x;
+    float2 _311 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _54);
+    float _84 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_311, float2(0.0), isnan(_311)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_311, float2(0.0), isnan(_311)), level(0.0)).x;
+    float2 _319 = float2(_62, _54);
+    float _86 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_319, float2(0.0), isnan(_319)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_319, float2(0.0), isnan(_319)), level(0.0)).x;
+    float2 _327 = float2(_64, _54);
+    float _88 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_327, float2(0.0), isnan(_327)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_327, float2(0.0), isnan(_327)), level(0.0)).x;
+    float2 _336 = float2(_74, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _90 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_336, float2(0.0), isnan(_336)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_336, float2(0.0), isnan(_336)), level(0.0)).x;
+    float2 _345 = float2(_78, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _92 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_345, float2(0.0), isnan(_345)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_345, float2(0.0), isnan(_345)), level(0.0)).x;
+    float2 _355 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _94 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_355, float2(0.0), isnan(_355)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_355, float2(0.0), isnan(_355)), level(0.0)).x;
+    float2 _364 = float2(_62, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _96 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_364, float2(0.0), isnan(_364)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_364, float2(0.0), isnan(_364)), level(0.0)).x;
+    float2 _373 = float2(_64, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _98 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_373, float2(0.0), isnan(_373)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_373, float2(0.0), isnan(_373)), level(0.0)).x;
+    float _100 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _102 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float2 _391 = float2(_74, _100);
+    float _104 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_391, float2(0.0), isnan(_391)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_391, float2(0.0), isnan(_391)), level(0.0)).x;
+    float2 _399 = float2(_78, _100);
+    float _106 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_399, float2(0.0), isnan(_399)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_399, float2(0.0), isnan(_399)), level(0.0)).x;
+    float2 _408 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _100);
+    float _108 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_408, float2(0.0), isnan(_408)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_408, float2(0.0), isnan(_408)), level(0.0)).x;
+    float2 _416 = float2(_62, _100);
+    float _110 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_416, float2(0.0), isnan(_416)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_416, float2(0.0), isnan(_416)), level(0.0)).x;
+    float2 _424 = float2(_64, _100);
+    float _112 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_424, float2(0.0), isnan(_424)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_424, float2(0.0), isnan(_424)), level(0.0)).x;
+    float2 _432 = float2(_74, _102);
+    float _114 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_432, float2(0.0), isnan(_432)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_432, float2(0.0), isnan(_432)), level(0.0)).x;
+    float2 _440 = float2(_78, _102);
+    float _116 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_440, float2(0.0), isnan(_440)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_440, float2(0.0), isnan(_440)), level(0.0)).x;
+    float2 _449 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _102);
+    float _118 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_449, float2(0.0), isnan(_449)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_449, float2(0.0), isnan(_449)), level(0.0)).x;
+    float2 _457 = float2(_62, _102);
+    float _120 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_457, float2(0.0), isnan(_457)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_457, float2(0.0), isnan(_457)), level(0.0)).x;
+    float2 _465 = float2(_64, _102);
+    float _122 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_465, float2(0.0), isnan(_465)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_465, float2(0.0), isnan(_465)), level(0.0)).x;
+    float _124 = as_type<float>(int(gl_VertexIndex));
+    int _127 = as_type<int>(_124) << 5;
+    int _129 = _127 + 24;
+    float _131 = precise::min(_60, 1000000.0);
+    float _133 = precise::min(_131, _66);
+    float _135 = precise::min(_133, _68);
+    float _137 = precise::min(_135, _70);
+    float _139 = precise::min(_137, _72);
+    float _141 = precise::min(_139, _80);
+    float _143 = precise::min(_141, _82);
+    float _145 = precise::min(_143, _84);
+    float _147 = precise::min(_145, _86);
+    float _149 = precise::min(_147, _88);
+    float _151 = precise::min(_149, _90);
+    float _153 = precise::min(_151, _92);
+    float _155 = precise::min(_153, _94);
+    float _157 = precise::min(_155, _96);
+    float _159 = precise::min(_157, _98);
+    float _161 = precise::min(_159, _104);
+    float _163 = precise::min(_161, _106);
+    float _165 = precise::min(_163, _108);
+    float _167 = precise::min(_165, _110);
+    float _169 = precise::min(_167, _112);
+    float _171 = precise::min(_114, _169);
+    float _173 = precise::min(_171, _116);
+    float _175 = precise::min(_173, _118);
+    float _177 = precise::min(_175, _120);
+    float _179 = precise::min(_122, _177);
+    uint _182 = uint(int(uint(_129) >> uint(2)));
+    (*spvDescriptorSet0.vp_s0)._m0[int(_182)] = as_type<uint>(_179);
+    return out;
+}
+
+
+struct dm_geometry_capture { device uint* dst; uint4 info; uint stride; short slot[144]; };
+static inline void dm_cw(constant dm_geometry_capture& g, device uint* p, uint k, uint v) { short s = g.slot[k]; if (s >= 0) p[s] = v; }
+vertex void main0_gs(constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], uint gl_VertexIndex [[vertex_id]], uint dm_iid [[instance_id]], constant dm_geometry_capture& dm_gs [[buffer(13)]])
+{
+    uint dm_vid = gl_VertexIndex;
+    uint4 dm_ci = dm_gs.info; device uint* dm_capture = dm_gs.dst;
+    if (dm_vid - dm_ci.x >= dm_ci.y || dm_iid - dm_ci.z >= dm_ci.w) return;
+    device uint* dm_p = dm_capture + ((ulong(dm_iid - dm_ci.z) * dm_ci.y + dm_vid - dm_ci.x) * dm_gs.stride);
+
+    main0_out out = {};
+    out.gl_PointSize = 1.0;
+    out.gl_Position.x = 0.0;
+    out.gl_Position.y = 0.0;
+    out.gl_Position.z = 0.0;
+    out.gl_Position.w = 1.0;
+    float _48 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _50 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _52 = -(*spvDescriptorSet0.vp_c3)._m0[1].y;
+    float _54 = fma(_52, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _56 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _58 = fma(_56, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _227 = float2(_48, _50);
+    float _60 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_227, float2(0.0), isnan(_227)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_227, float2(0.0), isnan(_227)), level(0.0)).x;
+    float _62 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _64 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _249 = float2(_58, _50);
+    float _66 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_249, float2(0.0), isnan(_249)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_249, float2(0.0), isnan(_249)), level(0.0)).x;
+    float2 _258 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _50);
+    float _68 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_258, float2(0.0), isnan(_258)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_258, float2(0.0), isnan(_258)), level(0.0)).x;
+    float2 _266 = float2(_62, _50);
+    float _70 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_266, float2(0.0), isnan(_266)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_266, float2(0.0), isnan(_266)), level(0.0)).x;
+    float2 _274 = float2(_64, _50);
+    float _72 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_274, float2(0.0), isnan(_274)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_274, float2(0.0), isnan(_274)), level(0.0)).x;
+    float _74 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _76 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _78 = fma(2.0, _76, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _294 = float2(_74, _54);
+    float _80 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_294, float2(0.0), isnan(_294)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_294, float2(0.0), isnan(_294)), level(0.0)).x;
+    float2 _302 = float2(_78, _54);
+    float _82 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_302, float2(0.0), isnan(_302)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_302, float2(0.0), isnan(_302)), level(0.0)).x;
+    float2 _311 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _54);
+    float _84 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_311, float2(0.0), isnan(_311)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_311, float2(0.0), isnan(_311)), level(0.0)).x;
+    float2 _319 = float2(_62, _54);
+    float _86 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_319, float2(0.0), isnan(_319)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_319, float2(0.0), isnan(_319)), level(0.0)).x;
+    float2 _327 = float2(_64, _54);
+    float _88 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_327, float2(0.0), isnan(_327)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_327, float2(0.0), isnan(_327)), level(0.0)).x;
+    float2 _336 = float2(_74, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _90 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_336, float2(0.0), isnan(_336)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_336, float2(0.0), isnan(_336)), level(0.0)).x;
+    float2 _345 = float2(_78, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _92 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_345, float2(0.0), isnan(_345)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_345, float2(0.0), isnan(_345)), level(0.0)).x;
+    float2 _355 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _94 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_355, float2(0.0), isnan(_355)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_355, float2(0.0), isnan(_355)), level(0.0)).x;
+    float2 _364 = float2(_62, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _96 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_364, float2(0.0), isnan(_364)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_364, float2(0.0), isnan(_364)), level(0.0)).x;
+    float2 _373 = float2(_64, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _98 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_373, float2(0.0), isnan(_373)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_373, float2(0.0), isnan(_373)), level(0.0)).x;
+    float _100 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _102 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float2 _391 = float2(_74, _100);
+    float _104 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_391, float2(0.0), isnan(_391)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_391, float2(0.0), isnan(_391)), level(0.0)).x;
+    float2 _399 = float2(_78, _100);
+    float _106 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_399, float2(0.0), isnan(_399)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_399, float2(0.0), isnan(_399)), level(0.0)).x;
+    float2 _408 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _100);
+    float _108 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_408, float2(0.0), isnan(_408)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_408, float2(0.0), isnan(_408)), level(0.0)).x;
+    float2 _416 = float2(_62, _100);
+    float _110 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_416, float2(0.0), isnan(_416)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_416, float2(0.0), isnan(_416)), level(0.0)).x;
+    float2 _424 = float2(_64, _100);
+    float _112 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_424, float2(0.0), isnan(_424)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_424, float2(0.0), isnan(_424)), level(0.0)).x;
+    float2 _432 = float2(_74, _102);
+    float _114 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_432, float2(0.0), isnan(_432)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_432, float2(0.0), isnan(_432)), level(0.0)).x;
+    float2 _440 = float2(_78, _102);
+    float _116 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_440, float2(0.0), isnan(_440)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_440, float2(0.0), isnan(_440)), level(0.0)).x;
+    float2 _449 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _102);
+    float _118 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_449, float2(0.0), isnan(_449)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_449, float2(0.0), isnan(_449)), level(0.0)).x;
+    float2 _457 = float2(_62, _102);
+    float _120 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_457, float2(0.0), isnan(_457)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_457, float2(0.0), isnan(_457)), level(0.0)).x;
+    float2 _465 = float2(_64, _102);
+    float _122 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_465, float2(0.0), isnan(_465)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_465, float2(0.0), isnan(_465)), level(0.0)).x;
+    float _124 = as_type<float>(int(gl_VertexIndex));
+    int _127 = as_type<int>(_124) << 5;
+    int _129 = _127 + 24;
+    float _131 = precise::min(_60, 1000000.0);
+    float _133 = precise::min(_131, _66);
+    float _135 = precise::min(_133, _68);
+    float _137 = precise::min(_135, _70);
+    float _139 = precise::min(_137, _72);
+    float _141 = precise::min(_139, _80);
+    float _143 = precise::min(_141, _82);
+    float _145 = precise::min(_143, _84);
+    float _147 = precise::min(_145, _86);
+    float _149 = precise::min(_147, _88);
+    float _151 = precise::min(_149, _90);
+    float _153 = precise::min(_151, _92);
+    float _155 = precise::min(_153, _94);
+    float _157 = precise::min(_155, _96);
+    float _159 = precise::min(_157, _98);
+    float _161 = precise::min(_159, _104);
+    float _163 = precise::min(_161, _106);
+    float _165 = precise::min(_163, _108);
+    float _167 = precise::min(_165, _110);
+    float _169 = precise::min(_167, _112);
+    float _171 = precise::min(_114, _169);
+    float _173 = precise::min(_171, _116);
+    float _175 = precise::min(_173, _118);
+    float _177 = precise::min(_175, _120);
+    float _179 = precise::min(_122, _177);
+    uint _182 = uint(int(uint(_129) >> uint(2)));
+    (*spvDescriptorSet0.vp_s0)._m0[int(_182)] = as_type<uint>(_179);
+    { dm_cw(dm_gs, dm_p, 0, as_type<uint>(out.gl_Position.x)); dm_cw(dm_gs, dm_p, 1, as_type<uint>(out.gl_Position.y)); dm_cw(dm_gs, dm_p, 2, as_type<uint>(out.gl_Position.z)); dm_cw(dm_gs, dm_p, 3, as_type<uint>(out.gl_Position.w)); dm_cw(dm_gs, dm_p, 4, as_type<uint>(out.gl_PointSize)); dm_cw(dm_gs, dm_p, 5, 0u); dm_cw(dm_gs, dm_p, 6, 0u); dm_cw(dm_gs, dm_p, 7, 0u); dm_cw(dm_gs, dm_p, 8, 0u); dm_cw(dm_gs, dm_p, 9, 0u); dm_cw(dm_gs, dm_p, 10, 0u); dm_cw(dm_gs, dm_p, 11, 0u); dm_cw(dm_gs, dm_p, 12, 0u); dm_cw(dm_gs, dm_p, 13, 0u); dm_cw(dm_gs, dm_p, 14, 0u); dm_cw(dm_gs, dm_p, 15, 0u); dm_cw(dm_gs, dm_p, 16, 0u); dm_cw(dm_gs, dm_p, 17, 0u); dm_cw(dm_gs, dm_p, 18, 0u); dm_cw(dm_gs, dm_p, 19, 0x3f800000u); dm_cw(dm_gs, dm_p, 20, 0u); dm_cw(dm_gs, dm_p, 21, 0u); dm_cw(dm_gs, dm_p, 22, 0u); dm_cw(dm_gs, dm_p, 23, 0x3f800000u); dm_cw(dm_gs, dm_p, 24, 0u); dm_cw(dm_gs, dm_p, 25, 0u); dm_cw(dm_gs, dm_p, 26, 0u); dm_cw(dm_gs, dm_p, 27, 0x3f800000u); dm_cw(dm_gs, dm_p, 28, 0u); dm_cw(dm_gs, dm_p, 29, 0u); dm_cw(dm_gs, dm_p, 30, 0u); dm_cw(dm_gs, dm_p, 31, 0x3f800000u); dm_cw(dm_gs, dm_p, 32, 0u); dm_cw(dm_gs, dm_p, 33, 0u); dm_cw(dm_gs, dm_p, 34, 0u); dm_cw(dm_gs, dm_p, 35, 0x3f800000u); dm_cw(dm_gs, dm_p, 36, 0u); dm_cw(dm_gs, dm_p, 37, 0u); dm_cw(dm_gs, dm_p, 38, 0u); dm_cw(dm_gs, dm_p, 39, 0x3f800000u); dm_cw(dm_gs, dm_p, 40, 0u); dm_cw(dm_gs, dm_p, 41, 0u); dm_cw(dm_gs, dm_p, 42, 0u); dm_cw(dm_gs, dm_p, 43, 0x3f800000u); dm_cw(dm_gs, dm_p, 44, 0u); dm_cw(dm_gs, dm_p, 45, 0u); dm_cw(dm_gs, dm_p, 46, 0u); dm_cw(dm_gs, dm_p, 47, 0x3f800000u); dm_cw(dm_gs, dm_p, 48, 0u); dm_cw(dm_gs, dm_p, 49, 0u); dm_cw(dm_gs, dm_p, 50, 0u); dm_cw(dm_gs, dm_p, 51, 0x3f800000u); dm_cw(dm_gs, dm_p, 52, 0u); dm_cw(dm_gs, dm_p, 53, 0u); dm_cw(dm_gs, dm_p, 54, 0u); dm_cw(dm_gs, dm_p, 55, 0x3f800000u); dm_cw(dm_gs, dm_p, 56, 0u); dm_cw(dm_gs, dm_p, 57, 0u); dm_cw(dm_gs, dm_p, 58, 0u); dm_cw(dm_gs, dm_p, 59, 0x3f800000u); dm_cw(dm_gs, dm_p, 60, 0u); dm_cw(dm_gs, dm_p, 61, 0u); dm_cw(dm_gs, dm_p, 62, 0u); dm_cw(dm_gs, dm_p, 63, 0x3f800000u); dm_cw(dm_gs, dm_p, 64, 0u); dm_cw(dm_gs, dm_p, 65, 0u); dm_cw(dm_gs, dm_p, 66, 0u); dm_cw(dm_gs, dm_p, 67, 0x3f800000u); dm_cw(dm_gs, dm_p, 68, 0u); dm_cw(dm_gs, dm_p, 69, 0u); dm_cw(dm_gs, dm_p, 70, 0u); dm_cw(dm_gs, dm_p, 71, 0x3f800000u); dm_cw(dm_gs, dm_p, 72, 0u); dm_cw(dm_gs, dm_p, 73, 0u); dm_cw(dm_gs, dm_p, 74, 0u); dm_cw(dm_gs, dm_p, 75, 0x3f800000u); dm_cw(dm_gs, dm_p, 76, 0u); dm_cw(dm_gs, dm_p, 77, 0u); dm_cw(dm_gs, dm_p, 78, 0u); dm_cw(dm_gs, dm_p, 79, 0x3f800000u); dm_cw(dm_gs, dm_p, 80, 0u); dm_cw(dm_gs, dm_p, 81, 0u); dm_cw(dm_gs, dm_p, 82, 0u); dm_cw(dm_gs, dm_p, 83, 0x3f800000u); dm_cw(dm_gs, dm_p, 84, 0u); dm_cw(dm_gs, dm_p, 85, 0u); dm_cw(dm_gs, dm_p, 86, 0u); dm_cw(dm_gs, dm_p, 87, 0x3f800000u); dm_cw(dm_gs, dm_p, 88, 0u); dm_cw(dm_gs, dm_p, 89, 0u); dm_cw(dm_gs, dm_p, 90, 0u); dm_cw(dm_gs, dm_p, 91, 0x3f800000u); dm_cw(dm_gs, dm_p, 92, 0u); dm_cw(dm_gs, dm_p, 93, 0u); dm_cw(dm_gs, dm_p, 94, 0u); dm_cw(dm_gs, dm_p, 95, 0x3f800000u); dm_cw(dm_gs, dm_p, 96, 0u); dm_cw(dm_gs, dm_p, 97, 0u); dm_cw(dm_gs, dm_p, 98, 0u); dm_cw(dm_gs, dm_p, 99, 0x3f800000u); dm_cw(dm_gs, dm_p, 100, 0u); dm_cw(dm_gs, dm_p, 101, 0u); dm_cw(dm_gs, dm_p, 102, 0u); dm_cw(dm_gs, dm_p, 103, 0x3f800000u); dm_cw(dm_gs, dm_p, 104, 0u); dm_cw(dm_gs, dm_p, 105, 0u); dm_cw(dm_gs, dm_p, 106, 0u); dm_cw(dm_gs, dm_p, 107, 0x3f800000u); dm_cw(dm_gs, dm_p, 108, 0u); dm_cw(dm_gs, dm_p, 109, 0u); dm_cw(dm_gs, dm_p, 110, 0u); dm_cw(dm_gs, dm_p, 111, 0x3f800000u); dm_cw(dm_gs, dm_p, 112, 0u); dm_cw(dm_gs, dm_p, 113, 0u); dm_cw(dm_gs, dm_p, 114, 0u); dm_cw(dm_gs, dm_p, 115, 0x3f800000u); dm_cw(dm_gs, dm_p, 116, 0u); dm_cw(dm_gs, dm_p, 117, 0u); dm_cw(dm_gs, dm_p, 118, 0u); dm_cw(dm_gs, dm_p, 119, 0x3f800000u); dm_cw(dm_gs, dm_p, 120, 0u); dm_cw(dm_gs, dm_p, 121, 0u); dm_cw(dm_gs, dm_p, 122, 0u); dm_cw(dm_gs, dm_p, 123, 0x3f800000u); dm_cw(dm_gs, dm_p, 124, 0u); dm_cw(dm_gs, dm_p, 125, 0u); dm_cw(dm_gs, dm_p, 126, 0u); dm_cw(dm_gs, dm_p, 127, 0x3f800000u); dm_cw(dm_gs, dm_p, 128, 0u); dm_cw(dm_gs, dm_p, 129, 0u); dm_cw(dm_gs, dm_p, 130, 0u); dm_cw(dm_gs, dm_p, 131, 0x3f800000u); dm_cw(dm_gs, dm_p, 132, 0u); dm_cw(dm_gs, dm_p, 133, 0u); dm_cw(dm_gs, dm_p, 134, 0u); dm_cw(dm_gs, dm_p, 135, 0x3f800000u); dm_cw(dm_gs, dm_p, 136, 0u); dm_cw(dm_gs, dm_p, 137, 0u); dm_cw(dm_gs, dm_p, 138, 0u); dm_cw(dm_gs, dm_p, 139, 0x3f800000u); dm_cw(dm_gs, dm_p, 140, 0u); dm_cw(dm_gs, dm_p, 141, 0u); dm_cw(dm_gs, dm_p, 142, 0u); dm_cw(dm_gs, dm_p, 143, 0x3f800000u); return; }
+}
+
+
+vertex void main0_discard(constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], uint gl_VertexIndex [[vertex_id]])
+{
+    main0_out out = {};
+    out.gl_PointSize = 1.0;
+    out.gl_Position.x = 0.0;
+    out.gl_Position.y = 0.0;
+    out.gl_Position.z = 0.0;
+    out.gl_Position.w = 1.0;
+    float _48 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _50 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _52 = -(*spvDescriptorSet0.vp_c3)._m0[1].y;
+    float _54 = fma(_52, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _56 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _58 = fma(_56, 2.0, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _227 = float2(_48, _50);
+    float _60 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_227, float2(0.0), isnan(_227)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_227, float2(0.0), isnan(_227)), level(0.0)).x;
+    float _62 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _64 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _249 = float2(_58, _50);
+    float _66 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_249, float2(0.0), isnan(_249)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_249, float2(0.0), isnan(_249)), level(0.0)).x;
+    float2 _258 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _50);
+    float _68 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_258, float2(0.0), isnan(_258)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_258, float2(0.0), isnan(_258)), level(0.0)).x;
+    float2 _266 = float2(_62, _50);
+    float _70 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_266, float2(0.0), isnan(_266)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_266, float2(0.0), isnan(_266)), level(0.0)).x;
+    float2 _274 = float2(_64, _50);
+    float _72 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_274, float2(0.0), isnan(_274)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_274, float2(0.0), isnan(_274)), level(0.0)).x;
+    float _74 = fma(-4.0, (*spvDescriptorSet0.vp_c3)._m0[1].x, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float _76 = -(*spvDescriptorSet0.vp_c3)._m0[1].x;
+    float _78 = fma(2.0, _76, (*spvDescriptorSet0.vp_c3)._m0[0].x);
+    float2 _294 = float2(_74, _54);
+    float _80 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_294, float2(0.0), isnan(_294)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_294, float2(0.0), isnan(_294)), level(0.0)).x;
+    float2 _302 = float2(_78, _54);
+    float _82 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_302, float2(0.0), isnan(_302)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_302, float2(0.0), isnan(_302)), level(0.0)).x;
+    float2 _311 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _54);
+    float _84 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_311, float2(0.0), isnan(_311)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_311, float2(0.0), isnan(_311)), level(0.0)).x;
+    float2 _319 = float2(_62, _54);
+    float _86 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_319, float2(0.0), isnan(_319)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_319, float2(0.0), isnan(_319)), level(0.0)).x;
+    float2 _327 = float2(_64, _54);
+    float _88 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_327, float2(0.0), isnan(_327)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_327, float2(0.0), isnan(_327)), level(0.0)).x;
+    float2 _336 = float2(_74, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _90 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_336, float2(0.0), isnan(_336)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_336, float2(0.0), isnan(_336)), level(0.0)).x;
+    float2 _345 = float2(_78, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _92 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_345, float2(0.0), isnan(_345)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_345, float2(0.0), isnan(_345)), level(0.0)).x;
+    float2 _355 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _94 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_355, float2(0.0), isnan(_355)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_355, float2(0.0), isnan(_355)), level(0.0)).x;
+    float2 _364 = float2(_62, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _96 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_364, float2(0.0), isnan(_364)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_364, float2(0.0), isnan(_364)), level(0.0)).x;
+    float2 _373 = float2(_64, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _98 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_373, float2(0.0), isnan(_373)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_373, float2(0.0), isnan(_373)), level(0.0)).x;
+    float _100 = fma(2.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float _102 = fma(4.0, (*spvDescriptorSet0.vp_c3)._m0[1].y, (*spvDescriptorSet0.vp_c3)._m0[0].y);
+    float2 _391 = float2(_74, _100);
+    float _104 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_391, float2(0.0), isnan(_391)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_391, float2(0.0), isnan(_391)), level(0.0)).x;
+    float2 _399 = float2(_78, _100);
+    float _106 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_399, float2(0.0), isnan(_399)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_399, float2(0.0), isnan(_399)), level(0.0)).x;
+    float2 _408 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _100);
+    float _108 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_408, float2(0.0), isnan(_408)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_408, float2(0.0), isnan(_408)), level(0.0)).x;
+    float2 _416 = float2(_62, _100);
+    float _110 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_416, float2(0.0), isnan(_416)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_416, float2(0.0), isnan(_416)), level(0.0)).x;
+    float2 _424 = float2(_64, _100);
+    float _112 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_424, float2(0.0), isnan(_424)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_424, float2(0.0), isnan(_424)), level(0.0)).x;
+    float2 _432 = float2(_74, _102);
+    float _114 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_432, float2(0.0), isnan(_432)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_432, float2(0.0), isnan(_432)), level(0.0)).x;
+    float2 _440 = float2(_78, _102);
+    float _116 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_440, float2(0.0), isnan(_440)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_440, float2(0.0), isnan(_440)), level(0.0)).x;
+    float2 _449 = float2((*spvDescriptorSet0.vp_c3)._m0[0].x, _102);
+    float _118 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_449, float2(0.0), isnan(_449)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_449, float2(0.0), isnan(_449)), level(0.0)).x;
+    float2 _457 = float2(_62, _102);
+    float _120 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_457, float2(0.0), isnan(_457)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_457, float2(0.0), isnan(_457)), level(0.0)).x;
+    float2 _465 = float2(_64, _102);
+    float _122 = dm_bs(spvDescriptorSet0.vp_t_tcb_8.sample(spvDescriptorSet0.vp_t_tcb_8Smplr, select(_465, float2(0.0), isnan(_465)), level(0.0)), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.vp_t_tcb_8, spvDescriptorSet0.vp_t_tcb_8Smplr_w, select(_465, float2(0.0), isnan(_465)), level(0.0)).x;
+    float _124 = as_type<float>(int(gl_VertexIndex));
+    int _127 = as_type<int>(_124) << 5;
+    int _129 = _127 + 24;
+    float _131 = precise::min(_60, 1000000.0);
+    float _133 = precise::min(_131, _66);
+    float _135 = precise::min(_133, _68);
+    float _137 = precise::min(_135, _70);
+    float _139 = precise::min(_137, _72);
+    float _141 = precise::min(_139, _80);
+    float _143 = precise::min(_141, _82);
+    float _145 = precise::min(_143, _84);
+    float _147 = precise::min(_145, _86);
+    float _149 = precise::min(_147, _88);
+    float _151 = precise::min(_149, _90);
+    float _153 = precise::min(_151, _92);
+    float _155 = precise::min(_153, _94);
+    float _157 = precise::min(_155, _96);
+    float _159 = precise::min(_157, _98);
+    float _161 = precise::min(_159, _104);
+    float _163 = precise::min(_161, _106);
+    float _165 = precise::min(_163, _108);
+    float _167 = precise::min(_165, _110);
+    float _169 = precise::min(_167, _112);
+    float _171 = precise::min(_114, _169);
+    float _173 = precise::min(_171, _116);
+    float _175 = precise::min(_173, _118);
+    float _177 = precise::min(_175, _120);
+    float _179 = precise::min(_122, _177);
+    uint _182 = uint(int(uint(_129) >> uint(2)));
+    (*spvDescriptorSet0.vp_s0)._m0[int(_182)] = as_type<uint>(_179);
+    out.gl_Position.z = fma(out.gl_Position.z, 0.5, out.gl_Position.w * 0.5);
+    return;
+}
+

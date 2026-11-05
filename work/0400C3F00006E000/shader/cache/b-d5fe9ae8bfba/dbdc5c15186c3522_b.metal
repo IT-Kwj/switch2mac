@@ -1,0 +1,1183 @@
+#pragma clang diagnostic ignored "-Wmissing-prototypes"
+
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
+struct dm_border_t { uint mask; float4 k[32]; };
+static inline __attribute__((always_inline)) float4 dm_bmix(float4 r, float4 w, float4 k) { return r + (w - r) * k; }
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+template<typename V, typename T, typename... A> static inline __attribute__((always_inline)) V dm_bs(V r, constant dm_border_t* b, uint i, T t, sampler w, A... a)
+{
+    if (b->mask >> i & 1u) r = dm_bmix(r, t.sample(w, a...), b->k[i]);
+    return r;
+}
+
+template<typename T>
+[[clang::optnone]] T spvFAdd(T l, T r)
+{
+    return fma(T(1), l, r);
+}
+
+struct _10
+{
+    uint _m0;
+    uint4 _m1[8];
+    float4 _m2;
+    float4 _m3;
+    int _m4;
+    float4 _m5[73];
+    int4 _m6;
+    int _m7;
+};
+
+struct _16
+{
+    float4 _m0[4096];
+};
+
+struct _31
+{
+    uint _m0[1];
+};
+
+struct spvDescriptorSetBuffer0
+{
+    constant _10* support_buffer [[id(0)]];
+    constant _16* fp_c9 [[id(1)]];
+    constant _16* fp_c7 [[id(2)]];
+    constant _16* fp_c11 [[id(3)]];
+    constant _16* fp_c4 [[id(4)]];
+    constant _16* fp_c13 [[id(5)]];
+    const device _31* fp_s0 [[id(6)]];
+    texture2d<float> fp_t_tcb_10 [[id(7)]];
+    sampler fp_t_tcb_10Smplr [[id(8)]];
+    texture2d<float> fp_t_tcb_14 [[id(9)]];
+    sampler fp_t_tcb_14Smplr [[id(10)]];
+    texture3d<float> fp_t_tcb_16 [[id(11)]];
+    sampler fp_t_tcb_16Smplr [[id(12)]];
+    texture2d_array<float> fp_t_tcb_A [[id(13)]];
+    sampler fp_t_tcb_ASmplr [[id(14)]];
+    texture2d<float> fp_t_tcb_8 [[id(15)]];
+    sampler fp_t_tcb_8Smplr [[id(16)]];
+    texturecube_array<float> fp_t_tcb_12 [[id(17)]];
+    sampler fp_t_tcb_12Smplr [[id(18)]];
+    texture3d<float> fp_t_tcb_18 [[id(19)]];
+    sampler fp_t_tcb_18Smplr [[id(20)]];
+    texture2d<float> fp_t_tcb_E [[id(21)]];
+    sampler fp_t_tcb_ESmplr [[id(22)]];
+    texture2d<float> fp_t_tcb_C [[id(23)]];
+    sampler fp_t_tcb_CSmplr [[id(24)]];
+    sampler fp_t_tcb_10Smplr_w [[id(25)]];
+    sampler fp_t_tcb_14Smplr_w [[id(26)]];
+    sampler fp_t_tcb_16Smplr_w [[id(27)]];
+    sampler fp_t_tcb_ASmplr_w [[id(28)]];
+    sampler fp_t_tcb_8Smplr_w [[id(29)]];
+    sampler fp_t_tcb_12Smplr_w [[id(30)]];
+    sampler fp_t_tcb_18Smplr_w [[id(31)]];
+    sampler fp_t_tcb_ESmplr_w [[id(32)]];
+    sampler fp_t_tcb_CSmplr_w [[id(33)]];
+    constant dm_border_t* dm_border [[id(34)]];
+};
+
+struct main0_out
+{
+    float4 m_78 [[color(0)]];
+    float4 m_80 [[color(1)]];
+};
+
+struct main0_in
+{
+    float4 m_75 [[user(locn0)]];
+    float4 m_71 [[user(locn2)]];
+    float4 m_69 [[user(locn3)]];
+    float4 m_73 [[user(locn4)]];
+};
+
+static inline __attribute__((always_inline))
+int _86(thread const int& _4755, const device _31& fp_s0)
+{
+    uint _4758 = uint(int(uint(_4755) >> uint(2)));
+    float _4760 = as_type<float>(fp_s0._m0[int(_4758)]);
+    int _4762 = _4755 & 3;
+    int _4764 = _4762 << 3;
+    int _4766 = as_type<int>(_4760) >> _4764;
+    int _4768 = extract_bits(_4766, 0u, 16u);
+    return _4768;
+}
+
+fragment main0_out main0(main0_in in [[stage_in]], constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], float4 gl_FragCoord [[position]])
+{
+    main0_out out = {};
+    float _90 = gl_FragCoord.w;
+    float _92 = in.m_69.z;
+    float _94 = gl_FragCoord.w;
+    float _96 = _92 * _94;
+    float _98 = in.m_69.y;
+    float _100 = gl_FragCoord.w;
+    float _102 = _98 * _100;
+    float _104 = in.m_69.x;
+    float _106 = gl_FragCoord.w;
+    float _108 = _104 * _106;
+    float _110 = gl_FragCoord.x;
+    float _112 = (*spvDescriptorSet0.support_buffer)._m5[0].x;
+    float _114 = _110 / _112;
+    float _116 = gl_FragCoord.y;
+    float _118 = (*spvDescriptorSet0.support_buffer)._m5[0].x;
+    float _120 = _116 / _118;
+    float _122 = 1.0 / _90;
+    float _124 = _114 * (*spvDescriptorSet0.fp_c9)._m0[989].x;
+    float _126 = _122 * _96;
+    float _128 = _122 * _102;
+    float _130 = _122 * _108;
+    float _132 = _126 + (*spvDescriptorSet0.fp_c7)._m0[11].y;
+    float _134 = _128 + (*spvDescriptorSet0.fp_c7)._m0[11].y;
+    float _136 = _130 + (*spvDescriptorSet0.fp_c7)._m0[11].y;
+    float _138 = _132 * (*spvDescriptorSet0.fp_c11)._m0[30].z;
+    float _140 = _134 * (*spvDescriptorSet0.fp_c11)._m0[30].y;
+    float _142 = _120 * (*spvDescriptorSet0.fp_c9)._m0[989].y;
+    float _144 = _136 * (*spvDescriptorSet0.fp_c11)._m0[30].x;
+    float _146 = fma(_138, (*spvDescriptorSet0.fp_c11)._m0[45].x, (*spvDescriptorSet0.fp_c11)._m0[29].z);
+    float _148 = fma(_140, (*spvDescriptorSet0.fp_c11)._m0[45].x, (*spvDescriptorSet0.fp_c11)._m0[29].y);
+    float2 _2036 = float2(_124, _142);
+    float2 _152 = dm_bs(spvDescriptorSet0.fp_t_tcb_10.sample(spvDescriptorSet0.fp_t_tcb_10Smplr, select(_2036, float2(0.0), isnan(_2036))), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.fp_t_tcb_10, spvDescriptorSet0.fp_t_tcb_10Smplr_w, select(_2036, float2(0.0), isnan(_2036))).xy;
+    float _154 = _152.x;
+    float _156 = _152.y;
+    float _158 = fma(_144, (*spvDescriptorSet0.fp_c11)._m0[45].x, (*spvDescriptorSet0.fp_c11)._m0[29].x);
+    float _160 = fma(_130, 6.2500002968590706586837768554688e-05, 0.5);
+    float _162 = precise::clamp(_160, 0.0, 1.0);
+    float _164 = fma(_126, 6.2500002968590706586837768554688e-05, 0.5);
+    float _166 = precise::clamp(_164, 0.0, 1.0);
+    float2 _2067 = float2(_162, _166);
+    float _168 = dm_bs(spvDescriptorSet0.fp_t_tcb_14.sample(spvDescriptorSet0.fp_t_tcb_14Smplr, select(_2067, float2(0.0), isnan(_2067))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_14, spvDescriptorSet0.fp_t_tcb_14Smplr_w, select(_2067, float2(0.0), isnan(_2067))).x;
+    float3 _2076 = float3(_158, _148, _146);
+    float _170 = dm_bs(spvDescriptorSet0.fp_t_tcb_16.sample(spvDescriptorSet0.fp_t_tcb_16Smplr, select(_2076, float3(0.0), isnan(_2076))), spvDescriptorSet0.dm_border, 2u, spvDescriptorSet0.fp_t_tcb_16, spvDescriptorSet0.fp_t_tcb_16Smplr_w, select(_2076, float3(0.0), isnan(_2076))).x;
+    int _172 = 1 & as_type<int>((*spvDescriptorSet0.fp_c9)._m0[40].w);
+    bool _176 = _172 != 0;
+    float _178 = fma(_156, 2.0, -1.0);
+    float _180 = fma(_154, 2.0, -1.0);
+    float _182 = fma(_178, (*spvDescriptorSet0.fp_c9)._m0[983].w, _142);
+    float _184 = fma(_180, (*spvDescriptorSet0.fp_c9)._m0[983].z, _124);
+    bool _186 = !_176;
+    float _188 = _186 ? _142 : _182;
+    bool _190 = !_176;
+    float _192 = _190 ? _124 : _184;
+    float3 _2123 = float3(_192, _188, float(0));
+    float3 _2125 = select(_2123, float3(0.0), isnan(_2123));
+    float4 _195 = dm_bs(spvDescriptorSet0.fp_t_tcb_A.sample(spvDescriptorSet0.fp_t_tcb_ASmplr, _2125.xy, uint(rint(_2125.z))), spvDescriptorSet0.dm_border, 3u, spvDescriptorSet0.fp_t_tcb_A, spvDescriptorSet0.fp_t_tcb_ASmplr_w, _2125.xy, uint(rint(_2125.z))).xyzw;
+    float _197 = _195.x;
+    float _199 = _195.y;
+    float _201 = _195.z;
+    float _203 = _195.w;
+    float _205 = -(*spvDescriptorSet0.fp_c9)._m0[26].z;
+    float _207 = _126 + _205;
+    float _209 = -(*spvDescriptorSet0.fp_c9)._m0[26].x;
+    float _211 = _130 + _209;
+    float _213 = in.m_71.w;
+    float _215 = gl_FragCoord.w;
+    float _217 = _213 * _215;
+    float _219 = _207 * _207;
+    float _221 = _142 * (*spvDescriptorSet0.fp_c9)._m0[71].y;
+    float _223 = _124 * (*spvDescriptorSet0.fp_c9)._m0[71].x;
+    float _225 = fma(_211, _211, _219);
+    float _227 = sqrt(_225);
+    float _229 = (*spvDescriptorSet0.fp_c9)._m0[26].y + (-220.0);
+    bool _231 = _227 > (*spvDescriptorSet0.fp_c9)._m0[42].y;
+    float _233 = -(*spvDescriptorSet0.fp_c9)._m0[42].y;
+    float _235 = _227 + _233;
+    float _237 = _122 * _217;
+    float _239 = (*spvDescriptorSet0.fp_c9)._m0[71].z + (-1.0);
+    float _241 = 0.0 + _237;
+    float _243 = precise::clamp(_241, 0.0, 1.0);
+    float _245 = _148;
+    float _247 = _235;
+    float _249 = _225;
+    float _251 = _229;
+    if (_231)
+    {
+        float _253 = 1.0 / (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        _245 = _253;
+    }
+    float _255 = _245;
+    float _257 = fma(_243, _239, 1.0);
+    float _259 = 0.0;
+    if (_231)
+    {
+        float _261 = _128 + (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        _259 = _261;
+    }
+    float _263 = _259;
+    float _265 = log2(_257);
+    float _267 = _263;
+    if (_231)
+    {
+        float _269 = _235 * _255;
+        _247 = _269;
+    }
+    float _271 = _247;
+    if (_231)
+    {
+        float _273 = rsqrt(_225);
+        _249 = _273;
+    }
+    float _275 = _249;
+    float _277 = 0.0;
+    if (_231)
+    {
+        float _279 = _271 * 0.15915493667125701904296875;
+        _277 = _279;
+    }
+    float _281 = _277;
+    float _283 = (-1.0) + (*spvDescriptorSet0.fp_c9)._m0[71].y;
+    float _285 = 0.0;
+    float _287 = _283;
+    if (_231)
+    {
+        float _289 = _281 * 6.283185482025146484375;
+        float _291 = cos(_289);
+        _285 = _291;
+    }
+    float _293 = _285;
+    float _295 = precise::min(_221, _283);
+    float _297 = _265 * 0.693147182464599609375;
+    float _299 = _265;
+    if (!_231)
+    {
+        _299 = _128;
+    }
+    float _301 = _299;
+    float _303 = _297 * (*spvDescriptorSet0.fp_c9)._m0[72].x;
+    float _305 = precise::clamp(_303, 0.0, 1.0);
+    float _307 = (*spvDescriptorSet0.fp_c9)._m0[71].z;
+    float _309 = _301;
+    float _311 = _305;
+    if (_231)
+    {
+        float _313 = _281 * 6.283185482025146484375;
+        float _315 = sin(_313);
+        _307 = _315;
+    }
+    float _317 = _307;
+    if (_231)
+    {
+        float _319 = _293 + (-1.0);
+        _287 = _319;
+    }
+    float _321 = _287;
+    float _323 = floor(_295);
+    float _325 = in.m_71.z;
+    float _327 = gl_FragCoord.w;
+    float _329 = _325 * _327;
+    float _331 = _317;
+    float _333 = _321;
+    if (_231)
+    {
+        float _335 = fma(_317, _263, (*spvDescriptorSet0.fp_c9)._m0[42].y);
+        _331 = _335;
+    }
+    float _337 = _331;
+    float _339 = _337;
+    if (_231)
+    {
+        float _341 = _321 * (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        _267 = _341;
+    }
+    float _343 = _267;
+    if (!_231)
+    {
+        _333 = _130;
+    }
+    float _345 = _333;
+    float _347 = _345;
+    if (_231)
+    {
+        float _349 = _275 * _337;
+        _339 = _349;
+    }
+    float _351 = _339;
+    if (_231)
+    {
+        float _353 = fma(_128, _293, _343);
+        _309 = _353;
+    }
+    float _355 = _309;
+    float _357 = _305 * (*spvDescriptorSet0.fp_c9)._m0[71].z;
+    if (!_231)
+    {
+        _311 = _126;
+    }
+    float _359 = _311;
+    float _361 = _359;
+    if (_231)
+    {
+        float _363 = fma(_211, _351, (*spvDescriptorSet0.fp_c9)._m0[26].x);
+        _347 = _363;
+    }
+    float _365 = _347;
+    float _367 = -(*spvDescriptorSet0.fp_c9)._m0[26].y;
+    float _369 = _355 + _367;
+    float _371 = _369;
+    if (_231)
+    {
+        float _373 = fma(_207, _351, (*spvDescriptorSet0.fp_c9)._m0[26].z);
+        _361 = _373;
+    }
+    float _375 = _361;
+    float _377 = precise::min(_239, _357);
+    float _379 = -(*spvDescriptorSet0.fp_c9)._m0[26].x;
+    float _381 = _365 + _379;
+    float _383 = _369 * _369;
+    float _385 = -(*spvDescriptorSet0.fp_c9)._m0[26].z;
+    float _387 = _375 + _385;
+    float _389 = in.m_71.y;
+    float _391 = gl_FragCoord.w;
+    float _393 = _389 * _391;
+    float _395 = in.m_71.x;
+    float _397 = gl_FragCoord.w;
+    float _399 = _395 * _397;
+    float _401 = fma(_381, _381, _383);
+    float _403 = floor(_377);
+    float _405 = (-1.0) + (*spvDescriptorSet0.fp_c9)._m0[71].x;
+    float _407 = fma(_387, _387, _401);
+    float _409 = precise::min(_223, _405);
+    float _411 = rsqrt(_407);
+    float _413 = fma(_323, (*spvDescriptorSet0.fp_c9)._m0[71].x, _409);
+    float _415 = _403 * (*spvDescriptorSet0.fp_c9)._m0[71].y;
+    float _417 = fma(_415, (*spvDescriptorSet0.fp_c9)._m0[71].x, _413);
+    float _419 = trunc(_417);
+    int _421 = int(_419);
+    float _423 = _411 * (*spvDescriptorSet0.fp_c9)._m0[26].w;
+    float _425 = _122 * _329;
+    float _427 = in.m_73.w;
+    float _429 = gl_FragCoord.w;
+    float _431 = _427 * _429;
+    float _433 = _381 * _423;
+    float _435 = _387 * _423;
+    float _437 = _122 * _393;
+    float _439 = _122 * _399;
+    float _441 = _433 * _433;
+    float _443 = _435 * _435;
+    float _445 = _437 * _437;
+    float _447 = -(*spvDescriptorSet0.fp_c4)._m0[12].w;
+    float _449 = _128 + _447;
+    float _451 = _441 + _443;
+    float _453 = fma(_439, _439, _445);
+    float _455 = -(*spvDescriptorSet0.fp_c4)._m0[11].w;
+    float _457 = _130 + _455;
+    float _459 = _449 * _449;
+    float _461 = sqrt(_451);
+    int _463 = as_type<int>((*spvDescriptorSet0.fp_c9)._m0[71].w) * as_type<int>((*spvDescriptorSet0.fp_c4)._m0[66].x);
+    int _465 = _463 + _421;
+    float _467 = -(*spvDescriptorSet0.fp_c4)._m0[13].w;
+    float _469 = _126 + _467;
+    float _471 = fma(_457, _457, _459);
+    float _473 = fma(_425, _425, _453);
+    float _475 = fma(_469, _469, _471);
+    int _477 = _465 * 136;
+    float _479 = precise::max(0.0, _229);
+    float _481 = rsqrt(_473);
+    bool _483 = _461 > (*spvDescriptorSet0.fp_c9)._m0[42].y;
+    float _485 = -_423;
+    float _487 = -_479;
+    float _489 = fma(_369, _485, _487);
+    float _491 = sqrt(_475);
+    int _493 = _477 + 4;
+    uint _496 = uint(int(uint(_477) >> uint(2)));
+    packed_uint2 _dmw0 = *(const device packed_uint2*)&(*spvDescriptorSet0.fp_s0)._m0[int(_496)];
+    float _498 = as_type<float>(_dmw0.x);
+    uint _500 = uint(int(uint(_493) >> uint(2)));
+    float _502 = as_type<float>(_dmw0.y);
+    float _504 = _479;
+    float _506 = _433;
+    float _508 = _435;
+    if (!_483)
+    {
+        _251 = _443;
+    }
+    float _510 = _251;
+    float _512 = _510;
+    if (!_483)
+    {
+        _371 = _441;
+    }
+    float _514 = _371;
+    float _516 = _514;
+    if (!_483)
+    {
+        _504 = _489;
+    }
+    float _518 = _504;
+    bool _520 = !_483;
+    float _522 = _518;
+    if (!_520)
+    {
+        float _524 = 1.0 / (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        float _526 = -(*spvDescriptorSet0.fp_c9)._m0[42].y;
+        float _528 = _461 + _526;
+        float _530 = _489 + (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        float _532 = rsqrt(_451);
+        float _534 = _528 * _524;
+        float _536 = _534 * 0.15915493667125701904296875;
+        float _538 = _536 * 6.283185482025146484375;
+        float _540 = sin(_538);
+        float _542 = _536 * 6.283185482025146484375;
+        float _544 = cos(_542);
+        float _546 = fma(_540, _530, (*spvDescriptorSet0.fp_c9)._m0[42].y);
+        float _548 = _532 * _546;
+        float _550 = _544 + (-1.0);
+        float _552 = _433 * _548;
+        float _554 = _435 * _548;
+        float _556 = _550 * (*spvDescriptorSet0.fp_c9)._m0[42].z;
+        float _558 = _554 * _554;
+        float _560 = fma(_489, _544, _556);
+        float _562 = _552 * _552;
+        _522 = _560;
+        _516 = _562;
+        _512 = _558;
+        _506 = _552;
+        _508 = _554;
+    }
+    float _564 = _522;
+    float _566 = _516;
+    float _568 = _512;
+    float _570 = _506;
+    float _572 = _508;
+    float _574 = fma(_564, _564, _566);
+    float _576 = _122 * _431;
+    float _578 = _574 + _568;
+    float _580 = spvFAdd(_491, 9.9999997473787516355514526367188e-06);
+    float _582 = (*spvDescriptorSet0.fp_c9)._m0[62].z + (-1.0);
+    float _584 = _576 * (*spvDescriptorSet0.fp_c9)._m0[62].y;
+    float _586 = rsqrt(_578);
+    float _588 = _439 * _481;
+    float _590 = _437 * _481;
+    float _592 = -_584;
+    float _594 = fma(_582, _592, 1.0);
+    float _596 = -(*spvDescriptorSet0.fp_c9)._m0[63].y;
+    float _598 = fma(_491, (*spvDescriptorSet0.fp_c9)._m0[63].x, _596);
+    float _600 = precise::clamp(_598, 0.0, 1.0);
+    float _602 = -(*spvDescriptorSet0.fp_c9)._m0[37].y;
+    float _604 = 1.0 + _602;
+    float _606 = _425 * _481;
+    float _608 = -_600;
+    float _610 = _608 + 1.0;
+    float _612 = 1.0 / _580;
+    float _614 = fma((*spvDescriptorSet0.fp_c9)._m0[37].y, (*spvDescriptorSet0.fp_c9)._m0[2649].y, _604);
+    float _616 = 0.0 + _168;
+    float _618 = precise::clamp(_616, 0.0, 1.0);
+    float _620 = _586 * _570;
+    float _622 = abs(_610);
+    float _624 = log2(_622);
+    float _626 = _586 * _572;
+    float _628 = _614 * (*spvDescriptorSet0.fp_c11)._m0[39].w;
+    float _630 = _620 * (*spvDescriptorSet0.fp_c9)._m0[69].x;
+    float _632 = -(*spvDescriptorSet0.fp_c11)._m0[13].y;
+    float _634 = _632 + (*spvDescriptorSet0.fp_c11)._m0[13].z;
+    float _636 = precise::max(_170, 0.25);
+    float _638 = _199 * _618;
+    float _640 = _457 * _612;
+    float _642 = _449 * _612;
+    float _644 = _469 * _612;
+    float _646 = _586 * _564;
+    float _648 = _588 * _640;
+    float _650 = _590 * _642;
+    float _652 = _606 * _644;
+    float _654 = -_630;
+    float _656 = fma(_646, (*spvDescriptorSet0.fp_c9)._m0[69].y, _654);
+    float _658 = _624 * (*spvDescriptorSet0.fp_c9)._m0[64].x;
+    float _660 = _648 + _650;
+    float _662 = precise::min(_628, (*spvDescriptorSet0.fp_c11)._m0[13].x);
+    float _664 = -_626;
+    float _666 = fma(_664, (*spvDescriptorSet0.fp_c9)._m0[69].z, _656);
+    float _668 = _652 + _660;
+    float _670 = exp2(_658);
+    float _672 = -_662;
+    float _674 = _672 + 1.0;
+    float _676 = _646 + 1.0;
+    float _678 = _668 + _668;
+    float _680 = fma(_666, -0.5, 0.5);
+    float _682 = fma((*spvDescriptorSet0.fp_c11)._m0[45].w, 2.0, -0.5);
+    float _684 = precise::clamp(_682, 0.0, 1.0);
+    float _686 = fma(_666, 0.5, 0.5);
+    float _688 = -_678;
+    float _690 = fma(_588, _688, _640);
+    float _692 = -_678;
+    float _694 = fma(_590, _692, _642);
+    float _696 = -_644;
+    float _698 = fma(_606, _678, _696);
+    float _700 = _684 * _674;
+    float _702 = sqrt(_680);
+    float _704 = gl_FragCoord.y;
+    float _706 = (*spvDescriptorSet0.support_buffer)._m5[0].x;
+    float _708 = _704 / _706;
+    float _710 = abs(_690);
+    float _712 = abs(_694);
+    float _714 = precise::max(_710, _712);
+    float _716 = fma(_700, _634, (*spvDescriptorSet0.fp_c11)._m0[13].y);
+    float _718 = -_646;
+    float _720 = fma(_670, _676, _718);
+    float _722 = fma(_686, -0.0187292993068695068359375, 0.07426099479198455810546875);
+    float _724 = abs(_698);
+    float _726 = precise::max(_724, _714);
+    float _728 = in.m_75.y;
+    float _730 = gl_FragCoord.w;
+    float _732 = _728 * _730;
+    float _734 = fma(_720, 0.5, 0.5);
+    float _736 = fma(_686, _722, -0.212114393711090087890625);
+    float _738 = 1.0 / _726;
+    float _740 = in.m_75.x;
+    float _742 = gl_FragCoord.w;
+    float _744 = _740 * _742;
+    float _746 = gl_FragCoord.x;
+    float _748 = (*spvDescriptorSet0.support_buffer)._m5[0].x;
+    float _750 = _746 / _748;
+    float _752 = fma(_686, _736, 1.570728778839111328125);
+    float _754 = precise::max(0.0, _590);
+    float _756 = _702 * 0.636619746685028076171875;
+    float _758 = -(*spvDescriptorSet0.fp_c11)._m0[45].w;
+    float _760 = fma(_716, (*spvDescriptorSet0.fp_c11)._m0[45].w, _758);
+    float _762 = log2(_594);
+    float _764 = -_752;
+    float _766 = fma(_756, _764, 1.0);
+    float _768 = precise::min(_754, 0.100000001490116119384765625);
+    float _770 = _690 * _738;
+    float _772 = fma(_768, 10.0, -1.0);
+    float _774 = _694 * _738;
+    float _776 = _698 * _738;
+    float _778 = _636 + _772;
+    float _780 = _708 * (*spvDescriptorSet0.fp_c9)._m0[989].y;
+    float _782 = _762 * 0.693147182464599609375;
+    float _784 = _778 * 4.0;
+    float _786 = precise::clamp(_784, 0.0, 1.0);
+    float _788 = _782 * (*spvDescriptorSet0.fp_c9)._m0[62].w;
+    float _790 = _122 * _732;
+    float _792 = _638 * _786;
+    float _794 = _122 * _744;
+    float _796 = fma(_792, _760, (*spvDescriptorSet0.fp_c11)._m0[45].w);
+    float _798 = _750 * (*spvDescriptorSet0.fp_c9)._m0[989].x;
+    float _800 = _796 * 7.0;
+    float2 _3035 = float2(_794, _790);
+    float3 _804 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_3035, float2(0.0), isnan(_3035))), spvDescriptorSet0.dm_border, 4u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_3035, float2(0.0), isnan(_3035))).xyz;
+    float _806 = _804.x;
+    float _808 = _804.y;
+    float _810 = _804.z;
+    float3 _3050 = float3(_192, _188, float(1));
+    float3 _3052 = select(_3050, float3(0.0), isnan(_3050));
+    float _812 = dm_bs(spvDescriptorSet0.fp_t_tcb_A.sample(spvDescriptorSet0.fp_t_tcb_ASmplr, _3052.xy, uint(rint(_3052.z))), spvDescriptorSet0.dm_border, 3u, spvDescriptorSet0.fp_t_tcb_A, spvDescriptorSet0.fp_t_tcb_ASmplr_w, _3052.xy, uint(rint(_3052.z))).x;
+    float4 _3060 = float4(_770, _774, _776, float(1));
+    float4 _3064 = select(_3060, float4(0.0), isnan(_3060));
+    float3 _814 = dm_bs(spvDescriptorSet0.fp_t_tcb_12.sample(spvDescriptorSet0.fp_t_tcb_12Smplr, _3064.xyz, uint(rint(_3064.w)), level(_800)), spvDescriptorSet0.dm_border, 5u, spvDescriptorSet0.fp_t_tcb_12, spvDescriptorSet0.fp_t_tcb_12Smplr_w, _3064.xyz, uint(rint(_3064.w)), level(_800)).xyz;
+    float _816 = _814.x;
+    float _818 = _814.y;
+    float _820 = _814.z;
+    float3 _3078 = float3(_798, _780, _788);
+    float _822 = dm_bs(spvDescriptorSet0.fp_t_tcb_18.sample(spvDescriptorSet0.fp_t_tcb_18Smplr, select(_3078, float3(0.0), isnan(_3078))), spvDescriptorSet0.dm_border, 6u, spvDescriptorSet0.fp_t_tcb_18, spvDescriptorSet0.fp_t_tcb_18Smplr_w, select(_3078, float3(0.0), isnan(_3078))).x;
+    float2 _3086 = float2(_766, _734);
+    float3 _824 = dm_bs(spvDescriptorSet0.fp_t_tcb_E.sample(spvDescriptorSet0.fp_t_tcb_ESmplr, select(_3086, float2(0.0), isnan(_3086))), spvDescriptorSet0.dm_border, 7u, spvDescriptorSet0.fp_t_tcb_E, spvDescriptorSet0.fp_t_tcb_ESmplr_w, select(_3086, float2(0.0), isnan(_3086))).xyz;
+    float _826 = _824.x;
+    float _828 = _824.y;
+    float _830 = _824.z;
+    float2 _3100 = float2(_184, _182);
+    float4 _832 = dm_bs(spvDescriptorSet0.fp_t_tcb_C.sample(spvDescriptorSet0.fp_t_tcb_CSmplr, select(_3100, float2(0.0), isnan(_3100))), spvDescriptorSet0.dm_border, 8u, spvDescriptorSet0.fp_t_tcb_C, spvDescriptorSet0.fp_t_tcb_CSmplr_w, select(_3100, float2(0.0), isnan(_3100))).xyzw;
+    float _834 = _832.x;
+    float _836 = _832.y;
+    float _838 = _832.z;
+    float _840 = _832.w;
+    float _842 = _642 + (*spvDescriptorSet0.fp_c9)._m0[69].y;
+    float _844 = _640 + (*spvDescriptorSet0.fp_c9)._m0[69].x;
+    float _846 = _644 + (*spvDescriptorSet0.fp_c9)._m0[69].z;
+    float _848 = -_648;
+    float _850 = -_650;
+    float _852 = _848 + _850;
+    float _854 = _842 * _842;
+    float _856 = in.m_73.x;
+    float _858 = gl_FragCoord.w;
+    float _860 = _856 * _858;
+    float _862 = fma((*spvDescriptorSet0.fp_c9)._m0[37].y, (*spvDescriptorSet0.fp_c9)._m0[2649].z, _604);
+    float _864 = _197 * _199;
+    float _866 = fma(_844, _844, _854);
+    float _868 = _588 * (*spvDescriptorSet0.fp_c9)._m0[69].x;
+    float _870 = _624 * (*spvDescriptorSet0.fp_c9)._m0[64].y;
+    bool _872 = 0.0 < (*spvDescriptorSet0.fp_c9)._m0[43].w;
+    float _874 = fma(_846, _846, _866);
+    bool _876 = as_type<uint>(_498) > 0u;
+    bool _878 = as_type<uint>(_502) > 0u;
+    float _880 = rsqrt(_874);
+    float _882 = _844 * _880;
+    float _884 = _842 * _880;
+    float _886 = -_652;
+    float _888 = _886 + _852;
+    float _890 = precise::clamp(_888, 0.0, 1.0);
+    float _892 = _846 * _880;
+    float _894 = _588 * _882;
+    float _896 = in.m_73.y;
+    float _898 = gl_FragCoord.w;
+    float _900 = _896 * _898;
+    float _902 = _884 * (*spvDescriptorSet0.fp_c9)._m0[69].y;
+    float _904 = _122 * _860;
+    float _906 = -_884;
+    float _908 = -_894;
+    float _910 = fma(_590, _906, _908);
+    float _912 = _890 * (-9.27999973297119140625);
+    float _914 = in.m_73.z;
+    float _916 = gl_FragCoord.w;
+    float _918 = _914 * _916;
+    float _920 = fma(_882, (*spvDescriptorSet0.fp_c9)._m0[69].x, _902);
+    float _922 = -_892;
+    float _924 = fma(_606, _922, _910);
+    float _926 = precise::clamp(_924, 0.0, 1.0);
+    float _928 = fma(_892, (*spvDescriptorSet0.fp_c9)._m0[69].z, _920);
+    float _930 = precise::clamp(_928, 0.0, 1.0);
+    float _932 = exp2(_912);
+    float _934 = -_796;
+    float _936 = _934 + 1.0;
+    float _938 = _862 + (-1.0);
+    float _940 = -_930;
+    float _942 = _940 + 1.0;
+    float _944 = _936 * _936;
+    float _946 = _942 * _942;
+    float _948 = precise::min(_944, _932);
+    float _950 = _122 * _900;
+    float _952 = _946 * _946;
+    float _954 = _122 * _918;
+    float _956 = _942 * _952;
+    float _958 = fma(_796, -0.0274999998509883880615234375, 0.0425000004470348358154296875);
+    float _960 = fma(_936, _948, _958);
+    float _962 = (*spvDescriptorSet0.fp_c9)._m0[39].y + (*spvDescriptorSet0.fp_c9)._m0[39].x;
+    float _964 = _808 * 0.715200006961822509765625;
+    float _966 = _808 * 0.715200006961822509765625;
+    float _968 = fma(_806, 0.2125999927520751953125, _964);
+    float _970 = fma(_806, 0.2125999927520751953125, _966);
+    float _972 = fma(_810, 0.072200000286102294921875, _968);
+    float _974 = fma(_810, 0.072200000286102294921875, _970);
+    float _976 = 1.0 / _972;
+    float _978 = 1.0 / _974;
+    float _980 = _976 * (*spvDescriptorSet0.fp_c9)._m0[39].z;
+    float _982 = _962 * _980;
+    float _984 = precise::clamp(_982, 0.0, 1.0);
+    float _986 = fma(_984, (*spvDescriptorSet0.fp_c9)._m0[37].w, (*spvDescriptorSet0.fp_c9)._m0[37].z);
+    float _988 = _978 * (*spvDescriptorSet0.fp_c9)._m0[39].z;
+    float _990 = (*spvDescriptorSet0.fp_c9)._m0[39].y + (*spvDescriptorSet0.fp_c9)._m0[39].x;
+    float _992 = _990 * _988;
+    float _994 = precise::clamp(_992, 0.0, 1.0);
+    float _996 = precise::min(_988, _986);
+    float _998 = fma(_796, 0.5, 0.5);
+    float _1000 = fma(_994, (*spvDescriptorSet0.fp_c9)._m0[37].w, (*spvDescriptorSet0.fp_c9)._m0[37].z);
+    float _1002 = -_203;
+    float _1004 = _1002 + 1.0;
+    float _1006 = _998 * _998;
+    float _1008 = _1006 * 0.5;
+    float _1010 = -_590;
+    float _1012 = -_868;
+    float _1014 = fma(_1010, (*spvDescriptorSet0.fp_c9)._m0[69].y, _1012);
+    float _1016 = fma(_792, _938, 1.0);
+    float _1018 = fma(_792, _938, 0.959999978542327880859375);
+    float _1020 = -_1008;
+    float _1022 = _1020 + 1.0;
+    float _1024 = -_606;
+    float _1026 = fma(_1024, (*spvDescriptorSet0.fp_c9)._m0[69].z, _1014);
+    float _1028 = precise::clamp(_1026, 0.0, 1.0);
+    float _1030 = _996 * (*spvDescriptorSet0.fp_c9)._m0[39].y;
+    float _1032 = fma(_890, _1022, _1008);
+    float _1034 = fma(_1028, _1022, _1008);
+    float _1036 = fma(_796, _796, 0.00999999977648258209228515625);
+    float _1038 = precise::clamp(_1036, 0.0, 1.0);
+    float _1040 = fma(_796, -0.572000026702880859375, 1.03999996185302734375);
+    float _1042 = _926 * _926;
+    float _1044 = fma(_796, 0.02199999988079071044921875, -0.039999999105930328369140625);
+    float _1046 = _1038 * _1038;
+    float _1048 = _1032 * _1034;
+    float _1050 = fma(_960, -1.03999996185302734375, _1040);
+    float _1052 = precise::clamp(_1050, 0.0, 1.0);
+    float _1054 = fma(_960, 1.03999996185302734375, _1044);
+    float _1056 = precise::clamp(_1054, 0.0, 1.0);
+    float _1058 = _1046 + (-1.0);
+    float _1060 = 1.0 / _1048;
+    float _1062 = fma(_1000, (*spvDescriptorSet0.fp_c9)._m0[39].x, _1030);
+    float _1064 = _1046 * 0.31830990314483642578125;
+    float _1066 = fma(_1042, _1058, 1.0);
+    float _1068 = _1016 * _1056;
+    float _1070 = _1066 * _1066;
+    float _1072 = -(*spvDescriptorSet0.fp_c9)._m0[1001].w;
+    float _1074 = fma(_491, (*spvDescriptorSet0.fp_c9)._m0[1000].w, _1072);
+    float _1076 = precise::clamp(_1074, 0.0, 1.0);
+    float _1078 = fma(_1052, 0.039999999105930328369140625, _1068);
+    float _1080 = 1.0 / _1070;
+    float _1082 = -_1004;
+    float _1084 = fma(_1082, (*spvDescriptorSet0.fp_c13)._m0[1].w, 1.0);
+    float _1086 = _864 * _1084;
+    float _1088 = _1064 * _1080;
+    float _1090 = -_812;
+    float _1092 = _1090 + 1.0;
+    float _1094 = -_201;
+    float _1096 = _1094 + 1.0;
+    float _1098 = _1028 * _1088;
+    float _1100 = -_1092;
+    float _1102 = fma(_1100, (*spvDescriptorSet0.fp_c11)._m0[46].z, 1.0);
+    float _1104 = -_1096;
+    float _1106 = fma(_1104, (*spvDescriptorSet0.fp_c13)._m0[5].y, 1.0);
+    float _1108 = precise::clamp(_1106, 0.0, 1.0);
+    float _1110 = fma(_1018, _956, 0.039999999105930328369140625);
+    float _1112 = _1098 * _1060;
+    float _1114 = _1112 * 0.25;
+    float _1116 = precise::min(1.0, (*spvDescriptorSet0.fp_c9)._m0[27].w);
+    float _1118 = _1086 * _1108;
+    float _1120 = precise::min(_1102, 1.0);
+    float _1122 = _1110 * _1114;
+    float _1124 = _1116 * 0.31830990314483642578125;
+    float _1126 = _1116 * _818;
+    float _1128 = _1116 * _816;
+    float _1130 = _1116 * _820;
+    float _1132 = precise::min(_201, _1120);
+    float _1134 = -_1126;
+    float _1136 = fma(_950, _1124, _1134);
+    float _1138 = -_1128;
+    float _1140 = fma(_904, _1124, _1138);
+    float _1142 = exp2(_870);
+    float _1144 = -_1130;
+    float _1146 = fma(_954, _1124, _1144);
+    float _1148 = fma(_1076, _1136, _1126);
+    float _1150 = fma(_1076, _1140, _1128);
+    float _1152 = fma(_1076, _1146, _1130);
+    float _1154 = _1128;
+    float _1156 = _1120;
+    float _1158 = _1146;
+    float _1160 = 0.0;
+    float _1162 = 0.0;
+    if (!_872)
+    {
+        _1154 = 0.0;
+    }
+    float _1164 = _1154;
+    float _1166 = _1164;
+    float _1168 = 0.0;
+    float _1170 = 0.0;
+    float _1172 = 0.0;
+    float _1174 = 0.0;
+    if (!_872)
+    {
+        _1156 = 0.0;
+    }
+    float _1176 = _1156;
+    float _1178 = _1176;
+    if (!_872)
+    {
+        _1158 = 0.0;
+    }
+    float _1180 = _1158;
+    bool _1182 = !_872;
+    float _1184 = _1180;
+    if (!_1182)
+    {
+        float _1186 = -_128;
+        float _1188 = _1186 + (*spvDescriptorSet0.fp_c9)._m0[43].y;
+        float _1190 = -_130;
+        float _1192 = _1190 + (*spvDescriptorSet0.fp_c9)._m0[43].x;
+        float _1194 = -_126;
+        float _1196 = _1194 + (*spvDescriptorSet0.fp_c9)._m0[43].z;
+        float _1198 = _1188 * _1188;
+        float _1200 = fma(_1192, _1192, _1198);
+        float _1202 = fma(_1196, _1196, _1200);
+        float _1204 = rsqrt(_1202);
+        float _1206 = _1188 * _1204;
+        float _1208 = _1192 * _1204;
+        float _1210 = _1196 * _1204;
+        float _1212 = -_642;
+        float _1214 = _1212 + _1206;
+        float _1216 = -_640;
+        float _1218 = _1216 + _1208;
+        float _1220 = -_644;
+        float _1222 = _1220 + _1210;
+        float _1224 = sqrt(_1202);
+        float _1226 = _1214 * _1214;
+        float _1228 = fma(_1218, _1218, _1226);
+        float _1230 = fma(_1222, _1222, _1228);
+        float _1232 = rsqrt(_1230);
+        float _1234 = -_1224;
+        float _1236 = _1234 + (*spvDescriptorSet0.fp_c9)._m0[43].w;
+        float _1238 = _1236 * (*spvDescriptorSet0.fp_c9)._m0[46].y;
+        float _1240 = precise::clamp(_1238, 0.0, 1.0);
+        float _1242 = abs(_1240);
+        float _1244 = log2(_1242);
+        float _1246 = _1214 * _1232;
+        float _1248 = _1218 * _1232;
+        float _1250 = _1222 * _1232;
+        float _1252 = _590 * _1246;
+        float _1254 = fma(_588, _1248, _1252);
+        float _1256 = _1244 * (*spvDescriptorSet0.fp_c9)._m0[45].w;
+        float _1258 = fma(_606, _1250, _1254);
+        float _1260 = precise::clamp(_1258, 0.0, 1.0);
+        float _1262 = _1260 * _1260;
+        float _1264 = _1208 * (*spvDescriptorSet0.fp_c9)._m0[44].x;
+        float _1266 = exp2(_1256);
+        float _1268 = fma(_1058, _1262, 1.0);
+        float _1270 = -_1206;
+        float _1272 = -_1264;
+        float _1274 = fma(_1270, (*spvDescriptorSet0.fp_c9)._m0[44].y, _1272);
+        float _1276 = _590 * _1206;
+        float _1278 = _1268 * _1268;
+        float _1280 = -_1210;
+        float _1282 = fma(_1280, (*spvDescriptorSet0.fp_c9)._m0[44].z, _1274);
+        float _1284 = fma(_588, _1208, _1276);
+        float _1286 = 1.0 / _1278;
+        float _1288 = -(*spvDescriptorSet0.fp_c9)._m0[44].w;
+        float _1290 = _1282 + _1288;
+        float _1292 = fma(_606, _1210, _1284);
+        float _1294 = precise::clamp(_1292, 0.0, 1.0);
+        float _1296 = _1290 * (*spvDescriptorSet0.fp_c9)._m0[46].w;
+        float _1298 = precise::clamp(_1296, 0.0, 1.0);
+        float _1300 = _1266 * _1298;
+        float _1302 = _1294 * _1300;
+        float _1304 = _1046 * _1286;
+        float _1306 = _1304 * _1302;
+        float _1308 = _1306 * (*spvDescriptorSet0.fp_c9)._m0[45].x;
+        float _1310 = _1306 * (*spvDescriptorSet0.fp_c9)._m0[45].y;
+        float _1312 = _1306 * (*spvDescriptorSet0.fp_c9)._m0[45].z;
+        _1166 = _1308;
+        _1178 = _1310;
+        _1184 = _1312;
+    }
+    float _1314 = _1166;
+    float _1316 = _1178;
+    float _1318 = _1184;
+    bool _1320 = !_876;
+    if (!_1320)
+    {
+        int _1322 = 0;
+        bool _1324;
+        do
+        {
+            int _1326 = _1322;
+            float _1328 = _1168;
+            float _1330 = _1170;
+            float _1332 = _1160;
+            int _1334 = _1326 << 1;
+            int _1336 = _1334 + _477;
+            int _1338 = _1336 + 8;
+            int _1340 = _1338;
+            int _1342 = _86(_1340, (*spvDescriptorSet0.fp_s0));
+            int _1344 = _1326 + 1;
+            bool _1346 = uint(_1344) >= as_type<uint>(_498);
+            int _1348 = _1342 & 65535;
+            int _1350 = _1348 * 48;
+            int _1352 = _1350 + 1168;
+            uint _1354 = uint(int(uint(_1352) >> uint(2)));
+            uint _1356 = uint(int(uint(int(_1354)) >> uint(2)));
+            int _1358 = int(_1354) & 3;
+            float _1360 = (*spvDescriptorSet0.fp_c9)._m0[int(_1356)][_1358];
+            int _1362 = int(_1354) + 1;
+            uint _1364 = uint(int(uint(_1362) >> uint(2)));
+            int _1366 = _1362 & 3;
+            float _1368 = (*spvDescriptorSet0.fp_c9)._m0[int(_1364)][_1366];
+            int _1370 = _1350 + 1176;
+            uint _1372 = uint(int(uint(_1370) >> uint(2)));
+            uint _1374 = uint(int(uint(int(_1372)) >> uint(2)));
+            int _1376 = int(_1372) & 3;
+            float _1378 = (*spvDescriptorSet0.fp_c9)._m0[int(_1374)][_1376];
+            int _1380 = int(_1372) + 1;
+            uint _1382 = uint(int(uint(_1380) >> uint(2)));
+            int _1384 = _1380 & 3;
+            float _1386 = (*spvDescriptorSet0.fp_c9)._m0[int(_1382)][_1384];
+            float _1388 = -_130;
+            float _1390 = _1388 + _1360;
+            float _1392 = -_128;
+            float _1394 = _1392 + _1368;
+            int _1396 = _1350 + 1200;
+            uint _1398 = uint(int(uint(_1396) >> uint(2)));
+            uint _1400 = uint(int(uint(int(_1398)) >> uint(2)));
+            int _1402 = int(_1398) & 3;
+            float _1404 = (*spvDescriptorSet0.fp_c9)._m0[int(_1400)][_1402];
+            float _1406 = _1394 * _1394;
+            float _1408 = -_126;
+            float _1410 = _1408 + _1378;
+            float _1412 = fma(_1390, _1390, _1406);
+            float _1414 = fma(_1410, _1410, _1412);
+            float _1416 = rsqrt(_1414);
+            float _1418 = sqrt(_1414);
+            float _1420 = _1394 * _1416;
+            float _1422 = _1390 * _1416;
+            float _1424 = _1410 * _1416;
+            float _1426 = -_642;
+            float _1428 = _1426 + _1420;
+            float _1430 = -_644;
+            float _1432 = _1430 + _1424;
+            float _1434 = -_1418;
+            float _1436 = _1434 + _1386;
+            float _1438 = -_640;
+            float _1440 = _1438 + _1422;
+            float _1442 = _1428 * _1428;
+            float _1444 = fma(_1440, _1440, _1442);
+            float _1446 = _1436 * _1404;
+            float _1448 = precise::clamp(_1446, 0.0, 1.0);
+            float _1450 = fma(_1432, _1432, _1444);
+            int _1452 = _1350 + 1192;
+            uint _1454 = uint(int(uint(_1452) >> uint(2)));
+            uint _1456 = uint(int(uint(int(_1454)) >> uint(2)));
+            int _1458 = int(_1454) & 3;
+            float _1460 = (*spvDescriptorSet0.fp_c9)._m0[int(_1456)][_1458];
+            int _1462 = int(_1454) + 1;
+            uint _1464 = uint(int(uint(_1462) >> uint(2)));
+            int _1466 = _1462 & 3;
+            float _1468 = (*spvDescriptorSet0.fp_c9)._m0[int(_1464)][_1466];
+            float _1470 = abs(_1448);
+            float _1472 = log2(_1470);
+            float _1474 = rsqrt(_1450);
+            float _1476 = _1428 * _1474;
+            float _1478 = _1440 * _1474;
+            float _1480 = _1432 * _1474;
+            float _1482 = _590 * _1476;
+            float _1484 = fma(_588, _1478, _1482);
+            int _1486 = _1350 + 1184;
+            uint _1488 = uint(int(uint(_1486) >> uint(2)));
+            uint _1490 = uint(int(uint(int(_1488)) >> uint(2)));
+            int _1492 = int(_1488) & 3;
+            float _1494 = (*spvDescriptorSet0.fp_c9)._m0[int(_1490)][_1492];
+            int _1496 = int(_1488) + 1;
+            uint _1498 = uint(int(uint(_1496) >> uint(2)));
+            int _1500 = _1496 & 3;
+            float _1502 = (*spvDescriptorSet0.fp_c9)._m0[int(_1498)][_1500];
+            float _1504 = fma(_606, _1480, _1484);
+            float _1506 = precise::clamp(_1504, 0.0, 1.0);
+            float _1508 = _1506 * _1506;
+            float _1510 = fma(_1058, _1508, 1.0);
+            float _1512 = _1472 * _1468;
+            float _1514 = _1510 * _1510;
+            float _1516 = _590 * _1420;
+            float _1518 = exp2(_1512);
+            float _1520 = fma(_588, _1422, _1516);
+            float _1522 = fma(_606, _1424, _1520);
+            float _1524 = precise::clamp(_1522, 0.0, 1.0);
+            float _1526 = 1.0 / _1514;
+            float _1528 = _1524 * _1518;
+            float _1530 = _1046 * _1526;
+            float _1532 = _1530 * _1528;
+            float _1534 = fma(_1532, _1494, _1328);
+            float _1536 = fma(_1532, _1502, _1330);
+            float _1538 = fma(_1532, _1460, _1332);
+            _1324 = !_1346;
+            _1322 = _1344;
+            _1168 = _1534;
+            _1170 = _1536;
+            _1160 = _1538;
+            _1162 = _1538;
+            _1172 = _1534;
+            _1174 = _1536;
+        } while (_1324);
+    }
+    float _1540 = _1162;
+    float _1542 = _1172;
+    float _1544 = _1174;
+    bool _1546 = !_878;
+    float _1548 = _1540;
+    float _1550 = _1542;
+    float _1552 = _1544;
+    float _1554 = _1542;
+    float _1556 = _1544;
+    float _1558 = _1540;
+    if (!_1546)
+    {
+        int _1560 = 0;
+        bool _1562;
+        do
+        {
+            int _1564 = _1560;
+            float _1566 = _1548;
+            float _1568 = _1550;
+            float _1570 = _1552;
+            int _1572 = _1564 << 1;
+            int _1574 = _1572 + _477;
+            int _1576 = _1574 + 72;
+            int _1578 = _1576;
+            int _1580 = _86(_1578, (*spvDescriptorSet0.fp_s0));
+            int _1582 = _1564 + 1;
+            bool _1584 = uint(_1582) >= as_type<uint>(_502);
+            int _1586 = _1580 << 6;
+            int _1588 = 4194240 & _1586;
+            int _1590 = _1588 + 10384;
+            uint _1592 = uint(int(uint(_1590) >> uint(2)));
+            uint _1594 = uint(int(uint(int(_1592)) >> uint(2)));
+            int _1596 = int(_1592) & 3;
+            float _1598 = (*spvDescriptorSet0.fp_c9)._m0[int(_1594)][_1596];
+            int _1600 = int(_1592) + 1;
+            uint _1602 = uint(int(uint(_1600) >> uint(2)));
+            int _1604 = _1600 & 3;
+            float _1606 = (*spvDescriptorSet0.fp_c9)._m0[int(_1602)][_1604];
+            int _1608 = _1588 + 10392;
+            uint _1610 = uint(int(uint(_1608) >> uint(2)));
+            uint _1612 = uint(int(uint(int(_1610)) >> uint(2)));
+            int _1614 = int(_1610) & 3;
+            float _1616 = (*spvDescriptorSet0.fp_c9)._m0[int(_1612)][_1614];
+            int _1618 = int(_1610) + 1;
+            uint _1620 = uint(int(uint(_1618) >> uint(2)));
+            int _1622 = _1618 & 3;
+            float _1624 = (*spvDescriptorSet0.fp_c9)._m0[int(_1620)][_1622];
+            int _1626 = _1588 + 10400;
+            uint _1628 = uint(int(uint(_1626) >> uint(2)));
+            uint _1630 = uint(int(uint(int(_1628)) >> uint(2)));
+            int _1632 = int(_1628) & 3;
+            float _1634 = (*spvDescriptorSet0.fp_c9)._m0[int(_1630)][_1632];
+            int _1636 = int(_1628) + 1;
+            uint _1638 = uint(int(uint(_1636) >> uint(2)));
+            int _1640 = _1636 & 3;
+            float _1642 = (*spvDescriptorSet0.fp_c9)._m0[int(_1638)][_1640];
+            float _1644 = -_128;
+            float _1646 = _1644 + _1606;
+            float _1648 = -_130;
+            float _1650 = _1648 + _1598;
+            float _1652 = _1646 * _1646;
+            float _1654 = -_126;
+            float _1656 = _1654 + _1616;
+            float _1658 = fma(_1650, _1650, _1652);
+            float _1660 = fma(_1656, _1656, _1658);
+            float _1662 = rsqrt(_1660);
+            float _1664 = sqrt(_1660);
+            float _1666 = _1650 * _1662;
+            float _1668 = _1646 * _1662;
+            float _1670 = _1656 * _1662;
+            float _1672 = _1666 * _1634;
+            float _1674 = -_642;
+            float _1676 = _1674 + _1668;
+            float _1678 = -_1668;
+            float _1680 = -_1672;
+            float _1682 = fma(_1678, _1642, _1680);
+            float _1684 = -_640;
+            float _1686 = _1684 + _1666;
+            float _1688 = _1676 * _1676;
+            float _1690 = -_644;
+            float _1692 = _1690 + _1670;
+            float _1694 = -_1664;
+            float _1696 = _1694 + _1624;
+            float _1698 = fma(_1686, _1686, _1688);
+            float _1700 = fma(_1692, _1692, _1698);
+            int _1702 = _1588 + 10436;
+            uint _1704 = uint(int(uint(_1702) >> uint(2)));
+            uint _1706 = uint(int(uint(int(_1704)) >> uint(2)));
+            int _1708 = int(_1704) & 3;
+            float _1710 = (*spvDescriptorSet0.fp_c9)._m0[int(_1706)][_1708];
+            float _1712 = rsqrt(_1700);
+            float _1714 = _1676 * _1712;
+            float _1716 = _1686 * _1712;
+            float _1718 = _1692 * _1712;
+            float _1720 = _590 * _1714;
+            float _1722 = fma(_588, _1716, _1720);
+            int _1724 = _1588 + 10408;
+            uint _1726 = uint(int(uint(_1724) >> uint(2)));
+            uint _1728 = uint(int(uint(int(_1726)) >> uint(2)));
+            int _1730 = int(_1726) & 3;
+            float _1732 = (*spvDescriptorSet0.fp_c9)._m0[int(_1728)][_1730];
+            int _1734 = int(_1726) + 1;
+            uint _1736 = uint(int(uint(_1734) >> uint(2)));
+            int _1738 = _1734 & 3;
+            float _1740 = (*spvDescriptorSet0.fp_c9)._m0[int(_1736)][_1738];
+            float _1742 = fma(_606, _1718, _1722);
+            float _1744 = precise::clamp(_1742, 0.0, 1.0);
+            float _1746 = _1744 * _1744;
+            float _1748 = fma(_1058, _1746, 1.0);
+            float _1750 = _1748 * _1748;
+            float _1752 = _1696 * _1710;
+            float _1754 = precise::clamp(_1752, 0.0, 1.0);
+            float _1756 = 1.0 / _1750;
+            int _1758 = _1588 + 10424;
+            uint _1760 = uint(int(uint(_1758) >> uint(2)));
+            uint _1762 = uint(int(uint(int(_1760)) >> uint(2)));
+            int _1764 = int(_1760) & 3;
+            float _1766 = (*spvDescriptorSet0.fp_c9)._m0[int(_1762)][_1764];
+            int _1768 = int(_1760) + 1;
+            uint _1770 = uint(int(uint(_1768) >> uint(2)));
+            int _1772 = _1768 & 3;
+            float _1774 = (*spvDescriptorSet0.fp_c9)._m0[int(_1770)][_1772];
+            float _1776 = -_1670;
+            float _1778 = fma(_1776, _1732, _1682);
+            float _1780 = abs(_1754);
+            float _1782 = log2(_1780);
+            int _1784 = _1588 + 10444;
+            uint _1786 = uint(int(uint(_1784) >> uint(2)));
+            uint _1788 = uint(int(uint(int(_1786)) >> uint(2)));
+            int _1790 = int(_1786) & 3;
+            float _1792 = (*spvDescriptorSet0.fp_c9)._m0[int(_1788)][_1790];
+            float _1794 = -_1740;
+            float _1796 = _1778 + _1794;
+            float _1798 = _590 * _1668;
+            float _1800 = fma(_588, _1666, _1798);
+            float _1802 = fma(_606, _1670, _1800);
+            float _1804 = precise::clamp(_1802, 0.0, 1.0);
+            float _1806 = _1782 * _1774;
+            int _1808 = _1588 + 10416;
+            uint _1810 = uint(int(uint(_1808) >> uint(2)));
+            uint _1812 = uint(int(uint(int(_1810)) >> uint(2)));
+            int _1814 = int(_1810) & 3;
+            float _1816 = (*spvDescriptorSet0.fp_c9)._m0[int(_1812)][_1814];
+            int _1818 = int(_1810) + 1;
+            uint _1820 = uint(int(uint(_1818) >> uint(2)));
+            int _1822 = _1818 & 3;
+            float _1824 = (*spvDescriptorSet0.fp_c9)._m0[int(_1820)][_1822];
+            float _1826 = exp2(_1806);
+            float _1828 = _1796 * _1792;
+            float _1830 = precise::clamp(_1828, 0.0, 1.0);
+            float _1832 = _1826 * _1830;
+            float _1834 = _1804 * _1832;
+            float _1836 = _1046 * _1756;
+            float _1838 = _1836 * _1834;
+            float _1840 = fma(_1838, _1766, _1566);
+            float _1842 = fma(_1838, _1816, _1568);
+            float _1844 = fma(_1838, _1824, _1570);
+            _1562 = !_1584;
+            _1560 = _1582;
+            _1548 = _1840;
+            _1550 = _1842;
+            _1552 = _1844;
+            _1554 = _1842;
+            _1556 = _1844;
+            _1558 = _1840;
+        } while (_1562);
+    }
+    float _1846 = _1554;
+    float _1848 = _1556;
+    float _1850 = _1558;
+    float _1852 = _1846 + _1314;
+    float _1854 = _1848 + _1316;
+    float _1856 = _1850 + _1318;
+    float _1858 = _1078 * _1132;
+    float _1860 = _1150 + _1852;
+    float _1862 = _1148 + _1854;
+    float _1864 = _1152 + _1856;
+    float _1866 = -_1142;
+    float _1868 = _1866 + 1.0;
+    float _1870 = _1122 * (*spvDescriptorSet0.fp_c9)._m0[70].z;
+    float _1872 = _1122 * (*spvDescriptorSet0.fp_c9)._m0[70].y;
+    float _1874 = _1860 * _1858;
+    float _1876 = _1862 * _1858;
+    float _1878 = _1864 * _1858;
+    float _1880 = _1122 * (*spvDescriptorSet0.fp_c9)._m0[70].x;
+    float _1882 = _1868 * (*spvDescriptorSet0.fp_c9)._m0[64].z;
+    float _1884 = fma(_1872, _1118, _1876);
+    float _1886 = fma(_1870, _1118, _1878);
+    float _1888 = fma(_1880, _1118, _1874);
+    float _1890 = -_1882;
+    float _1892 = _1890 + 1.0;
+    float _1894 = fma(_808, _1062, _1884);
+    float _1896 = fma(_810, _1062, _1886);
+    float _1898 = fma(_806, _1062, _1888);
+    float _1900 = _840 * _1892;
+    float _1902 = _826 * _1882;
+    float _1904 = _828 * _1882;
+    float _1906 = _830 * _1882;
+    float _1908 = _840 * _822;
+    float _1910 = precise::max(0.0, _1898);
+    float _1912 = precise::max(0.0, _1894);
+    float _1914 = fma(_1902, _1908, _834);
+    float _1916 = precise::max(0.0, _1896);
+    float _1918 = fma(_1904, _1908, _836);
+    float _1920 = fma(_1906, _1908, _838);
+    float _1922 = fma(_1900, _1910, _1914);
+    float _1924 = fma(_1900, _1912, _1918);
+    float _1926 = fma(_1900, _1916, _1920);
+    out.m_78.x = _1922;
+    out.m_78.y = _1924;
+    out.m_78.z = _1926;
+    out.m_78.w = 1.0;
+    out.m_80.x = (*spvDescriptorSet0.fp_c11)._m0[44].z;
+    return out;
+}
+

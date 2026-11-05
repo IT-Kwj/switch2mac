@@ -1,0 +1,41 @@
+{
+ "key": "58d9378494e1def4_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "58d9378494e1def4",
+ "source": "ms_shader.bin#2",
+ "pc_paired": "/Shader/Drive.Nin_Ounce_NVN2.release.sarc.zs/DrivePassShaderDefault.sharcb#BAHS@0x1aa80",
+ "stage": "ms",
+ "mesh_stage": {
+  "kind": "ms",
+  "threads": 8,
+  "payload": 1408,
+  "task": true
+ },
+ "entry_z": "main0_z",
+ "entry": "main0",
+ "msl_entry_kind": null,
+ "threadgroup_size": [
+  8,
+  1,
+  1
+ ],
+ "c1": "81100c01000000000000000100000001010000ff0000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

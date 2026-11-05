@@ -1,0 +1,78 @@
+{
+ "key": "e697fe655b1e24bd_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "e697fe655b1e24bd",
+ "source": "cs_lib.bin#52",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_common.sharcb#BAHS@0x5a5f8",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  16,
+  16,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_c0",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "drvcb",
+   "bank": 0
+  },
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _23*",
+   "arg_id": 2,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 0,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_t_tcb_8",
+   "msl_type": "texture2d<float>",
+   "arg_id": 3,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 4,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 5,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 6,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

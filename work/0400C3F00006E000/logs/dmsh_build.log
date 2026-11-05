@@ -1,0 +1,160 @@
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:26:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:34:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+<stdin>:28:52: warning: unused function 'dm_bmix' [-Wunused-function]
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+                                                   ^
+1 warning generated.
+shaders 11561: ok 11561, 
+shader cache: hit 11561, rebuilt 0
+variant cache: generated 1468, hit 1434, rebuilt 34, compiled 34
+shadow-input libraries (<key>_bv, dmsh_vin.py): 511 generated, 0 failed to compile, 0 not generated; 606 integer inputs shadowed, 0 of them with no other-sign shadow (attribute indices ran out)
+alpha test and logic operation libraries (<key>_bx, dmsh_side.py): 7216 generated, 0 failed to compile, 45 pixel shaders without either
+pulling libraries (<key>_bp, dmsh_pull.py): 3486 generated, 0 failed to compile, 0 not generated, 62 vertex shaders without stage inputs (none needed)
+mesh libraries (<vertex>_<geometry>_m3, dmsh_mesh.py): none
+Metal cache: mac 11258 reused, 0 compiled
+shaders reading driver segments at run time 8 (c0 8, c2 0); reading what the replay layer cannot fill 0
+1D integer fetches read as 2D rows of 16384 texels (a texture buffer there is bound as rows, nvn_mtl.m tbuf_as_2d): 0 bindings in 0 shaders, 0 of them also size-queried
+shaders with a binding whose slot was not decoded 0, with an unrecognized binding kind 0 (loading them at run time prints [RED] lines)
+  queries without an answer 10809  not in the answer table, queries use defaults
+  queries without an answer   470  texture handle A
+  queries without an answer    74  texture handle C
+  queries without an answer    42  texture handle 8
+  queries without an answer     6  texture handle E
+  queries without an answer     4  texture handle 8 is texture slot 0: type Texture2D, Array from the shader's other instructions
+  queries without an answer     3  texture handle 8 is texture slot 0: type Texture2D, Multisample from the shader's other instructions
+  translator   2838 in  2838 shaders  Attribute offset 0x5C is not valid.
+  translator      5 in     1 shaders  Global memory operation "Store" traced to no storage buffer: it goes through the memory pool table.
+  translator      1 in     1 shaders  Global memory operation "Load" traced to no storage buffer: it goes through the memory pool table.
+library stamp: game 0400C3F00006E000, inputs 91583a7dc183
+c1_full.tsv: not proven bounded: 13 shaders
+cb_extent.tsv: bounded uniform reads: 31753 slots; storage slots never written: 702; 10959 shaders

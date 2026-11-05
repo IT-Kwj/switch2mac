@@ -1,0 +1,77 @@
+{
+ "key": "c0bb443c8fc1aabf_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "c0bb443c8fc1aabf",
+ "source": "ps_lib.bin#2220",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_technique_pfx.sharcb#BAHS@0xae4b8",
+ "stage": "ps",
+ "entry": "main0",
+ "msl_entry_kind": "fragment",
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "fp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_8",
+   "msl_type": "texture2d<float>",
+   "arg_id": 1,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 2,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_8Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 3,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 4,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {
+  "discard": 0,
+  "sample_mask": 0,
+  "primitive_id": 0,
+  "colors": [
+   0
+  ]
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365",
+ "alpha": {
+  "entries": [
+   "main0_a"
+  ]
+ },
+ "logic": {
+  "entries": [
+   "main0_l"
+  ]
+ }
+}

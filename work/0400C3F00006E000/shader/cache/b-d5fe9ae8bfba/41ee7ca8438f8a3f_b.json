@@ -1,0 +1,57 @@
+{
+ "key": "41ee7ca8438f8a3f_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "41ee7ca8438f8a3f",
+ "source": "vs_main.bin#1",
+ "pc_paired": "main#BNSH@0x3328000#var1",
+ "stage": "vs",
+ "entry": "main0",
+ "msl_entry_kind": "vertex",
+ "entry_z": "main0_z",
+ "entry_geometry_capture": "main0_gs",
+ "threadgroup_size": null,
+ "c1": "3004000060040000a0040000e00400003005000080050000e00500003006000090060000d00600002007000060070000b0070000b00700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "vp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "vp_c1",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "c1",
+   "bank": 1
+  }
+ ],
+ "vertex_inputs": [
+  {
+   "location": 0,
+   "msl_type": "float4"
+  }
+ ],
+ "raster": {
+  "pos_attr": -1,
+  "screen": []
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365",
+ "pull": {
+  "entry": "main0",
+  "entry_z": "main0_z",
+  "slot": 16,
+  "inputs": [
+   0
+  ]
+ }
+}

@@ -1,0 +1,1 @@
+main {'plain': 28346, 'pcrel': 527, 'cond': 535, 'blr': 20, 'br': 18, 'tpidr_r': 502, 'spin': 101} cuts 0 obs 0 patch 2818464 PATCH_OFF 0x3420000 slot_refs 30049 gates 101

@@ -1,0 +1,153 @@
+{
+ "key": "a61c49baf8034c14_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "a61c49baf8034c14",
+ "source": "ps_shader.bin#1625",
+ "pc_paired": "/Shader/DriveRefreshUber.Others.Nin_Ounce_NVN2.bfsha.zs#BNSH@0x212000#var2109",
+ "stage": "ps",
+ "entry": "main0",
+ "msl_entry_kind": "fragment",
+ "entry_u": "main0_u",
+ "entry_m": "main0_m",
+ "uint_mask_m": 1,
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "fp_c9",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 6
+  },
+  {
+   "msl_name": "fp_c11",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "cbuf",
+   "reg": 8
+  },
+  {
+   "msl_name": "fp_t_tcb_12",
+   "msl_type": "texture2d<float>",
+   "arg_id": 3,
+   "kind": "tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_12Smplr",
+   "msl_type": "sampler",
+   "arg_id": 4,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_10",
+   "msl_type": "texture2d<float>",
+   "arg_id": 5,
+   "kind": "tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_t_tcb_10Smplr",
+   "msl_type": "sampler",
+   "arg_id": 6,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_t_tcb_12Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 7,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_10Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 8,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 9,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {
+  "discard": 0,
+  "sample_mask": 0,
+  "primitive_id": 0,
+  "colors": [
+   0,
+   1
+  ]
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365",
+ "alpha": {
+  "entries": [
+   "main0_a",
+   "main0_u_a",
+   "main0_m_a"
+  ]
+ },
+ "logic": {
+  "entries": [
+   "main0_l",
+   "main0_u_l",
+   "main0_m_l"
+  ]
+ },
+ "fetch": {
+  "calls": [
+   {
+    "fc": 0,
+    "tex_reg": 5,
+    "frag_pos": [
+     [
+      6,
+      989,
+      0
+     ],
+     [
+      6,
+      989,
+      1
+     ]
+    ]
+   }
+  ],
+  "mixed_regs": [
+   4
+  ],
+  "outputs": [
+   {
+    "color": 0,
+    "type": "float4"
+   },
+   {
+    "color": 1,
+    "type": "float4"
+   }
+  ]
+ }
+}

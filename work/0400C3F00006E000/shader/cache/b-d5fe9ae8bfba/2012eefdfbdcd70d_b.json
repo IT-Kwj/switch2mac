@@ -1,0 +1,52 @@
+{
+ "key": "2012eefdfbdcd70d_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "2012eefdfbdcd70d",
+ "source": "cs_lib.bin#34",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_common.sharcb#BAHS@0x577f8",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  32,
+  1,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _23*",
+   "arg_id": 1,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 1,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s1",
+   "msl_type": "device _23*",
+   "arg_id": 2,
+   "kind": "sbuf",
+   "index": 1,
+   "reg": 0,
+   "rw": true
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

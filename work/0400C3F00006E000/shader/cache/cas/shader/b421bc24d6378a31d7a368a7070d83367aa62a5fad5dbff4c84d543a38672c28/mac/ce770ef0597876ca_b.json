@@ -1,0 +1,66 @@
+{
+ "key": "ce770ef0597876ca_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "ce770ef0597876ca",
+ "source": "cs_lib.bin#80",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_common.sharcb#BAHS@0x5cf48",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  16,
+  16,
+  1
+ ],
+ "c1": "",
+ "notes": [
+  "translator: Global memory operation \"Load\" traced to no storage buffer: it goes through the memory pool table."
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _21*",
+   "arg_id": 1,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 0,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s1",
+   "msl_type": "device _21*",
+   "arg_id": 2,
+   "kind": "gmem_map",
+   "index": 1,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_t_tcb_8",
+   "msl_type": "texture2d<float>",
+   "arg_id": 3,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 4,
+   "kind": "samp_tex",
+   "reg": 0
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

@@ -1,5 +1,4 @@
 # builds, dumps and anything made from the game: never committed
-/work/
 /.venv/
 *.app
 *.app.key

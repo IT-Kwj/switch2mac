@@ -1,0 +1,36 @@
+{
+ "key": "25dd9a634d883e88_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "25dd9a634d883e88",
+ "source": "cs_shader.bin#453",
+ "pc_paired": "/Shader/Drive.Nin_Ounce_NVN2.release.sarc.zs/GearPassShader.sharcb#BAHS@0x1168",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  32,
+  1,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _21*",
+   "arg_id": 0,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 0,
+   "rw": true
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

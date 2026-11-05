@@ -1,0 +1,63 @@
+{
+ "key": "72b4adba0a491c21_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "72b4adba0a491c21",
+ "source": "cs_lib.bin#143",
+ "pc_paired": "/Lib/gsys/gsys_resource.Nin_Ounce_NVN2.release.sarc/common.sharcb#BAHS@0x93d0",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  8,
+  8,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _23*",
+   "arg_id": 2,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 0,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_i_tcb_4A_",
+   "msl_type": "texture2d<float>",
+   "arg_id": 3,
+   "kind": "img",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_i_tcb_48_",
+   "msl_type": "texture2d<float>",
+   "arg_id": 4,
+   "kind": "img",
+   "reg": 0
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

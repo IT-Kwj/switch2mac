@@ -1,0 +1,50 @@
+{
+ "key": "f6919272c50f988d_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "f6919272c50f988d",
+ "source": "vs_lib.bin#12",
+ "pc_paired": "/Lib/Terrain/tera_resource.Nin_Ounce_NVN2.release.sarc.zs/tera_common.sharcb#BAHS@0x7c60",
+ "stage": "vs",
+ "entry": "main0",
+ "msl_entry_kind": "vertex",
+ "entry_z": "main0_z",
+ "entry_geometry_capture": "main0_gs",
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "vp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  }
+ ],
+ "vertex_inputs": [
+  {
+   "location": 0,
+   "msl_type": "float4"
+  }
+ ],
+ "raster": {
+  "pos_attr": -1,
+  "screen": []
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365",
+ "pull": {
+  "entry": "main0",
+  "entry_z": "main0_z",
+  "slot": 16,
+  "inputs": [
+   0
+  ]
+ }
+}

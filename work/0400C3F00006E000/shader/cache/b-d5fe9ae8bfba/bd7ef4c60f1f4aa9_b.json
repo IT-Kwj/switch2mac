@@ -1,0 +1,133 @@
+{
+ "key": "bd7ef4c60f1f4aa9_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "bd7ef4c60f1f4aa9",
+ "source": "cs_lib.bin#116",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_technique_pfx.sharcb#BAHS@0xc0628",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  64,
+  1,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8",
+   "msl_type": "texture2d<float>",
+   "arg_id": 2,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 3,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_C",
+   "msl_type": "texture2d<float>",
+   "arg_id": 4,
+   "kind": "tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_t_tcb_CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 5,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_t_tcb_A",
+   "msl_type": "texture2d<float>",
+   "arg_id": 6,
+   "kind": "tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_t_tcb_ASmplr",
+   "msl_type": "sampler",
+   "arg_id": 7,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_i_tcb_4A_",
+   "msl_type": "texture2d<float>",
+   "arg_id": 8,
+   "kind": "img",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_i_tcb_4C_",
+   "msl_type": "texture2d<float>",
+   "arg_id": 9,
+   "kind": "img",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_i_tcb_48_",
+   "msl_type": "texture2d<float, access::write>",
+   "arg_id": 10,
+   "kind": "img",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 11,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 12,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_t_tcb_ASmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 13,
+   "border_bit": 2,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 14,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

@@ -1,0 +1,6 @@
+# the pipeline archive made offline (dm/gfx/tools/pso_offline.py); the host reads prebuilt.tsv, not this file
+arch	applegpu_g15s
+platform	macos	27.0
+toolchain	AIR-TT 32023.922
+bases	9547
+rest	0

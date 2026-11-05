@@ -1,0 +1,250 @@
+{
+ "key": "3b051c17561330bb_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "3b051c17561330bb",
+ "source": "cs_shader.bin#23",
+ "pc_paired": "/Shader/Drive.Nin_Ounce_NVN2.release.sarc.zs/DrivePassShaderDefault.sharcb#BAHS@0x19bd0",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  64,
+  1,
+  1
+ ],
+ "c1": "d0040000100600005007000050070000000c0000400d0000800e0000800e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_c0",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "drvcb",
+   "bank": 0
+  },
+  {
+   "msl_name": "cp_c5",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_c1",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "c1",
+   "bank": 1
+  },
+  {
+   "msl_name": "cp_c6",
+   "msl_type": "constant _16*",
+   "arg_id": 3,
+   "kind": "cbuf",
+   "reg": 3
+  },
+  {
+   "msl_name": "cp_c7",
+   "msl_type": "constant _16*",
+   "arg_id": 4,
+   "kind": "cbuf",
+   "reg": 4
+  },
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 5,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_c4",
+   "msl_type": "constant _16*",
+   "arg_id": 6,
+   "kind": "cbuf",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _33*",
+   "arg_id": 7,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 4,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s1",
+   "msl_type": "device _33*",
+   "arg_id": 8,
+   "kind": "sbuf",
+   "index": 1,
+   "reg": 5,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s2",
+   "msl_type": "device _33*",
+   "arg_id": 9,
+   "kind": "ubo_ptr",
+   "index": 2,
+   "reg": 5,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s3",
+   "msl_type": "device _33*",
+   "arg_id": 10,
+   "kind": "ubo_ptr",
+   "index": 3,
+   "reg": 6,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_t_tcb_8",
+   "msl_type": "texture2d<float>",
+   "arg_id": 11,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 12,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_A",
+   "msl_type": "texture2d<float>",
+   "arg_id": 13,
+   "kind": "tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_t_tcb_ASmplr",
+   "msl_type": "sampler",
+   "arg_id": 14,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_t_tcb_E",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 15,
+   "kind": "tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "cp_t_tcb_ESmplr",
+   "msl_type": "sampler",
+   "arg_id": 16,
+   "kind": "samp_tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "cp_t_tcb_10",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 17,
+   "kind": "tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "cp_t_tcb_10Smplr",
+   "msl_type": "sampler",
+   "arg_id": 18,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "cp_t_tcb_12",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 19,
+   "kind": "tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "cp_t_tcb_12Smplr",
+   "msl_type": "sampler",
+   "arg_id": 20,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "cp_t_tcb_C",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 21,
+   "kind": "tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_t_tcb_CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 22,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 23,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_ASmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 24,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_t_tcb_ESmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 25,
+   "border_bit": 2,
+   "kind": "samp_tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "cp_t_tcb_10Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 26,
+   "border_bit": 3,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "cp_t_tcb_12Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 27,
+   "border_bit": 4,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "cp_t_tcb_CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 28,
+   "border_bit": 5,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 29,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

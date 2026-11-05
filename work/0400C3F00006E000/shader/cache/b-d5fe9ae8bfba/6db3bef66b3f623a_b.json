@@ -1,0 +1,193 @@
+{
+ "key": "6db3bef66b3f623a_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "6db3bef66b3f623a",
+ "source": "vs_effect.bin#693",
+ "pc_paired": "/Effect/static.Nin_Ounce_NVN2.esetb.byml.zs#BNSH@0x4e1d000#var165",
+ "stage": "vs",
+ "entry": "main0",
+ "msl_entry_kind": "vertex",
+ "entry_z": "main0_z",
+ "entry_geometry_capture": "main0_gs",
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "translator: Attribute offset 0x5C is not valid.",
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "vp_c8",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 5
+  },
+  {
+   "msl_name": "vp_c10",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 7
+  },
+  {
+   "msl_name": "vp_c9",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "cbuf",
+   "reg": 6
+  },
+  {
+   "msl_name": "vp_c15",
+   "msl_type": "constant _16*",
+   "arg_id": 3,
+   "kind": "cbuf",
+   "reg": 12
+  },
+  {
+   "msl_name": "vp_c16",
+   "msl_type": "constant _16*",
+   "arg_id": 4,
+   "kind": "cbuf",
+   "reg": 13
+  },
+  {
+   "msl_name": "vp_c7",
+   "msl_type": "constant _16*",
+   "arg_id": 5,
+   "kind": "cbuf",
+   "reg": 4
+  },
+  {
+   "msl_name": "vp_t_tcb_32",
+   "msl_type": "texture3d<float>",
+   "arg_id": 6,
+   "kind": "tex",
+   "reg": 21
+  },
+  {
+   "msl_name": "vp_t_tcb_32Smplr",
+   "msl_type": "sampler",
+   "arg_id": 7,
+   "kind": "samp_tex",
+   "reg": 21
+  },
+  {
+   "msl_name": "vp_t_tcb_30",
+   "msl_type": "texture3d<float>",
+   "arg_id": 8,
+   "kind": "tex",
+   "reg": 20
+  },
+  {
+   "msl_name": "vp_t_tcb_30Smplr",
+   "msl_type": "sampler",
+   "arg_id": 9,
+   "kind": "samp_tex",
+   "reg": 20
+  },
+  {
+   "msl_name": "vp_t_tcb_1C",
+   "msl_type": "texture2d<float>",
+   "arg_id": 10,
+   "kind": "tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "vp_t_tcb_1CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 11,
+   "kind": "samp_tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "vp_t_tcb_32Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 12,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 21
+  },
+  {
+   "msl_name": "vp_t_tcb_30Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 13,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 20
+  },
+  {
+   "msl_name": "vp_t_tcb_1CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 14,
+   "border_bit": 2,
+   "kind": "samp_tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 15,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [
+  {
+   "location": 1,
+   "msl_type": "float4"
+  },
+  {
+   "location": 2,
+   "msl_type": "float4"
+  },
+  {
+   "location": 3,
+   "msl_type": "float4"
+  },
+  {
+   "location": 5,
+   "msl_type": "float4"
+  },
+  {
+   "location": 6,
+   "msl_type": "float4"
+  },
+  {
+   "location": 7,
+   "msl_type": "float4"
+  },
+  {
+   "location": 8,
+   "msl_type": "float4"
+  },
+  {
+   "location": 9,
+   "msl_type": "float4"
+  }
+ ],
+ "raster": {
+  "pos_attr": -1,
+  "screen": []
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365",
+ "pull": {
+  "entry": "main0",
+  "entry_z": "main0_z",
+  "slot": 16,
+  "inputs": [
+   1,
+   2,
+   3,
+   5,
+   6,
+   7,
+   8,
+   9
+  ]
+ }
+}

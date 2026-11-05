@@ -1,0 +1,107 @@
+{
+ "key": "f4df882a738ac908_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "f4df882a738ac908",
+ "source": "cs_shader.bin#448",
+ "pc_paired": "/Shader/Drive.Nin_Ounce_NVN2.release.sarc.zs/DrivePassShaderDefault.sharcb#BAHS@0xd4168",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  64,
+  1,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "cp_c5",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_c6",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "cbuf",
+   "reg": 3
+  },
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 3,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_c4",
+   "msl_type": "constant _16*",
+   "arg_id": 4,
+   "kind": "cbuf",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _29*",
+   "arg_id": 5,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 1,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s1",
+   "msl_type": "device _29*",
+   "arg_id": 6,
+   "kind": "sbuf",
+   "index": 1,
+   "reg": 0,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_t_tcb_8",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 7,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 8,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_t_tcb_A",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 9,
+   "kind": "tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_t_tcb_ASmplr",
+   "msl_type": "sampler",
+   "arg_id": 10,
+   "kind": "samp_tex",
+   "reg": 1
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

@@ -1,0 +1,64 @@
+{
+ "key": "996c06d62b780087_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "996c06d62b780087",
+ "source": "ms_shader.bin#7",
+ "pc_paired": "/Shader/Drive.Nin_Ounce_NVN2.release.sarc.zs/DrivePassShaderDefault.sharcb#BAHS@0x1b6e8",
+ "stage": "ms",
+ "mesh_stage": {
+  "kind": "ms",
+  "threads": 32,
+  "payload": 128,
+  "task": false
+ },
+ "entry_z": "main0_z",
+ "entry": "main0",
+ "msl_entry_kind": null,
+ "threadgroup_size": [
+  32,
+  1,
+  1
+ ],
+ "c1": "81100c01000000000000000100000001010000ff0000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_c3",
+   "msl_type": "constant _16*",
+   "arg_id": 0,
+   "kind": "cbuf",
+   "reg": 0
+  },
+  {
+   "msl_name": "cp_c5",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 2
+  },
+  {
+   "msl_name": "cp_c4",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "cbuf",
+   "reg": 1
+  },
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "const device _27*",
+   "arg_id": 3,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 2,
+   "rw": false
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

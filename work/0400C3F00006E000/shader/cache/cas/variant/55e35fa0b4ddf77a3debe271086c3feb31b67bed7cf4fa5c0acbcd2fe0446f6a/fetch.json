@@ -1,0 +1,29 @@
+{
+ "calls": [
+  {
+   "fc": 0,
+   "tex_reg": 0,
+   "frag_pos": [
+    [
+     0,
+     3,
+     2
+    ],
+    [
+     0,
+     3,
+     3
+    ]
+   ]
+  }
+ ],
+ "mixed_regs": [
+  0
+ ],
+ "outputs": [
+  {
+   "color": 0,
+   "type": "float4"
+  }
+ ]
+}

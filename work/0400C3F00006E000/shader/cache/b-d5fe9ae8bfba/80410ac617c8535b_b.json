@@ -1,0 +1,217 @@
+{
+ "key": "80410ac617c8535b_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "80410ac617c8535b",
+ "source": "cs_effect.bin#64",
+ "pc_paired": "/Effect/static.Nin_Ounce_NVN2.esetb.byml.zs#BNSH@0x700a000#var22",
+ "stage": "cs",
+ "entry": "main0",
+ "msl_entry_kind": "kernel",
+ "threadgroup_size": [
+  32,
+  1,
+  1
+ ],
+ "c1": "",
+ "notes": [],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "cp_s0",
+   "msl_type": "device _21*",
+   "arg_id": 0,
+   "kind": "ubo_ptr",
+   "index": 0,
+   "reg": 7,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s1",
+   "msl_type": "device _21*",
+   "arg_id": 1,
+   "kind": "sbuf",
+   "index": 1,
+   "reg": 0,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s2",
+   "msl_type": "device _21*",
+   "arg_id": 2,
+   "kind": "sbuf",
+   "index": 2,
+   "reg": 1,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s3",
+   "msl_type": "device _21*",
+   "arg_id": 3,
+   "kind": "ubo_ptr",
+   "index": 3,
+   "reg": 6,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s4",
+   "msl_type": "device _21*",
+   "arg_id": 4,
+   "kind": "sbuf",
+   "index": 4,
+   "reg": 2,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_s5",
+   "msl_type": "device _21*",
+   "arg_id": 5,
+   "kind": "sbuf",
+   "index": 5,
+   "reg": 4,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s6",
+   "msl_type": "device _21*",
+   "arg_id": 6,
+   "kind": "sbuf",
+   "index": 6,
+   "reg": 3,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s7",
+   "msl_type": "device _21*",
+   "arg_id": 7,
+   "kind": "sbuf",
+   "index": 7,
+   "reg": 6,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s8",
+   "msl_type": "device _21*",
+   "arg_id": 8,
+   "kind": "sbuf",
+   "index": 8,
+   "reg": 5,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s9",
+   "msl_type": "device _21*",
+   "arg_id": 9,
+   "kind": "sbuf",
+   "index": 9,
+   "reg": 7,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s10",
+   "msl_type": "device _21*",
+   "arg_id": 10,
+   "kind": "ubo_ptr",
+   "index": 10,
+   "reg": 8,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s11",
+   "msl_type": "device _21*",
+   "arg_id": 11,
+   "kind": "ubo_ptr",
+   "index": 11,
+   "reg": 5,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s12",
+   "msl_type": "device _21*",
+   "arg_id": 12,
+   "kind": "ubo_ptr",
+   "index": 12,
+   "reg": 12,
+   "rw": false
+  },
+  {
+   "msl_name": "cp_s13",
+   "msl_type": "device _21*",
+   "arg_id": 13,
+   "kind": "sbuf",
+   "index": 13,
+   "reg": 8,
+   "rw": true
+  },
+  {
+   "msl_name": "cp_t_tcb_2C",
+   "msl_type": "texture2d<float>",
+   "arg_id": 14,
+   "kind": "tex",
+   "reg": 18
+  },
+  {
+   "msl_name": "cp_t_tcb_2CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 15,
+   "kind": "samp_tex",
+   "reg": 18
+  },
+  {
+   "msl_name": "cp_t_tcb_14",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 16,
+   "kind": "tex",
+   "reg": 6
+  },
+  {
+   "msl_name": "cp_t_tcb_14Smplr",
+   "msl_type": "sampler",
+   "arg_id": 17,
+   "kind": "samp_tex",
+   "reg": 6
+  },
+  {
+   "msl_name": "cp_t_tcb_16",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 18,
+   "kind": "tex",
+   "reg": 7
+  },
+  {
+   "msl_name": "cp_t_tcb_16Smplr",
+   "msl_type": "sampler",
+   "arg_id": 19,
+   "kind": "samp_tex",
+   "reg": 7
+  },
+  {
+   "msl_name": "cp_t_tcb_2CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 20,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 18
+  },
+  {
+   "msl_name": "cp_t_tcb_14Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 21,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 6
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 22,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {},
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

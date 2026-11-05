@@ -1,0 +1,32 @@
+{
+ "key": "029844021f95dd32_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "029844021f95dd32",
+ "source": "ps_lib.bin#2368",
+ "pc_paired": "/Lib/agl/agl_resource.Nin_Ounce_NVN2.release.sarc/agl_technique_pfx.sharcb#BAHS@0xc5f10",
+ "stage": "ps",
+ "entry": "main0",
+ "msl_entry_kind": "fragment",
+ "entry_u": "main0_u",
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [],
+ "vertex_inputs": [],
+ "raster": {
+  "discard": 0,
+  "sample_mask": 0,
+  "primitive_id": 0,
+  "colors": [
+   0
+  ]
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

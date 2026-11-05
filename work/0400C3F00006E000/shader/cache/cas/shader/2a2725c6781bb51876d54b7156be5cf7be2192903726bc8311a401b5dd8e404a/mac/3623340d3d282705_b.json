@@ -1,0 +1,406 @@
+{
+ "key": "3623340d3d282705_b",
+ "route": "B",
+ "chain": "d5fe9ae8bfba",
+ "dm_ctl": "3623340d3d282705",
+ "source": "ps_shader.bin#1031",
+ "pc_paired": "/Shader/DriveRefreshUber.GridifyGeo.Nin_Ounce_NVN2.bfsha.zs#BNSH@0xf2000#var520",
+ "stage": "ps",
+ "entry": "main0",
+ "msl_entry_kind": "fragment",
+ "threadgroup_size": null,
+ "c1": "",
+ "notes": [
+  "not in the answer table, queries use defaults"
+ ],
+ "drv_reads": {},
+ "drv_unfillable": [],
+ "bindings": [
+  {
+   "msl_name": "support_buffer",
+   "msl_type": "constant _10*",
+   "arg_id": 0,
+   "kind": "support"
+  },
+  {
+   "msl_name": "fp_c9",
+   "msl_type": "constant _16*",
+   "arg_id": 1,
+   "kind": "cbuf",
+   "reg": 6
+  },
+  {
+   "msl_name": "fp_c7",
+   "msl_type": "constant _16*",
+   "arg_id": 2,
+   "kind": "cbuf",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_c11",
+   "msl_type": "constant _16*",
+   "arg_id": 3,
+   "kind": "cbuf",
+   "reg": 8
+  },
+  {
+   "msl_name": "fp_c4",
+   "msl_type": "constant _16*",
+   "arg_id": 4,
+   "kind": "cbuf",
+   "reg": 1
+  },
+  {
+   "msl_name": "fp_c13",
+   "msl_type": "constant _16*",
+   "arg_id": 5,
+   "kind": "cbuf",
+   "reg": 10
+  },
+  {
+   "msl_name": "fp_s0",
+   "msl_type": "const device _31*",
+   "arg_id": 6,
+   "kind": "sbuf",
+   "index": 0,
+   "reg": 3,
+   "rw": false
+  },
+  {
+   "msl_name": "fp_s1",
+   "msl_type": "const device _31*",
+   "arg_id": 7,
+   "kind": "sbuf",
+   "index": 1,
+   "reg": 1,
+   "rw": false
+  },
+  {
+   "msl_name": "fp_t_tcb_8",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 8,
+   "kind": "tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_8Smplr",
+   "msl_type": "sampler",
+   "arg_id": 9,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_A",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 10,
+   "kind": "tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "fp_t_tcb_ASmplr",
+   "msl_type": "sampler",
+   "arg_id": 11,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "fp_t_tcb_C",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 12,
+   "kind": "tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "fp_t_tcb_CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 13,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "fp_t_tcb_10",
+   "msl_type": "texture2d<float>",
+   "arg_id": 14,
+   "kind": "tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_t_tcb_10Smplr",
+   "msl_type": "sampler",
+   "arg_id": 15,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_t_tcb_1C",
+   "msl_type": "texture2d<float>",
+   "arg_id": 16,
+   "kind": "tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "fp_t_tcb_1CSmplr",
+   "msl_type": "sampler",
+   "arg_id": 17,
+   "kind": "samp_tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "fp_t_tcb_22",
+   "msl_type": "texture3d<float>",
+   "arg_id": 18,
+   "kind": "tex",
+   "reg": 13
+  },
+  {
+   "msl_name": "fp_t_tcb_22Smplr",
+   "msl_type": "sampler",
+   "arg_id": 19,
+   "kind": "samp_tex",
+   "reg": 13
+  },
+  {
+   "msl_name": "fp_t_tcb_12",
+   "msl_type": "texture2d<float>",
+   "arg_id": 20,
+   "kind": "tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_12Smplr",
+   "msl_type": "sampler",
+   "arg_id": 21,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_E",
+   "msl_type": "texture2d<float>",
+   "arg_id": 22,
+   "kind": "tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "fp_t_tcb_ESmplr",
+   "msl_type": "sampler",
+   "arg_id": 23,
+   "kind": "samp_tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "fp_t_tcb_20",
+   "msl_type": "texture2d<float>",
+   "arg_id": 24,
+   "kind": "tex",
+   "reg": 12
+  },
+  {
+   "msl_name": "fp_t_tcb_20Smplr",
+   "msl_type": "sampler",
+   "arg_id": 25,
+   "kind": "samp_tex",
+   "reg": 12
+  },
+  {
+   "msl_name": "fp_t_tcb_16",
+   "msl_type": "texture2d_array<float>",
+   "arg_id": 26,
+   "kind": "tex",
+   "reg": 7
+  },
+  {
+   "msl_name": "fp_t_tcb_16Smplr",
+   "msl_type": "sampler",
+   "arg_id": 27,
+   "kind": "samp_tex",
+   "reg": 7
+  },
+  {
+   "msl_name": "fp_t_tcb_1E",
+   "msl_type": "texturecube_array<float>",
+   "arg_id": 28,
+   "kind": "tex",
+   "reg": 11
+  },
+  {
+   "msl_name": "fp_t_tcb_1ESmplr",
+   "msl_type": "sampler",
+   "arg_id": 29,
+   "kind": "samp_tex",
+   "reg": 11
+  },
+  {
+   "msl_name": "fp_t_tcb_24",
+   "msl_type": "texture3d<float>",
+   "arg_id": 30,
+   "kind": "tex",
+   "reg": 14
+  },
+  {
+   "msl_name": "fp_t_tcb_24Smplr",
+   "msl_type": "sampler",
+   "arg_id": 31,
+   "kind": "samp_tex",
+   "reg": 14
+  },
+  {
+   "msl_name": "fp_t_tcb_1A",
+   "msl_type": "texture2d<float>",
+   "arg_id": 32,
+   "kind": "tex",
+   "reg": 9
+  },
+  {
+   "msl_name": "fp_t_tcb_1ASmplr",
+   "msl_type": "sampler",
+   "arg_id": 33,
+   "kind": "samp_tex",
+   "reg": 9
+  },
+  {
+   "msl_name": "fp_t_tcb_18",
+   "msl_type": "texture2d<float>",
+   "arg_id": 34,
+   "kind": "tex",
+   "reg": 8
+  },
+  {
+   "msl_name": "fp_t_tcb_18Smplr",
+   "msl_type": "sampler",
+   "arg_id": 35,
+   "kind": "samp_tex",
+   "reg": 8
+  },
+  {
+   "msl_name": "fp_t_tcb_8Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 36,
+   "border_bit": 0,
+   "kind": "samp_tex",
+   "reg": 0
+  },
+  {
+   "msl_name": "fp_t_tcb_ASmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 37,
+   "border_bit": 1,
+   "kind": "samp_tex",
+   "reg": 1
+  },
+  {
+   "msl_name": "fp_t_tcb_CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 38,
+   "border_bit": 2,
+   "kind": "samp_tex",
+   "reg": 2
+  },
+  {
+   "msl_name": "fp_t_tcb_10Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 39,
+   "border_bit": 3,
+   "kind": "samp_tex",
+   "reg": 4
+  },
+  {
+   "msl_name": "fp_t_tcb_1CSmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 40,
+   "border_bit": 4,
+   "kind": "samp_tex",
+   "reg": 10
+  },
+  {
+   "msl_name": "fp_t_tcb_22Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 41,
+   "border_bit": 5,
+   "kind": "samp_tex",
+   "reg": 13
+  },
+  {
+   "msl_name": "fp_t_tcb_12Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 42,
+   "border_bit": 6,
+   "kind": "samp_tex",
+   "reg": 5
+  },
+  {
+   "msl_name": "fp_t_tcb_ESmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 43,
+   "border_bit": 7,
+   "kind": "samp_tex",
+   "reg": 3
+  },
+  {
+   "msl_name": "fp_t_tcb_20Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 44,
+   "border_bit": 8,
+   "kind": "samp_tex",
+   "reg": 12
+  },
+  {
+   "msl_name": "fp_t_tcb_16Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 45,
+   "border_bit": 9,
+   "kind": "samp_tex",
+   "reg": 7
+  },
+  {
+   "msl_name": "fp_t_tcb_1ESmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 46,
+   "border_bit": 10,
+   "kind": "samp_tex",
+   "reg": 11
+  },
+  {
+   "msl_name": "fp_t_tcb_24Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 47,
+   "border_bit": 11,
+   "kind": "samp_tex",
+   "reg": 14
+  },
+  {
+   "msl_name": "fp_t_tcb_1ASmplr_w",
+   "msl_type": "sampler",
+   "arg_id": 48,
+   "border_bit": 12,
+   "kind": "samp_tex",
+   "reg": 9
+  },
+  {
+   "msl_name": "fp_t_tcb_18Smplr_w",
+   "msl_type": "sampler",
+   "arg_id": 49,
+   "border_bit": 13,
+   "kind": "samp_tex",
+   "reg": 8
+  },
+  {
+   "msl_name": "dm_border",
+   "msl_type": "constant dm_border_t*",
+   "arg_id": 50,
+   "kind": "border"
+  }
+ ],
+ "vertex_inputs": [],
+ "raster": {
+  "discard": 0,
+  "sample_mask": 0,
+  "primitive_id": 0,
+  "colors": [
+   0,
+   1
+  ]
+ },
+ "vs_pad": [],
+ "chain_metal": "xcrun -sdk macosx metal -c -O1 -fpreserve-invariance; xcrun -sdk macosx metallib",
+ "chain_compiler": "8f1723638304a0401a6f0362824d1c0f462d5357640a5d6395294fb4acdf2365"
+}

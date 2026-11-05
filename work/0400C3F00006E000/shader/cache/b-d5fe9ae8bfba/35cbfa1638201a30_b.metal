@@ -1,0 +1,304 @@
+#include <metal_stdlib>
+#include <simd/simd.h>
+
+using namespace metal;
+
+struct dm_border_t { uint mask; float4 k[32]; };
+static inline __attribute__((always_inline)) float4 dm_bmix(float4 r, float4 w, float4 k) { return r + (w - r) * k; }
+static inline __attribute__((always_inline)) float dm_bmix(float r, float w, float4 k) { return r + (w - r) * k.x; }
+template<typename V, typename T, typename... A> static inline __attribute__((always_inline)) V dm_bs(V r, constant dm_border_t* b, uint i, T t, sampler w, A... a)
+{
+    if (b->mask >> i & 1u) r = dm_bmix(r, t.sample(w, a...), b->k[i]);
+    return r;
+}
+
+struct _10
+{
+    uint _m0;
+    uint _m1[8];
+    float4 _m2;
+    float4 _m3;
+    int _m4;
+    float _m5[73];
+    int4 _m6;
+    int _m7;
+};
+
+struct _16
+{
+    float4 _m0[4096];
+};
+
+struct spvDescriptorSetBuffer0
+{
+    constant _16* fp_c4 [[id(0)]];
+    constant _16* fp_c5 [[id(1)]];
+    texture2d<float> fp_t_tcb_A [[id(2)]];
+    sampler fp_t_tcb_ASmplr [[id(3)]];
+    texture2d<float> fp_t_tcb_8 [[id(4)]];
+    sampler fp_t_tcb_8Smplr [[id(5)]];
+    sampler fp_t_tcb_ASmplr_w [[id(6)]];
+    sampler fp_t_tcb_8Smplr_w [[id(7)]];
+    constant dm_border_t* dm_border [[id(8)]];
+};
+
+struct main0_out
+{
+    float4 m_36 [[color(0)]];
+    float4 m_38 [[color(1)]];
+    float4 m_40 [[color(2)]];
+    float4 m_42 [[color(3)]];
+    float4 m_44 [[color(4)]];
+    float4 m_46 [[color(5)]];
+};
+
+struct main0_in
+{
+    float4 m_33 [[user(locn0)]];
+};
+
+fragment main0_out main0(main0_in in [[stage_in]], constant spvDescriptorSetBuffer0& spvDescriptorSet0 [[buffer(0)]], float4 gl_FragCoord [[position]])
+{
+    main0_out out = {};
+    float _53 = gl_FragCoord.w;
+    float _55 = in.m_33.x;
+    float _57 = gl_FragCoord.w;
+    float _59 = _55 * _57;
+    float _61 = in.m_33.y;
+    float _63 = gl_FragCoord.w;
+    float _65 = _61 * _63;
+    float _67 = 1.0 / _53;
+    float _69 = _67 * _59;
+    float _71 = _67 * _65;
+    float2 _491 = float2(_69, _71);
+    float3 _75 = dm_bs(spvDescriptorSet0.fp_t_tcb_A.sample(spvDescriptorSet0.fp_t_tcb_ASmplr, select(_491, float2(0.0), isnan(_491))), spvDescriptorSet0.dm_border, 0u, spvDescriptorSet0.fp_t_tcb_A, spvDescriptorSet0.fp_t_tcb_ASmplr_w, select(_491, float2(0.0), isnan(_491))).xyz;
+    float _77 = _75.x;
+    float _79 = _75.y;
+    float _81 = _75.z;
+    float _83 = _79 * (*spvDescriptorSet0.fp_c4)._m0[1].y;
+    float _85 = _79 * (*spvDescriptorSet0.fp_c4)._m0[2].y;
+    float _87 = _81 * (*spvDescriptorSet0.fp_c4)._m0[1].x;
+    float _89 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[1].x, _83);
+    float _91 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[2].x, _85);
+    float _93 = -_77;
+    float _95 = fma(_93, (*spvDescriptorSet0.fp_c4)._m0[1].x, _83);
+    float _97 = -_77;
+    float _99 = fma(_97, (*spvDescriptorSet0.fp_c4)._m0[2].x, _85);
+    float _101 = -_81;
+    float _103 = fma(_101, (*spvDescriptorSet0.fp_c4)._m0[1].z, _89);
+    float _105 = -_81;
+    float _107 = fma(_105, (*spvDescriptorSet0.fp_c4)._m0[2].z, _91);
+    float _109 = fma(_81, (*spvDescriptorSet0.fp_c4)._m0[1].z, _95);
+    float _111 = fma(_81, (*spvDescriptorSet0.fp_c4)._m0[2].z, _99);
+    float _113 = _81 * (*spvDescriptorSet0.fp_c4)._m0[2].x;
+    float _115 = -_87;
+    float _117 = _83 + _115;
+    float _119 = _83 + _87;
+    float _121 = -_87;
+    float _123 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[1].y, _121);
+    float _125 = -_113;
+    float _127 = _85 + _125;
+    float _129 = _85 + _113;
+    float _131 = -_113;
+    float _133 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[2].y, _131);
+    float _135 = -_77;
+    float _137 = -_113;
+    float _139 = fma(_135, (*spvDescriptorSet0.fp_c4)._m0[2].y, _137);
+    float _141 = -_77;
+    float _143 = -_87;
+    float _145 = fma(_141, (*spvDescriptorSet0.fp_c4)._m0[1].y, _143);
+    float _147 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[2].z, _129);
+    float _149 = -_77;
+    float _151 = fma(_149, (*spvDescriptorSet0.fp_c4)._m0[1].z, _117);
+    float _153 = -_79;
+    float _155 = fma(_153, (*spvDescriptorSet0.fp_c4)._m0[2].z, _139);
+    float _157 = fma(_77, (*spvDescriptorSet0.fp_c4)._m0[1].z, _119);
+    float _159 = -_77;
+    float _161 = fma(_159, (*spvDescriptorSet0.fp_c4)._m0[2].z, _127);
+    float _163 = fma(_103, -0.5, 0.5);
+    float _165 = fma(_107, -0.5, 0.5);
+    float _167 = fma(_155, -0.5, 0.5);
+    float _169 = fma(_79, (*spvDescriptorSet0.fp_c4)._m0[1].z, _123);
+    float _171 = -_79;
+    float _173 = fma(_171, (*spvDescriptorSet0.fp_c4)._m0[1].z, _145);
+    float _175 = fma(_79, (*spvDescriptorSet0.fp_c4)._m0[2].z, _133);
+    float2 _682 = float2(_163, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _177 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_682, float2(0.0), isnan(_682))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_682, float2(0.0), isnan(_682))).x;
+    float2 _692 = float2(_165, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _179 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_692, float2(0.0), isnan(_692))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_692, float2(0.0), isnan(_692))).x;
+    float _181 = fma(_109, -0.5, 0.5);
+    float _183 = fma(_111, -0.5, 0.5);
+    float _185 = fma(_175, -0.5, 0.5);
+    float _187 = fma(_169, -0.5, 0.5);
+    float2 _709 = float2(_181, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _189 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_709, float2(0.0), isnan(_709))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_709, float2(0.0), isnan(_709))).x;
+    float2 _718 = float2(_183, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _191 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_718, float2(0.0), isnan(_718))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_718, float2(0.0), isnan(_718))).x;
+    float _193 = fma(_157, -0.5, 0.5);
+    float2 _729 = float2(_187, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _195 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_729, float2(0.0), isnan(_729))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_729, float2(0.0), isnan(_729))).x;
+    float2 _738 = float2(_185, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _197 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_738, float2(0.0), isnan(_738))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_738, float2(0.0), isnan(_738))).x;
+    float _199 = fma(_173, -0.5, 0.5);
+    float _201 = fma(_151, -0.5, 0.5);
+    float _203 = fma(_161, -0.5, 0.5);
+    float _205 = fma(_147, -0.5, 0.5);
+    float2 _755 = float2(_199, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _207 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_755, float2(0.0), isnan(_755))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_755, float2(0.0), isnan(_755))).x;
+    float2 _764 = float2(_167, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _209 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_764, float2(0.0), isnan(_764))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_764, float2(0.0), isnan(_764))).x;
+    float2 _773 = float2(_201, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _211 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_773, float2(0.0), isnan(_773))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_773, float2(0.0), isnan(_773))).x;
+    float2 _782 = float2(_193, (*spvDescriptorSet0.fp_c5)._m0[8].x);
+    float _213 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_782, float2(0.0), isnan(_782))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_782, float2(0.0), isnan(_782))).x;
+    float2 _791 = float2(_203, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _215 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_791, float2(0.0), isnan(_791))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_791, float2(0.0), isnan(_791))).x;
+    float2 _800 = float2(_205, (*spvDescriptorSet0.fp_c5)._m0[9].x);
+    float _217 = dm_bs(spvDescriptorSet0.fp_t_tcb_8.sample(spvDescriptorSet0.fp_t_tcb_8Smplr, select(_800, float2(0.0), isnan(_800))), spvDescriptorSet0.dm_border, 1u, spvDescriptorSet0.fp_t_tcb_8, spvDescriptorSet0.fp_t_tcb_8Smplr_w, select(_800, float2(0.0), isnan(_800))).x;
+    float _219 = _165 + _163;
+    float _221 = -(*spvDescriptorSet0.fp_c5)._m0[16].x;
+    float _223 = _221 + (*spvDescriptorSet0.fp_c5)._m0[17].x;
+    float _225 = -(*spvDescriptorSet0.fp_c5)._m0[16].y;
+    float _227 = _225 + (*spvDescriptorSet0.fp_c5)._m0[17].y;
+    float _229 = -(*spvDescriptorSet0.fp_c5)._m0[16].z;
+    float _231 = _229 + (*spvDescriptorSet0.fp_c5)._m0[17].z;
+    float _233 = _183 + _181;
+    float _235 = -(*spvDescriptorSet0.fp_c5)._m0[18].y;
+    float _237 = _235 + (*spvDescriptorSet0.fp_c5)._m0[19].y;
+    float _239 = _205 + _193;
+    float _241 = -(*spvDescriptorSet0.fp_c5)._m0[18].z;
+    float _243 = _241 + (*spvDescriptorSet0.fp_c5)._m0[19].z;
+    float _245 = _185 + _187;
+    float _247 = _203 + _201;
+    float _249 = _167 + _199;
+    float _251 = abs(_177);
+    float _253 = log2(_251);
+    float _255 = abs(_179);
+    float _257 = log2(_255);
+    float _259 = _253 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _261 = abs(_189);
+    float _263 = log2(_261);
+    float _265 = _257 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _267 = exp2(_259);
+    float _269 = exp2(_265);
+    float _271 = -(*spvDescriptorSet0.fp_c5)._m0[18].x;
+    float _273 = _271 + (*spvDescriptorSet0.fp_c5)._m0[19].x;
+    float _275 = abs(_191);
+    float _277 = log2(_275);
+    float _279 = fma(_267, _223, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _281 = fma(_267, _227, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _283 = fma(_267, _231, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _285 = fma(_269, _273, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _287 = fma(_269, _237, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _289 = abs(_195);
+    float _291 = log2(_289);
+    float _293 = fma(_269, _243, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _295 = _285 + _279;
+    float _297 = _263 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _299 = _287 + _281;
+    float _301 = _293 + _283;
+    float _303 = _277 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _305 = abs(_197);
+    float _307 = log2(_305);
+    float _309 = exp2(_297);
+    float _311 = exp2(_303);
+    float _313 = fma(_223, _309, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _315 = _307 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _317 = abs(_207);
+    float _319 = log2(_317);
+    float _321 = fma(_231, _309, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _323 = fma(_227, _309, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _325 = fma(_273, _311, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _327 = fma(_243, _311, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _329 = exp2(_315);
+    float _331 = fma(_237, _311, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _333 = _325 + _313;
+    float _335 = _291 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _337 = _327 + _321;
+    float _339 = _331 + _323;
+    float _341 = abs(_209);
+    float _343 = log2(_341);
+    float _345 = _319 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _347 = exp2(_335);
+    float _349 = fma(_273, _329, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _351 = fma(_243, _329, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _353 = fma(_237, _329, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _355 = abs(_211);
+    float _357 = log2(_355);
+    float _359 = _343 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _361 = abs(_213);
+    float _363 = log2(_361);
+    float _365 = fma(_223, _347, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _367 = fma(_231, _347, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _369 = fma(_227, _347, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _371 = _349 + _365;
+    float _373 = _351 + _367;
+    float _375 = _353 + _369;
+    float _377 = abs(_215);
+    float _379 = log2(_377);
+    float _381 = _357 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _383 = abs(_217);
+    float _385 = log2(_383);
+    float _387 = _363 * (*spvDescriptorSet0.fp_c5)._m0[0].x;
+    float _389 = exp2(_345);
+    float _391 = _379 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _393 = exp2(_359);
+    float _395 = _385 * (*spvDescriptorSet0.fp_c5)._m0[1].x;
+    float _397 = exp2(_381);
+    float _399 = fma(_223, _389, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _401 = fma(_227, _389, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _403 = fma(_231, _389, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _405 = exp2(_391);
+    float _407 = fma(_273, _393, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _409 = fma(_237, _393, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _411 = fma(_243, _393, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _413 = _407 + _399;
+    float _415 = _409 + _401;
+    float _417 = _411 + _403;
+    float _419 = exp2(_387);
+    float _421 = fma(_223, _397, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _423 = fma(_227, _397, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _425 = fma(_231, _397, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _427 = exp2(_395);
+    float _429 = fma(_273, _405, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _431 = _429 + _421;
+    float _433 = fma(_227, _419, (*spvDescriptorSet0.fp_c5)._m0[16].y);
+    float _435 = fma(_237, _405, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _437 = fma(_243, _405, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _439 = fma(_223, _419, (*spvDescriptorSet0.fp_c5)._m0[16].x);
+    float _441 = fma(_231, _419, (*spvDescriptorSet0.fp_c5)._m0[16].z);
+    float _443 = _435 + _423;
+    float _445 = _437 + _425;
+    float _447 = fma(_273, _427, (*spvDescriptorSet0.fp_c5)._m0[18].x);
+    float _449 = fma(_237, _427, (*spvDescriptorSet0.fp_c5)._m0[18].y);
+    float _451 = fma(_243, _427, (*spvDescriptorSet0.fp_c5)._m0[18].z);
+    float _453 = _447 + _439;
+    float _455 = _449 + _433;
+    float _457 = _451 + _441;
+    out.m_36.x = _295;
+    out.m_36.y = _299;
+    out.m_36.z = _301;
+    out.m_36.w = _219;
+    out.m_38.x = _333;
+    out.m_38.y = _339;
+    out.m_38.z = _337;
+    out.m_38.w = _233;
+    out.m_40.x = _371;
+    out.m_40.y = _375;
+    out.m_40.z = _373;
+    out.m_40.w = _245;
+    out.m_42.x = _413;
+    out.m_42.y = _415;
+    out.m_42.z = _417;
+    out.m_42.w = _249;
+    out.m_44.x = _431;
+    out.m_44.y = _443;
+    out.m_44.z = _445;
+    out.m_44.w = _247;
+    out.m_46.x = _453;
+    out.m_46.y = _455;
+    out.m_46.z = _457;
+    out.m_46.w = _239;
+    return out;
+}
+

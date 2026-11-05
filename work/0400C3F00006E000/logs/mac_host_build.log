@@ -1,0 +1,299 @@
+hle_sdk16.c:333:28: warning: calling '__builtin_frame_address' with a nonzero argument is unsafe [-Wframe-address]
+  333 |     dm_backtrace((uint64_t)__builtin_frame_address(1));
+      |                            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+front_mac.m:1321:15: warning: variable 'activity' set but not used [-Wunused-but-set-variable]
+ 1321 |     static id activity; activity = [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityUserInitiated | NSActivityLatencyCritical reason:@"game"];
+      |               ^
+1 warning generated.
+../gfx/nvn/nvn_mtl.m:1851:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 1851 | static __unsafe_unretained id hm_get_id(const nvn_hmap *m, const void *k) { return (__bridge id)nvn_hm_get(m, k); }
+      |        ^
+../gfx/nvn/nvn_mtl.m:1955:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 1955 | static __unsafe_unretained id serial_get(uint64_t k) { pthread_mutex_lock(&g_smu); __unsafe_unretained id o = hm_get_id(&g_by_serial, &k); pthread_mutex_unlock(&g_smu); return o; }
+      |        ^
+../gfx/nvn/nvn_mtl.m:1975:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 1975 | static __unsafe_unretained id tex_get(uint64_t k) {
+      |        ^
+../gfx/nvn/nvn_mtl.m:3663:40: warning: returning 'id<MTL4ComputeCommandEncoder>' from a function with incompatible result type 'id<MTLComputeCommandEncoder>'
+ 3663 |     if (!p) { args_dirty_all(); return enc_c_begin(NULL); }
+      |                                        ^~~~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:3669:12: warning: returning 'id<MTL4ComputeCommandEncoder>' from a function with incompatible result type 'id<MTLComputeCommandEncoder>'
+ 3669 |     return enc_c_begin(cd);
+      |            ^~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:3954:133: warning: 'MTLPixelFormatPVRTC_RGB_2BPP' is deprecated: first deprecated in macOS 15.0 - Usage of ASTC/ETC2/BC formats is recommended instead. [-Wdeprecated-declarations]
+ 3954 | static int mtl_fmt_block(MTLPixelFormat f) { return (f >= MTLPixelFormatBC1_RGBA && f <= MTLPixelFormatBC7_RGBAUnorm_sRGB) || (f >= MTLPixelFormatPVRTC_RGB_2BPP && f < MTLPixelFormatGBGR422); }
+      |                                                                                                                                     ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Headers/MTLPixelFormat.h:239:5: note: 'MTLPixelFormatPVRTC_RGB_2BPP' has been explicitly marked deprecated here
+  239 |     MTLPixelFormatPVRTC_RGB_2BPP        API_DEPRECATED("Usage of ASTC/ETC2/BC formats is recommended instead.", macos(11.0,15.0), macCatalyst(14.0,18.0), ios(8.0,18.0)) = 160,
+      |     ^
+../gfx/nvn/nvn_mtl.m:4820:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 4820 | static __unsafe_unretained NvProg *prog_get(const prog_t *cp) {   // Called only on the submit thread
+      |        ^
+../gfx/nvn/nvn_mtl.m:7045:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 7045 | static __unsafe_unretained id<MTLRenderPipelineState> hybrid_get(const pso_key *k, NvShader *vs, NvShader *fs) {
+      |        ^
+../gfx/nvn/nvn_mtl.m:7270:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 7270 | static __unsafe_unretained id<MTLRenderPipelineState> pso_get_(NvProg *pr, MTLRenderPassDescriptor *unused);
+      |        ^
+../gfx/nvn/nvn_mtl.m:7284:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 7284 | static __unsafe_unretained id<MTLRenderPipelineState> pso_get(NvProg *pr, MTLRenderPassDescriptor *unused) { AP_B; __unsafe_unretained id<MTLRenderPipelineState> r = pso_get_(pr, unused); AP_E(2); return r; }
+      |        ^
+../gfx/nvn/nvn_mtl.m:7289:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 7289 | static __unsafe_unretained id<MTLRenderPipelineState> sm_amp_get(const pso_key *k, NvShader *vs, NvShader *fs) {
+      |        ^
+../gfx/nvn/nvn_mtl.m:7301:8: warning: ARC __unsafe_unretained lifetime qualifier on return type is ignored [-Wignored-qualifiers]
+ 7301 | static __unsafe_unretained id<MTLRenderPipelineState> pso_get_(NvProg *pr, MTLRenderPassDescriptor *unused) {
+      |        ^
+../gfx/nvn/nvn_mtl.m:7903:21: warning: passing 'id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 7903 |     else enc_r_args((id<MTLRenderCommandEncoder>)en, metal_vertex ? MTLRenderStageVertex : MTLRenderStageFragment, gpu, ai);
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:1079:60: note: passing argument to parameter 'e' here
+ 1079 | static inline void enc_r_args(id<MTL4RenderCommandEncoder> e, MTLRenderStages s, uint64_t gpu, NSUInteger i) {
+      |                                                            ^
+In file included from ../gfx/nvn/nvn_mtl.m:10525:
+../gfx/nvn/nvn_feedback.inc:71:34: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+   71 |     args_dirty_all();encode_args(en,vs,0,1);enc_r_vbuf(en,14,job);
+      |                                  ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10525:
+../gfx/nvn/nvn_feedback.inc:82:99: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+   82 |     id<MTL4RenderCommandEncoder> en=enc_r_begin(rd);enc_r_pso(en,ps);args_dirty_all();encode_args(en,reader,0,1);enc_r_vbuf(en,14,job);
+      |                                                                                                   ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:141:72: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  141 |     vconv_bind(en, vs, 1, &range, NULL); args_dirty_all(); encode_args(en, vs, 0, 1); enc_r_vbuf(en, 13, gpu);
+      |                                                                        ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:405:201: warning: incompatible operand types ('id<MTLFunction> _Nullable' and 'NSNull * _Nonnull')
+  405 |             g_geo_mesh_runfn[[NSValue valueWithPointer:(__bridge const void *)f]] = [lib newFunctionWithName:[@"dm_mesh_run" stringByAppendingString:[((id<MTLFunction>)f).name substringFromIndex:7]]] ?: NSNull.null; }
+      |                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~
+../gfx/nvn/nvn_geometry.inc:435:82: warning: incompatible operand types ('id<MTLRenderPipelineState>' and 'NSNull * _Nonnull')
+  435 |             os_unfair_lock_lock(&g_pso_mesh_lock); hm_put_id(&g_pso_mesh, &kk, p ?: NSNull.null); os_unfair_lock_unlock(&g_pso_mesh_lock);
+      |                                                                                ~ ^  ~~~~~~~~~~~
+../gfx/nvn/nvn_geometry.inc:542:70: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  542 |     g_args_dirty[2] = 1; g_args_mesh = GEO_MESH_GS_SLOT; encode_args(en, g_geo_mesh.lean, 2, 0); g_args_mesh = 0; g_args_dirty[2] = 1;
+      |                                                                      ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:579:76: warning: incompatible operand types ('id<MTLRenderPipelineState>' and 'NSNull * _Nonnull')
+  579 |         os_unfair_lock_lock(&g_pso_mtk_lock); hm_put_id(&g_pso_mtk, &kk, p ?: NSNull.null); os_unfair_lock_unlock(&g_pso_mtk_lock);
+      |                                                                          ~ ^  ~~~~~~~~~~~
+../gfx/nvn/nvn_geometry.inc:587:106: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  587 |     if (ts) { [en setArgumentTable:g_ot atStages:MTLRenderStageObject]; g_args_dirty[3] = 1; encode_args(en, ts, 3, 0);
+      |                                                                                                          ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:589:38: warning: passing '__strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  589 |     g_args_dirty[4] = 1; encode_args(en, ms, 4, 1);
+      |                                      ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:869:35: warning: passing 'const __strong id<MTL4RenderCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  869 |     args_dirty_all(); encode_args(re, j->vs, 0, 1); enc_r_vbuf(re, 13, j->capture_info);
+      |                                   ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+In file included from ../gfx/nvn/nvn_mtl.m:10527:
+../gfx/nvn/nvn_geometry.inc:876:35: warning: passing 'const __strong id<MTL4ComputeCommandEncoder>' to parameter of incompatible type 'id<MTLCommandEncoder>'
+  876 |     args_dirty_all(); encode_args(ce, j->gs, 2, 0); enc_c_pso(ce, j->gs->geo_pso);
+      |                                   ^~
+../gfx/nvn/nvn_mtl.m:8073:46: note: passing argument to parameter 'en' here
+ 8073 | static int encode_args(id<MTLCommandEncoder> en, NvShader *sh, int nvn_stage, int metal_vertex) { AP_B; int r = encode_args_(en, sh, nvn_stage, metal_vertex); AP_E(3); return r; }
+      |                                              ^
+../gfx/nvn/nvn_mtl.m:10907:33: warning: initializing '__strong id<MTLRenderCommandEncoder>' with an expression of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10907 |     id<MTLRenderCommandEncoder> en = rp_begin_ex(mode);
+       |                                 ^    ~~~~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:10916:97: warning: assigning to '__strong id<MTLRenderCommandEncoder>' from incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10916 |         vbuf_prepare(pr->sh[0] ? &pr->sh[0]->rf : NULL, dw, di); g_fd_dw = dw; g_fd_di = di; en = rp_begin_ex(mode); g_fd_dw = NULL; g_fd_di = NULL; g_rp_layered = 0;
+       |                                                                                                 ^ ~~~~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:10929:22: warning: assigning to '__strong id<MTLRenderCommandEncoder>' from incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10929 |         rp_end(); en = rp_begin_ex(mode); if (!en) return;
+       |                      ^ ~~~~~~~~~~~~~~~~~
+../gfx/nvn/nvn_mtl.m:10935:38: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10935 |     if (ps != g_enc_pso) { enc_r_pso(en, ps); g_enc_pso = ps; }
+       |                                      ^~
+../gfx/nvn/nvn_mtl.m:1059:59: note: passing argument to parameter 'e' here
+ 1059 | static inline void enc_r_pso(id<MTL4RenderCommandEncoder> e, id<MTLRenderPipelineState> p) { [e setRenderPipelineState:p]; }
+      |                                                           ^
+../gfx/nvn/nvn_mtl.m:10946:42: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10946 |     if (cur_ds != g_enc_dss) { enc_r_dss(en, cur_ds); g_enc_dss = cur_ds; }
+       |                                          ^~
+../gfx/nvn/nvn_mtl.m:1060:59: note: passing argument to parameter 'e' here
+ 1060 | static inline void enc_r_dss(id<MTL4RenderCommandEncoder> e, id<MTLDepthStencilState> s) { [e setDepthStencilState:s]; }
+      |                                                           ^
+../gfx/nvn/nvn_mtl.m:10948:72: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10948 |       if (!(g_ed.ok & ED_SREF) || g_ed.sref != sr) { enc_r_stencil_ref(en, sr, sr); g_ed.sref = sr; g_ed.ok |= ED_SREF; } }
+       |                                                                        ^~
+../gfx/nvn/nvn_mtl.m:1068:67: note: passing argument to parameter 'e' here
+ 1068 | static inline void enc_r_stencil_ref(id<MTL4RenderCommandEncoder> e, uint32_t f, uint32_t b) { (void)b; [e setStencilReferenceValue:f]; }
+      |                                                                   ^
+../gfx/nvn/nvn_mtl.m:10958:82: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10958 |       if (!(g_ed.ok & ED_VP) || memcmp(&g_ed.vp, &v, sizeof v)) { enc_r_viewport(en, v); g_ed.vp = v; g_ed.ok |= ED_VP; } }
+       |                                                                                  ^~
+../gfx/nvn/nvn_mtl.m:1061:64: note: passing argument to parameter 'e' here
+ 1061 | static inline void enc_r_viewport(id<MTL4RenderCommandEncoder> e, MTLViewport v) { [e setViewport:v]; }
+      |                                                                ^
+../gfx/nvn/nvn_mtl.m:10966:81: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10966 |     if (!(g_ed.ok & ED_SC) || memcmp(&g_ed.sc, &sc, sizeof sc)) { enc_r_scissor(en, sc); g_ed.sc = sc; g_ed.ok |= ED_SC; }
+       |                                                                                 ^~
+../gfx/nvn/nvn_mtl.m:1062:63: note: passing argument to parameter 'e' here
+ 1062 | static inline void enc_r_scissor(id<MTL4RenderCommandEncoder> e, MTLScissorRect r) { [e setScissorRect:r]; }
+      |                                                               ^
+../gfx/nvn/nvn_mtl.m:10972:65: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10972 |       if (!(g_ed.ok & ED_CULL) || g_ed.cull != cu) { enc_r_cull(en, (MTLCullMode)cu); g_ed.cull = cu; g_ed.ok |= ED_CULL; }
+       |                                                                 ^~
+../gfx/nvn/nvn_mtl.m:1063:60: note: passing argument to parameter 'e' here
+ 1063 | static inline void enc_r_cull(id<MTL4RenderCommandEncoder> e, MTLCullMode m) { [e setCullMode:m]; }
+      |                                                            ^
+../gfx/nvn/nvn_mtl.m:10973:68: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10973 |       if (!(g_ed.ok & ED_WIND) || g_ed.wind != wi) { enc_r_winding(en, (MTLWinding)wi); g_ed.wind = wi; g_ed.ok |= ED_WIND; }
+       |                                                                    ^~
+../gfx/nvn/nvn_mtl.m:1064:63: note: passing argument to parameter 'e' here
+ 1064 | static inline void enc_r_winding(id<MTL4RenderCommandEncoder> e, MTLWinding w) { [e setFrontFacingWinding:w]; }
+      |                                                               ^
+../gfx/nvn/nvn_mtl.m:10974:65: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10974 |       if (!(g_ed.ok & ED_FILL) || g_ed.fill != fi) { enc_r_fill(en, (MTLTriangleFillMode)fi); g_ed.fill = fi; g_ed.ok |= ED_FILL; }
+       |                                                                 ^~
+../gfx/nvn/nvn_mtl.m:1065:60: note: passing argument to parameter 'e' here
+ 1065 | static inline void enc_r_fill(id<MTL4RenderCommandEncoder> e, MTLTriangleFillMode m) { [e setTriangleFillMode:m]; }
+      |                                                            ^
+../gfx/nvn/nvn_mtl.m:10975:88: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10975 |       if (!(g_ed.ok & ED_BIAS) || memcmp(g_ed.bias, bi, sizeof bi)) { enc_r_depth_bias(en, bi[0], bi[1], bi[2]); memcpy(g_ed.bias, bi, sizeof bi); g_ed.ok |= ED_BIAS; }
+       |                                                                                        ^~
+../gfx/nvn/nvn_mtl.m:1066:66: note: passing argument to parameter 'e' here
+ 1066 | static inline void enc_r_depth_bias(id<MTL4RenderCommandEncoder> e, float u, float s, float c) { [e setDepthBias:u slopeScale:s clamp:c]; }
+      |                                                                  ^
+../gfx/nvn/nvn_mtl.m:10976:71: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10976 |       if (!(g_ed.ok & ED_CLIP) || g_ed.clip != cl) { enc_r_depth_clip(en, cl); g_ed.clip = cl; g_ed.ok |= ED_CLIP; }
+       |                                                                       ^~
+../gfx/nvn/nvn_mtl.m:1067:66: note: passing argument to parameter 'e' here
+ 1067 | static inline void enc_r_depth_clip(id<MTL4RenderCommandEncoder> e, BOOL v) { [e setDepthClipMode:v ? MTLDepthClipModeClip : MTLDepthClipModeClamp]; }
+      |                                                                  ^
+../gfx/nvn/nvn_mtl.m:10977:110: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10977 |       if (!(g_ed.ok & ED_BLEND) || memcmp(g_ed.blend, S.blend_color, sizeof g_ed.blend)) { enc_r_blend_color(en, S.blend_color[0], S.blend_color[1], S.blend_color[2], S.blend_color[3]); memcpy(g_ed.blend, S.blend_color, sizeof g_ed.blend); g_ed.ok |= ED_BLEND; } }
+       |                                                                                                              ^~
+../gfx/nvn/nvn_mtl.m:1069:67: note: passing argument to parameter 'e' here
+ 1069 | static inline void enc_r_blend_color(id<MTL4RenderCommandEncoder> e, float r, float g, float b, float a) { [e setBlendColorRed:r green:g blue:b alpha:a]; }
+      |                                                                   ^
+../gfx/nvn/nvn_mtl.m:10978:31: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10978 |     if (cur_pull) { pull_bind(en); g_hy_draws += !g_geo_mesh.on; }   // a pulling pipeline reads the streams itself (no conversion either: dm_fetch decodes every format)
+       |                               ^~
+../gfx/nvn/nvn_mtl.m:5630:52: note: passing argument to parameter 'en' here
+ 5630 | static void pull_bind(id<MTL4RenderCommandEncoder> en) {
+      |                                                    ^
+../gfx/nvn/nvn_mtl.m:10980:20: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10980 |         bind_vbufs(en);
+       |                    ^~
+../gfx/nvn/nvn_mtl.m:5587:53: note: passing argument to parameter 'en' here
+ 5587 | static void bind_vbufs(id<MTL4RenderCommandEncoder> en) {
+      |                                                     ^
+../gfx/nvn/nvn_mtl.m:10981:35: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 10981 |         if (pr->sh[0]) vconv_bind(en, pr->sh[0], S.rast_discard, g_geo_vrange ? g_geo_vrange : dw, g_geo_vrange ? NULL : di);   // integer inputs fed float-type formats or 8 / 16-bit integers of the other sign (see vconv_ncomp, vconv_int); a lean geometry draw: the vertices its indices name
+       |                                   ^~
+../gfx/nvn/nvn_mtl.m:6079:53: note: passing argument to parameter 'en' here
+ 6079 | static void vconv_bind(id<MTL4RenderCommandEncoder> en, NvShader *vs, int tf, const p_draw *dw, const p_draw_idx *di) {   // tf: a transform feedback capture (no shadow inputs)
+      |                                                     ^
+../gfx/nvn/nvn_mtl.m:10989:15: warning: comparison of distinct pointer types ('id<MTL4RenderCommandEncoder>' and 'id<MTLRenderCommandEncoder>') [-Wcompare-distinct-pointer-types]
+ 10989 |     if (g_enc != en) {
+       |         ~~~~~ ^  ~~
+../gfx/nvn/nvn_mtl.m:11014:82: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11014 |             if (g_vis_cur >= 0 && g_enc_vis != g_vis_cur + 1) { enc_r_visibility(en, MTLVisibilityResultModeCounting, (NSUInteger)g_vis_cur * 8); g_enc_vis = g_vis_cur + 1; }
+       |                                                                                  ^~
+../gfx/nvn/nvn_mtl.m:1070:66: note: passing argument to parameter 'e' here
+ 1070 | static inline void enc_r_visibility(id<MTL4RenderCommandEncoder> e, MTLVisibilityResultMode m, NSUInteger o) { [e setVisibilityResultMode:m offset:o]; }
+      |                                                                  ^
+../gfx/nvn/nvn_mtl.m:11076:45: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11076 |         if (g_geo_count) enc_r_draw_indexed(en, mp, g_geo_count, MTLIndexTypeUInt32, g_geo_indices, g_geo_index_bytes, 1, 0, (uint32_t)g_draw_binst);   // geo_lean_tri's slots
+       |                                             ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11077:42: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11077 |         else enc_r_draw_indexed_indirect(en, mp, MTLIndexTypeUInt32, g_geo_indices, g_geo_index_bytes, g_geo_args);
+       |                                          ^~
+../gfx/nvn/nvn_mtl.m:1086:77: note: passing argument to parameter 'e' here
+ 1086 | static inline void enc_r_draw_indexed_indirect(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, MTLIndexType t, uint64_t gpu, NSUInteger len, uint64_t ind) { [e drawIndexedPrimitives:p indexType:t indexBuffer:gpu indexBufferLength:len indirectBuffer:ind]; }
+      |                                                                             ^
+../gfx/nvn/nvn_mtl.m:11085:81: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11085 |         if (ixc_wanted(dw, di)) { if (e && e->args) enc_r_draw_indexed_indirect(en, mp, MTLIndexTypeUInt32, e->ixb, e->ixlen, e->args); else RED_ONCE(88, "indirect draw skipped: the arguments for primitive %d were not converted (argument address %#llx is in no memory pool, or the conversion pipeline was not created)", prim, (unsigned long long)ind); }
+       |                                                                                 ^~
+../gfx/nvn/nvn_mtl.m:1086:77: note: passing argument to parameter 'e' here
+ 1086 | static inline void enc_r_draw_indexed_indirect(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, MTLIndexType t, uint64_t gpu, NSUInteger len, uint64_t ind) { [e drawIndexedPrimitives:p indexType:t indexBuffer:gpu indexBufferLength:len indirectBuffer:ind]; }
+      |                                                                             ^
+../gfx/nvn/nvn_mtl.m:11087:44: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11087 |         else if (dw) { enc_r_draw_indirect(en, mp, mdx ? mdx : ((__bridge id<MTLBuffer>)ab).gpuAddress + ao); if (mdx) mdx_chain(dw->mdi_cnt, dw->mdi_i, mp, MTLIndexTypeUInt32, 0, 0); }
+       |                                            ^~
+../gfx/nvn/nvn_mtl.m:1084:69: note: passing argument to parameter 'e' here
+ 1084 | static inline void enc_r_draw_indirect(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, uint64_t gpu) { [e drawPrimitives:p indirectBuffer:gpu]; }
+      |                                                                     ^
+../gfx/nvn/nvn_mtl.m:11090:41: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11090 |             enc_r_draw_indexed_indirect(en, mp, ty, ig, il, mdx ? mdx : ((__bridge id<MTLBuffer>)ab).gpuAddress + ao); if (mdx) mdx_chain(di->mdi_cnt, di->mdi_i, mp, ty, ig, il); }
+       |                                         ^~
+../gfx/nvn/nvn_mtl.m:1086:77: note: passing argument to parameter 'e' here
+ 1086 | static inline void enc_r_draw_indexed_indirect(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, MTLIndexType t, uint64_t gpu, NSUInteger len, uint64_t ind) { [e drawIndexedPrimitives:p indexType:t indexBuffer:gpu indexBufferLength:len indirectBuffer:ind]; }
+      |                                                                             ^
+../gfx/nvn/nvn_mtl.m:11093:48: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11093 |         if (dw->count >= 4) enc_r_draw_indexed(en, mp, (dw->count / 4) * 6, MTLIndexTypeUInt32, g_quad_gpu, g_quad_ib.length, dw->instances > 0 ? dw->instances : 1, dw->first, dw->base_instance);
+       |                                                ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11096:48: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11096 |         if (dw->count >= 3) enc_r_draw_indexed(en, mp, (dw->count - 2) * 3, MTLIndexTypeUInt32, g_fan_gpu, g_fan_ib.length, dw->instances > 0 ? dw->instances : 1, dw->first, dw->base_instance);
+       |                                                ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11098:89: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11098 |         if (dw->count && (dw->instances > 1 || dw->base_instance)) enc_r_draw_instanced(en, mp, dw->first, dw->count, dw->instances > 0 ? dw->instances : 1, dw->base_instance);
+       |                                                                                         ^~
+../gfx/nvn/nvn_mtl.m:1083:70: note: passing argument to parameter 'e' here
+ 1083 | static inline void enc_r_draw_instanced(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger v, NSUInteger n, NSUInteger i, NSUInteger b) { [e drawPrimitives:p vertexStart:v vertexCount:n instanceCount:i baseInstance:b]; }
+      |                                                                      ^
+../gfx/nvn/nvn_mtl.m:11099:40: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11099 |         else if (dw->count) enc_r_draw(en, mp, dw->first, dw->count);
+       |                                        ^~
+../gfx/nvn/nvn_mtl.m:1082:60: note: passing argument to parameter 'e' here
+ 1082 | static inline void enc_r_draw(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger v, NSUInteger n) { [e drawPrimitives:p vertexStart:v vertexCount:n]; }
+      |                                                            ^
+../gfx/nvn/nvn_mtl.m:11115:43: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11115 |             if (count) enc_r_draw_indexed(en, mp, count, MTLIndexTypeUInt32, g_cur_arena->gpu + off, (NSUInteger)count * 4, di->instances ? di->instances : 1, di->base_vertex, di->base_instance);
+       |                                           ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11125:36: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11125 |                 enc_r_draw_indexed(en, mp, di->count, MTLIndexTypeUInt16, w->gpu, (NSUInteger)di->count * 2, di->instances ? di->instances : 1, di->base_vertex, di->base_instance);
+       |                                    ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11135:32: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11135 |             enc_r_draw_indexed(en, mp, di->count, MTLIndexTypeUInt16, g_cur_arena->gpu + off, (NSUInteger)di->count * 2, di->instances ? di->instances : 1, di->base_vertex, di->base_instance);
+       |                                ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+../gfx/nvn/nvn_mtl.m:11142:43: warning: passing '__strong id<MTLRenderCommandEncoder>' to parameter of incompatible type 'id<MTL4RenderCommandEncoder>'
+ 11142 |         if (di->count) enc_r_draw_indexed(en, mp, di->count, di->itype == 1 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32, gpu, ((__bridge id<MTLBuffer>)mb).length - mo,
+       |                                           ^~
+../gfx/nvn/nvn_mtl.m:1085:68: note: passing argument to parameter 'e' here
+ 1085 | static inline void enc_r_draw_indexed(id<MTL4RenderCommandEncoder> e, MTLPrimitiveType p, NSUInteger n, MTLIndexType t, uint64_t gpu, NSUInteger len, NSUInteger i, NSInteger bv, NSUInteger bi) { [e drawIndexedPrimitives:p indexCount:n indexType:t indexBuffer:gpu indexBufferLength:len instanceCount:i baseVertex:bv baseInstance:bi]; }
+      |                                                                    ^
+56 warnings generated.
