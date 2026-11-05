@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (11)
+
+- Shader lists: Mario Kart World's switch2mac build gains 1,049 rows (#11).
+
 ## 2026-11-05 (10): switch2mac app 0.3.0
 
 - **New What's New tab.** News about switch2mac first (the newest five, Show all for the rest), then new games, every build update day by day, and nxnative's latest changes with the games each one names. A dot on the tab shows something arrived since you last looked.
