@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// Step 3 of the export (LNPANDY/NX2Apple#416): the game data into the shared app on a device (the install's own copy step), or onto a
+// Step 3 of the export: the game data into the shared app on a device (the install's own copy step), or onto a
 // drive or folder of this Mac for the iPhone's Game data folder (DriveCopy). The IPA is signed and installed by another tool.
 
 /// Where step 3 stands. Every failure names the next step only.

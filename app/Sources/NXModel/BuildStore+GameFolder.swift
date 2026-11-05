@@ -1,7 +1,7 @@
 import Foundation
 import NXCore
 
-// A game chosen as a folder of its files (GameFolder, LNPANDY/NX2Apple#512 and #445): how Switch 2 games come. The rows show what the
+// A game chosen as a folder of its files (GameFolder, and #445): how Switch 2 games come. The rows show what the
 // folder holds and are not picked one by one, the keys row says no keys are needed, and the build passes the folder to the script
 // with no -k (BuildStore+Run.swift).
 

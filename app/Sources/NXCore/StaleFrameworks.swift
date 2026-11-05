@@ -1,6 +1,6 @@
 import Foundation
 
-/// LNPANDY/NX2Apple#449: the shared iPhone and iPad app takes frameworks of one shader chain only. After an engine update that
+/// : the shared iPhone and iPad app takes frameworks of one shader chain only. After an engine update that
 /// changes the chain, the frameworks already in the shell folder are stale, and build_shell.sh refuses them at the last step.
 /// This finds them before the long steps. The chain of the engine is the `DMSH_CHAIN` of `dm/gfx/nvn/dmsh_chain.h` (the
 /// `b-<chain>` folder name), the chain of a framework is the `chain` of its `game.manifest.json`, the two values the script compares.

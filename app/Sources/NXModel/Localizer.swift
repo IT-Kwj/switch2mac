@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-/// The interface language and the strings for it (LNPANDY/NX2Apple#387). Views take it from the environment, so a language change
+/// The interface language and the strings for it. Views take it from the environment, so a language change
 /// redraws the views that show text and nothing else. `BuildStore` gets it through its init for the strings it writes itself.
 ///
 /// The language choice is stored by `Lang.saved` (UserDefaults key `appLanguage`): "" follows the system. `choose()` writes it.

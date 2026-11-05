@@ -9,11 +9,11 @@ final class CloudSaveSyncTests: XCTestCase {
 
     // ---- env.txt files as older versions and players wrote them ----
 
-    /// What CloudSavesMigration wrote in v0.9 for a game on the old keyword: its comment, then the path.
+    /// An env.txt whose DM_SAVE_SYNC line has a comment above it, then the path.
     func testTheMigrationsPinnedPathCounts() {
-        let text = CloudSavesMigration.comment + "\nDM_SAVE_SYNC=\(drive)/NX2Apple Saves\nDM_FPS_TARGET=60\n"
+        let text = "# a comment line" + "\nDM_SAVE_SYNC=\(drive)/Old Saves\nDM_FPS_TARGET=60\n"
         let s = CloudSaveSync.resolve(playerEnv: text, appEnv: nil, preference: "/Elsewhere", home: home)
-        XCTAssertEqual(s, .init(source: .playerEnv, value: "\(drive)/NX2Apple Saves", folder: "\(drive)/NX2Apple Saves"))
+        XCTAssertEqual(s, .init(source: .playerEnv, value: "\(drive)/Old Saves", folder: "\(drive)/Old Saves"))
     }
 
     /// The keyword a player wrote by hand, with Windows line ends (#490 had one like it).
@@ -44,8 +44,8 @@ final class CloudSaveSyncTests: XCTestCase {
     }
 
     func testSettingTheLineKeepsEverythingElse() {
-        let old = CloudSavesMigration.comment + "\r\nDM_SAVE_SYNC=icloud\r\nDM_FPS_TARGET=60\r\n"
-        XCTAssertEqual(CloudSaveSync.settingEnv(old, to: "/New"), CloudSavesMigration.comment + "\r\nDM_SAVE_SYNC=/New\r\nDM_FPS_TARGET=60\r\n")
+        let old = "# a comment line" + "\r\nDM_SAVE_SYNC=icloud\r\nDM_FPS_TARGET=60\r\n"
+        XCTAssertEqual(CloudSaveSync.settingEnv(old, to: "/New"), "# a comment line" + "\r\nDM_SAVE_SYNC=/New\r\nDM_FPS_TARGET=60\r\n")
         XCTAssertEqual(CloudSaveSync.settingEnv("DM_FPS_TARGET=60", to: "0"), "DM_FPS_TARGET=60\nDM_SAVE_SYNC=0\n")
         XCTAssertEqual(CloudSaveSync.settingEnv(nil, to: "/New"), "DM_SAVE_SYNC=/New\n")
     }

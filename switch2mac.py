@@ -264,7 +264,7 @@ def app_switches(g): return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-{g
 def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
     g = GAMES[tid]; eng = g['engine']; d = engine_dir(g); dump = Path(a.dump).expanduser().resolve()
     if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
-    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}; UNTESTED in switch2mac')
+    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}')
     e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
     w.mkdir(parents=True, exist_ok=True); app = w / f'{g["name"]}.app'
     if eng['kind'] == 'nxnative':
@@ -508,16 +508,21 @@ def builds_cmd(a):   # the builds a game has and which one this Mac gets, for pe
 
 
 def switched_build(g):
-    """The game's data folder notes which build is installed (s2m_build.txt). When it changes (Mario Kart World from switch2mac's engine to nxnative's, or back), the
-    old build's record of the pipelines it built (pso_user.tsv) and its shader list contribution are put aside with the old build's name: the two engines name their
-    shaders differently, so the new build would offer the old one's rows as its own. Saves are the game's own and stay as they are."""
+    """The game's data folder notes which build is installed (s2m_build.txt). Each build keeps its own record of the pipelines it built
+    (pso_user.tsv), its pipeline archive (pso_archive/) and its shader list contribution: the engines name shaders differently, and one
+    build cannot read the other's archive. When the build changes, the old build's are put aside under its name and the new build's,
+    if it was installed before, come back, so switching back and forth never loses what a build learned. Saves are the game's own and stay."""
     data = Path.home() / f'Library/Application Support/nxnative/{g["title_id"]}'; note = data / 's2m_build.txt'; new = g['build']['id']
     old = note.read_text().strip() if note.exists() else (builds(g)[0]['id'] if (data / 'pso_user.tsv').exists() else '')
+    def aside(f, b):   # pso_user.tsv → pso_user.<build>.tsv, pso_archive → pso_archive.<build>
+        return data / (f'{f.removesuffix(".tsv").removesuffix(".txt")}.{b}{Path(f).suffix}' if Path(f).suffix in ('.tsv', '.txt', '.done') else f'{f}.{b}')
     if old and old != new:
-        for f in ('pso_user.tsv', 'shader-list-contribution.txt', '.shader-list-contribution.txt.done'):
-            p = data / f
-            if p.exists(): p.rename(data / f'{f.removesuffix(".tsv").removesuffix(".txt")}.{old}{p.suffix}')
-        print(f'  {g["name"]} was on the {old} build: its pipeline record and shader list contribution are kept aside as *.{old}.* (saves stay)')
+        for f in ('pso_user.tsv', 'pso_archive', 'shader-list-contribution.txt', '.shader-list-contribution.txt.done'):
+            p, keep = data / f, aside(f, old)
+            if p.exists() and not keep.exists(): p.rename(keep)
+            back = aside(f, new)
+            if back.exists() and not p.exists(): back.rename(p)
+        print(f'  {g["name"]} was on the {old} build: its pipeline record and archive are kept aside for it, and the {new} build\'s own come back (saves stay)')
     if data.is_dir(): note.write_text(new + '\n')
 
 
@@ -575,7 +580,14 @@ def main():
     a = ap.parse_args()
     if a.cmd not in ('setup', 'identify', 'builds') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
         os.execv(py(), [str(py()), __file__] + sys.argv[1:])
-    {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
+    try:
+        {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
+    except (KeyboardInterrupt, SystemExit): raise
+    except Exception:   # a bug here, not a problem with the dump: the details go to the log, the last line says what to do
+        import traceback; traceback.print_exc()
+        P.end(False, 'switch2mac stopped on a problem of its own')
+        sys.exit('switch2mac stopped on a problem of its own (a bug, not your dump). Copy the diagnostics in Settings and open an issue: '
+                 'https://github.com/azmasm/switch2mac/issues')
 
 
 if __name__ == '__main__':

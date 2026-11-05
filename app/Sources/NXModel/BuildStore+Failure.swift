@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// What a failed build says and what its card offers: the classification, "Build anyway" and the fix buttons (LNPANDY/NX2Apple#387).
+// What a failed build says and what its card offers: the classification, "Build anyway" and the fix buttons.
 
 extension BuildStore {
     /// A failed build's log read for the script's known early stops: the card under the build button then says what

@@ -56,7 +56,7 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     DispatchQueue.main.async { MainActor.assumeIsolated(body) }
 }
 
-/// The build (LNPANDY/NX2Apple#387, step 7, the last store): the inputs (the four rows, the output folder), the target, the stages
+/// The build: the inputs (the four rows, the output folder), the target, the stages
 /// and whether a build runs, the script's JSON events, the run itself with its archive step and its hand-off to the device, the
 /// failure the card shows and "Build anyway". It follows `AppUpdateStore` (`frontend/ARCHITECTURE.md`, "Stores").
 ///

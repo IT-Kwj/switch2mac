@@ -4,7 +4,7 @@ import XCTest
 /// #111: the repo-root Brewfile is the one list of Homebrew tools, and the launcher's dependency check offers the same.
 final class BrewfileTests: XCTestCase {
     private func brewfileLines() throws -> [String] {
-        // frontend/Tests/NX2AppleTests/BrewfileTests.swift -> the repository root
+        // frontend/Tests/Switch2MacTests/BrewfileTests.swift -> the repository root
         var url = URL(fileURLWithPath: #filePath)
         for _ in 0..<4 { url.deleteLastPathComponent() }
         let text = try String(contentsOf: url.appendingPathComponent("Brewfile"), encoding: .utf8)
@@ -23,12 +23,14 @@ final class BrewfileTests: XCTestCase {
     }
 
     func testBrewfileFormulaeAreTheLaunchersDependencies() throws {
+        throw XCTSkip("the original launcher's repo-root Brewfile: the switch2mac repository has none (switch2mac.py setup and the app's own dependency rows install the tools)")
         let launcher = Set(Toolchain.brewDeps.map { $0.formula })
         XCTAssertEqual(Set(try entries("brew")), launcher)
         XCTAssertEqual(try entries("brew").count, launcher.count, "a formula is listed twice")
     }
 
     func testBrewfileCaskIsTheDotnetSdkTheLauncherNeeds() throws {
+        throw XCTSkip("the original launcher's repo-root Brewfile: the switch2mac repository has none (switch2mac.py setup and the app's own dependency rows install the tools)")
         // The launcher checks for an SDK (`dotnet --list-sdks`) and installs channel 10.0; the cask is Homebrew's SDK.
         XCTAssertEqual(try entries("cask"), ["dotnet-sdk"])
     }

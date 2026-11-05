@@ -1,6 +1,6 @@
 # Fire Emblem Fortune's Weave
 
-Title ID `04007EF01F8AE000`, v131072. **nxnative reports it plays on the Mac**: the opening movie, the dialogue, the first battle map and its battle scenes, at 60 fps (120 offered); not yet tested in switch2mac.
+Title ID `04007EF01F8AE000`, v131072. **nxnative reports it plays on the Mac**: the opening movie, the dialogue, the first battle map and its battle scenes, at 60 fps (120 offered).
 
 Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
@@ -25,6 +25,8 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 [`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. switch2mac has not test-built this game: what is known comes from these reports.
 
 ## Build
+
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

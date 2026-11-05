@@ -1,0 +1,70 @@
+name: How a game ran on my Mac
+description: Tell others how a game runs on your Mac. Each game's build choice and its reports table come from these.
+title: "[How it ran] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thanks!** Your report goes into the game's reports table (`games/<game>/reports.tsv`) and helps switch2mac pick the right build for Macs like yours. Only the Mac's model, chip, memory and macOS are recorded, never anything about you. Don't attach game files, saves or the app.
+  - type: dropdown
+    id: game
+    attributes:
+      label: Game
+      options:
+        - Mario Kart World
+        - Donkey Kong Bananza
+        - Pokémon Pokopia
+        - Yoshi and the Mysterious Book
+        - Splatoon Raiders
+        - "Hyrule Warriors: Age of Imprisonment"
+        - Fire Emblem Fortune's Weave
+        - Mario Tennis Fever
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Build
+      description: The app shows it on the game's Build card and in the Library. Not sure? Pick the last one.
+      options:
+        - The one the app recommended
+        - switch2mac's engine
+        - nxnative's engine
+        - pokopia-native
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac
+      description: The model, chip and memory, as in Apple menu → About This Mac.
+      placeholder: MacBook Air, M3, 16 GB
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "26.6"
+    validations:
+      required: true
+  - type: input
+    id: fps
+    attributes:
+      label: Frame rate
+      description: What the overlay (key 1) shows most of the time. Ranges are fine.
+      placeholder: "55-60 fps in races"
+  - type: input
+    id: memory
+    attributes:
+      label: Memory used (optional)
+      description: The overlay's detailed view (press 1 twice) shows it.
+      placeholder: "12 GB"
+  - type: textarea
+    id: notes
+    attributes:
+      label: How it went
+      description: How far you played, how long, and anything wrong (stutters, crashes, graphics). Screenshots are welcome.
+    validations:
+      required: true

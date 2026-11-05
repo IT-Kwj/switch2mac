@@ -1,15 +1,15 @@
 import XCTest
 @testable import NXCore
 
-/// LNPANDY/NX2Apple#427: the shared app's folder moves out of the output folder, once, and only when that is safe. Every test
+/// : the shared app's folder moves out of the output folder, once, and only when that is safe. Every test
 /// runs in a temporary folder with its own `home`, so the real Application Support folder is never touched.
 final class ShellRootMigrationTests: XCTestCase {
     private let fm = FileManager.default
     private var base: String!
     private var home: String { base + "/home" }
     private var out: String { base + "/Games" }
-    private var oldRoot: String { out + "/NX2Apple-shell" }
-    private var newRoot: String { home + "/Library/Application Support/NX2Apple/shell" }
+    private var oldRoot: String { out + "/switch2mac-shell" }
+    private var newRoot: String { home + "/Library/Application Support/switch2mac/shell" }
 
     override func setUpWithError() throws {
         base = fm.temporaryDirectory.path + "/nspb-migrate-" + UUID().uuidString
@@ -132,7 +132,7 @@ final class ShellRootMigrationTests: XCTestCase {
         d.set(oldRoot, forKey: "shellRoot")
         XCTAssertEqual(ShellLibrary.resolveRoot(defaults: d, parent: out, home: home), newRoot)
 
-        let unplugged = base + "/Volumes/Games/NX2Apple-shell"
+        let unplugged = base + "/Volumes/Games/switch2mac-shell"
         d.set(unplugged, forKey: "shellRoot")
         XCTAssertEqual(ShellLibrary.resolveRoot(defaults: d, parent: out, home: home), unplugged)
         XCTAssertEqual(d.string(forKey: "shellRoot"), unplugged)

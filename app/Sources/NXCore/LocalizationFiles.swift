@@ -1,6 +1,6 @@
 import Foundation
 
-/// Finds and reads the language files, `frontend/l10n/<code>.json` (LNPANDY/NX2Apple#388). One flat JSON object per language: the keys
+/// Finds and reads the language files, `frontend/l10n/<code>.json`. One flat JSON object per language: the keys
 /// are the texts' names, the values the texts, and `_language` (the language's own name and its locale prefixes) is not a text.
 ///
 /// Where they are, in this order:

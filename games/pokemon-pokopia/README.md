@@ -1,6 +1,6 @@
 # Pokémon Pokopia
 
-Title ID `0400A3A01EE4C000`, update v327680 or 2.0.1 (v655360). **pokopia-native reports it plays on its author's M4 Mac** past the first wake-up with no issues found; not yet tested in switch2mac.
+Title ID `0400A3A01EE4C000`, update v327680 or 2.0.1 (v655360). **pokopia-native reports it plays on its author's M4 Mac** past the first wake-up with no issues found.
 
 ## Two builds
 
@@ -37,6 +37,8 @@ Built with [pokopia-native](https://github.com/xFractals/pokopia-native) by xFra
 [`reports.tsv`](reports.tsv): every report that names the Mac (from GitHub issues on this game's builder), with the fps and memory where given, and whether it was fixed.
 
 ## Build
+
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

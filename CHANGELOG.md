@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-05 (3)
+
+- The README now starts with the app: download it, open it, choose your dump folder, press Build. `Build a Game.command` is gone; the Terminal commands are still there.
+- New **How it ran** form on the Issues page: tell others how a game runs on your Mac. Each game's reports and the build your Mac gets come from these.
+- Builds moved to their newest upstream versions: Donkey Kong Bananza (the white Donkey Kong fix), Mario Kart World's nxnative build (fewer stray bright dots), Yoshi and the Mysterious Book (395 more shaders), Pokopia's pokopia-native build, and Mario Kart World's own engine.
+- Switching a game between its builds keeps what each build learned, so switching back doesn't bring back first-play stutter.
+- App bug fixes, coming in the next app release.
+- Docs updated for nine games and three engines.
+
 ## 2026-11-05 (2)
 
 - Five more Switch 2 games, built with nxnative: **Yoshi and the Mysterious Book**, **Splatoon Raiders**, **Hyrule Warriors: Age of Imprisonment**, **Fire Emblem Fortune's Weave** and **Mario Tennis Fever**. Like Donkey Kong Bananza, they start straight into the game, with the performance overlay on key 1 and the settings on key 2. None has been test-built in switch2mac yet: each game's page says what nxnative and players report. Thanks to seedds and nxnative's contributors.

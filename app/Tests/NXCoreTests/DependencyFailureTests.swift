@@ -32,13 +32,12 @@ final class DependencyFailureTests: XCTestCase {
         XCTAssertFalse(error.isEmpty)
     }
 
-    func testEveryFixHintHasBothLanguages() {
+    /// switch2mac is English only (l10n/en.json).
+    func testEveryFixHintHasItsEnglishText() {
         for key in ["dep.fix.brewOwner", "dep.fix.brewMissing", "dep.fix.xcodeLicense", "dep.fix.network", "dep.fix.log"] {
             let row = L10n.table[key]
             XCTAssertNotNil(row, key)
-            XCTAssertFalse(row?.0.isEmpty ?? true, key)
-            XCTAssertFalse(row?.1.isEmpty ?? true, key)
-            XCTAssertNotEqual(row?.0, row?.1, "\(key) has the English text twice")
+            XCTAssertFalse(row?.en.isEmpty ?? true, key)
         }
     }
 }

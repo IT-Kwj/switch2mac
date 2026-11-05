@@ -22,14 +22,14 @@ import CryptoKit
         // ditto: the fake unpacks a launcher bundle of the version the test names (its tag without the "v") into the last argument
         runner.answer = { [bundleID] launch in
             guard launch.executable.hasSuffix("ditto"), let dir = launch.arguments.last else { return ProcessResult() }
-            let macOS = URL(fileURLWithPath: dir).appendingPathComponent("NX2Apple.app/Contents/MacOS")
+            let macOS = URL(fileURLWithPath: dir).appendingPathComponent("switch2mac.app/Contents/MacOS")
             try? FileManager.default.createDirectory(at: macOS, withIntermediateDirectories: true)
             let exe = macOS.appendingPathComponent("NSPortBuilder")
             try? Data("new".utf8).write(to: exe)
             try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: exe.path)
             let info: [String: Any] = ["CFBundleIdentifier": bundleID, "CFBundleExecutable": "NSPortBuilder", "CFBundleShortVersionString": "0.4.8"]
             try? (try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0))
-                .write(to: URL(fileURLWithPath: dir).appendingPathComponent("NX2Apple.app/Contents/Info.plist"))
+                .write(to: URL(fileURLWithPath: dir).appendingPathComponent("switch2mac.app/Contents/Info.plist"))
             return ProcessResult()
         }
     }
@@ -47,7 +47,7 @@ import CryptoKit
                            uninstall: @escaping (Uninstall.Plan) -> (removed: [String], failures: [String]) = { _ in ([], []) }) -> AppUpdateStore {
         defaults.set(automatic, forKey: AppUpdateStore.automaticKey)
         let store = AppUpdateStore(localizer: Localizer(.en), runner: runner, releases: source, version: version,
-                                   bundle: temporary.appendingPathComponent("Applications/NX2Apple.app"), bundleIdentifier: bundleID,
+                                   bundle: temporary.appendingPathComponent("Applications/switch2mac.app"), bundleIdentifier: bundleID,
                                    defaults: defaults, buildRunning: buildRunning, relaunch: relaunch, terminate: terminate,
                                    uninstall: uninstall, trashOldApp: false)
         store.installability = installability
@@ -83,7 +83,7 @@ import CryptoKit
         source.latest = FakeReleaseSource.release(tag: "v0.4.8", digest: "sha256:aa", notes: "What changed")
         let store = makeStore()
         await store.checkForUpdate().value
-        XCTAssertEqual(store.update, AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/NX2Apple-macOS-arm64.zip", digest: "sha256:aa", notes: "What changed"))
+        XCTAssertEqual(store.update, AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/switch2mac-macOS-arm64.zip", digest: "sha256:aa", notes: "What changed"))
         XCTAssertEqual(store.status, text("app.found", "v0.4.8"))
         XCTAssertTrue(store.showUpdateSheet)
         XCTAssertFalse(store.busy)
@@ -158,16 +158,16 @@ import CryptoKit
         XCTAssertEqual(store.status, text("app.staging", "v0.4.8"))
         XCTAssertTrue(store.showUpdateSheet)
         while store.busy { await Task.yield() }
-        XCTAssertEqual(source.downloads.map(\.lastPathComponent), ["NX2Apple-macOS-arm64.zip"])
+        XCTAssertEqual(source.downloads.map(\.lastPathComponent), ["switch2mac-macOS-arm64.zip"])
         XCTAssertEqual(store.staged?.release.tag, "v0.4.8")
-        XCTAssertEqual(store.staged?.app.lastPathComponent, "NX2Apple.app")
+        XCTAssertEqual(store.staged?.app.lastPathComponent, "switch2mac.app")
         XCTAssertEqual(store.status, text("app.ready", "v0.4.8"))
         XCTAssertNil(store.blocked)
         XCTAssertTrue(runner.commands.first?.hasPrefix("ditto -x -k ") == true, "\(runner.commands)")
     }
 
     func testAChosenUpdateWithoutADigestIsStagedByHandButNotAutomatically() async {
-        let release = AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/NX2Apple-macOS-arm64.zip", digest: nil)
+        let release = AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/switch2mac-macOS-arm64.zip", digest: nil)
         let store = makeStore()
         await store.stage(release, automatic: true).value
         XCTAssertNil(store.staged)
@@ -227,8 +227,8 @@ import CryptoKit
     private func stagedStore(_ installability: AppUpdate.Installability = .ok, buildRunning: @escaping () -> Bool = { false },
                              relaunch: @escaping (URL) -> Bool = { _ in true }, terminate: @escaping () -> Void = {},
                              automatic: Bool = true) throws -> (AppUpdateStore, current: URL) {
-        let current = try makeApp("NX2Apple", in: temporary.appendingPathComponent("Applications"), marker: "old")
-        let staged = try makeApp("NX2Apple", in: temporary.appendingPathComponent("staged"), marker: "new")
+        let current = try makeApp("switch2mac", in: temporary.appendingPathComponent("Applications"), marker: "old")
+        let staged = try makeApp("switch2mac", in: temporary.appendingPathComponent("staged"), marker: "new")
         let store = makeStore(installability, automatic: automatic, buildRunning: buildRunning, relaunch: relaunch, terminate: terminate)
         store.staged = AppUpdate.Staged(release: AppUpdate.Release(tag: "v0.4.8", url: "", digest: nil), app: staged)
         return (store, current)
@@ -304,7 +304,7 @@ import CryptoKit
     func testConfirmingTheUninstallRunsThePlanAndSaysWhatWent() {
         var ran: Uninstall.Plan?
         let store = makeStore(uninstall: { ran = $0; return (["a", "b"], []) })
-        let plan = Uninstall.Plan(stateFolders: ["/x"], app: "/Applications/NX2Apple.app")
+        let plan = Uninstall.Plan(stateFolders: ["/x"], app: "/Applications/switch2mac.app")
         store.uninstallPlan = plan
         store.confirmUninstall()
         XCTAssertEqual(ran, plan)

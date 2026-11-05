@@ -10,5 +10,5 @@
 
 ---
 
-**Install:** download `NX2Apple-macOS-arm64.zip`, unzip, drag to Applications. 中文：下载后解压，拖进「应用程序」。
+**Install:** download `switch2mac-macOS-arm64.zip`, unzip, drag to Applications. 中文：下载后解压，拖进「应用程序」。
 

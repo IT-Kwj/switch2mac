@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// The install on a device after the archive: the shared app, the reinstall, the re-sign and the IPA (LNPANDY/NX2Apple#387).
+// The install on a device after the archive: the shared app, the reinstall, the re-sign and the IPA.
 
 extension BuildStore {
     // MARK: Installing on a device

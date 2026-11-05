@@ -1,7 +1,7 @@
 #!/bin/bash
 # Checks an assembled launcher bundle the way a player's Mac uses it: every bundled tool starts from the bundle with a clean PATH (nothing of
 # Homebrew or the system Python), nothing links into /opt/homebrew or /usr/local, and the code signature holds.
-# Usage: check_bundle.sh <NX2Apple.app or a folder that holds tools/ and python/> [--sign]   (--sign: also ad-hoc sign the app and verify it)
+# Usage: check_bundle.sh <switch2mac.app or a folder that holds tools/ and python/> [--sign]   (--sign: also ad-hoc sign the app and verify it)
 set -uo pipefail
 APP=${1:?usage: check_bundle.sh <app> [--sign]}
 if [ -d "$APP/Contents/Resources" ]; then RES="$APP/Contents/Resources"; else RES="$APP"; fi

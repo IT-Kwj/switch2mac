@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// The shared app as an unsigned IPA (LNPANDY/NX2Apple#416). The steps are ShellInstaller.export (NXCore, ShellExport.swift): this
+// The shared app as an unsigned IPA. The steps are ShellInstaller.export (NXCore, ShellExport.swift): this
 // runs them off the main actor and shows what they leave. No device, no signing team, no game data copy.
 
 extension BuildStore {

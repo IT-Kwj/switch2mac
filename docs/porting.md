@@ -4,6 +4,19 @@ This guide covers how to bring up a new Switch 2 game with switch2mac, or a new 
 
 Bring-up is research. A new game will boot partway, draw wrong, or crash, and each problem has to be traced. Nothing below promises that a given game will run.
 
+## The easy case: a game nxnative already runs
+
+Most of switch2mac's games were added this way, in a few minutes each and without a test build: upstream [nxnative](https://github.com/seedds/nxnative) has a profile for the game (`dm/games/<title ID>/` on its `main`), and switch2mac builds it with nxnative's own builder plus switch2mac's front end. Copy Donkey Kong Bananza's folder as the pattern:
+
+1. **`games/<game>/game.json`**: `title_id`, `name`, `version` (from the profile's `game.tsv` build line), `"engine": {"kind": "nxnative", "repo": "https://github.com/seedds/nxnative", "commit": <the newest commit that touches dm/games/<title ID>, in full>}`, and `disk_gb` (the RomFS size from the profile's README, plus room for the build).
+2. **`games/<game>/README.md`**: what nxnative reports (the Mac it played on, how far, the frame rate), the dump folder layout, the shader count (over 100,000 means a build of hours), and known problems with their issue numbers.
+3. **`games/<game>/shader_list.tsv`**: the header only (`game=<title ID>`, `engine=nxnative-<commit, 12 characters>`).
+4. **`games/<game>/reports.tsv`**: every report that names the Mac, from the profile's README and from nxnative's GitHub issues (search the game's name), with its source. Leave out reports without a Mac model.
+5. **The README's game table and dump-folder table**, and **NOTICE.md** (the game in nxnative's line, its trademarks).
+6. Check: `./switch2mac.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
+
+A game with a second port (Pokopia: pokopia-native and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
+
 ## How a build works
 
 | Step | Tool | Output in `work/` |

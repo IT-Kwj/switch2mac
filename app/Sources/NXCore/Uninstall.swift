@@ -4,9 +4,9 @@ import Foundation
 /// player's games and keys left alone. What goes:
 ///
 /// - the state folder `~/Library/Application Support/switch2mac/` (settings, the venv, library file)
-/// - engine trees this launcher installed (`~/Library/Application Support/NX2Apple/engine/`). The shared app's folder beside
-///   it (`NX2Apple/shell`, #427) stays: its frameworks cost a full rebuild, like the games they were built from.
-/// - the project checkout the launcher itself cloned (`~/NX2Apple`, only when it is the launcher's own
+/// - engine trees this launcher installed (`~/Library/Application Support/switch2mac/engine/`). The shared app's folder beside
+///   it (`switch2mac/shell`, #427) stays: its frameworks cost a full rebuild, like the games they were built from.
+/// - the project checkout the launcher itself cloned (`~/the original launcher`, only when it is the launcher's own
 ///   download; a checkout the player made by hand is not touched)
 /// - the launcher's settings (its UserDefaults domain)
 ///
@@ -37,9 +37,8 @@ package enum Uninstall {
         var p = Plan(defaultsDomain: defaultsDomain)
         let kept = [gamesFolder, outputFolder].filter { !$0.isEmpty }
         let holdsPlayerFiles = { (folder: String) in kept.contains { contains(folder, $0) } }
-        let state = home + "/Library/Application Support/switch2mac"
-        if fm.fileExists(atPath: state), !holdsPlayerFiles(state) { p.stateFolders.append(state) }
-        let engine = home + "/Library/Application Support/NX2Apple"
+        // switch2mac's own folder only: ~/Library/Application Support/switch2mac belongs to the the original launcher app and is never touched.
+        let engine = home + "/Library/Application Support/switch2mac"
         if fm.fileExists(atPath: engine), !holdsPlayerFiles(engine) {
             // The shared app's folder stays. With it there, only the other entries go.
             if fm.fileExists(atPath: engine + "/shell") {
@@ -48,9 +47,9 @@ package enum Uninstall {
                 p.stateFolders.append(engine)
             }
         }
-        let own = home + "/NX2Apple"
+        let own = home + "/switch2mac"
         for checkout in checkouts where fm.fileExists(atPath: checkout) {
-            // The launcher's own clone sits at ~/NX2Apple and is a git checkout with origin = this repo.
+            // The launcher's own clone sits at ~/the original launcher and is a git checkout with origin = this repo.
             // A folder the player picked from anywhere else stays: we cannot know what else lives there.
             guard checkout == own, !holdsPlayerFiles(checkout) else { continue }
             if let origin = gitOrigin(checkout), origin.contains("azmasm/switch2mac") { p.checkouts.append(checkout) }

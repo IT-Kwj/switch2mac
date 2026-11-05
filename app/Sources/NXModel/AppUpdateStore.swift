@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-/// The launcher's self-update (LNPANDY/NX2Apple#387): the release check, the staged update, the update sheet, the uninstall
+/// The launcher's self-update: the release check, the staged update, the update sheet, the uninstall
 /// plan and the version the check compares. It is the reference store: `frontend/ARCHITECTURE.md` ("Stores") describes the
 /// pattern, and later stores follow it.
 ///
@@ -217,7 +217,7 @@ import NXCore
             return false
         }
         self.staged = nil
-        // A rename era (nxnative, NS Port Builder, NX2Apple) installs under the release's own bundle name. The Dock entry
+        // A rename era (nxnative, NS Port Builder, the original launcher) installs under the release's own bundle name. The Dock entry
         // pointing at the old path goes stale once, so the log says where the new copy landed instead of leaving the player
         // to find it.
         if placed != current {

@@ -8,7 +8,7 @@ package enum RepoLayout {
     /// them (#87: romfs_image.py exists since v0.4.8, so a build ran 70 minutes and failed at its last step). A new
     /// tool the launcher calls goes into this list and is then checked before every build.
     package static let buildScript = "switch2mac.py"   // switch2mac: its one entry point (identify, build --progress json, install --to)
-    package static let romfsImageTool = "dm/tools/romfs_image.py"   // NX2Apple's archive step (unused by switch2mac's builds)
+    package static let romfsImageTool = "dm/tools/romfs_image.py"   // the original launcher's archive step (unused by switch2mac's builds)
     package static let requiredTools = [buildScript]
 
     /// Home shown as ~ (shorter in a one-line row, and it keeps the account name out of screenshots).

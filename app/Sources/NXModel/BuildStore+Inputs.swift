@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// The build inputs: the four rows (base game, update, add-on content, keys) and what fills them (LNPANDY/NX2Apple#387).
+// The build inputs: the four rows (base game, update, add-on content, keys) and what fills them.
 
 extension BuildStore {
     /// Fill every slot from a folder: NSP/XCI classified by title ID (…000 base,

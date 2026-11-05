@@ -1,7 +1,7 @@
 import XCTest
 @testable import NXCore
 
-/// LNPANDY/NX2Apple#427, Move cache folder. Every test runs in a temporary folder with its own `home`, so the real Application
+/// Move cache folder. Every test runs in a temporary folder with its own `home`, so the real Application
 /// Support folder is never touched. The bug class is data loss: the old folder must survive every stop and every failure, and is
 /// removed only after its copy was checked file by file. The copy to another volume is tested on one volume by setting
 /// `sameVolume` to false in the plan, which takes the same code path as a real external drive.
@@ -9,7 +9,7 @@ final class ShellRootMoveTests: XCTestCase {
     private let fm = FileManager.default
     private var base: String!
     private var home: String { base + "/home" }
-    private var source: String { home + "/Library/Application Support/NX2Apple/shell" }
+    private var source: String { home + "/Library/Application Support/switch2mac/shell" }
     private var picked: String { base + "/Drive/Games" }
     private var destination: String { ShellRootMove.destination(inside: picked) }
     private var buildFramework: String { base + "/Out/build/DmGame0100BBBB.framework" }
@@ -188,7 +188,7 @@ final class ShellRootMoveTests: XCTestCase {
     func testThePickedFolderAndItsOtherFilesStayWhenTheCacheMovesAwayAgain() throws {
         try makeCache()
         try Data("mine".utf8).write(to: URL(fileURLWithPath: picked + "/notes.txt"))
-        XCTAssertEqual(destination, picked + "/NX2Apple-shell")
+        XCTAssertEqual(destination, picked + "/switch2mac-shell")
         XCTAssertEqual(ShellRootMove.run(crossVolumePlan()), .moved)
         var back = ShellRootMove.plan(from: destination, to: source)
         back.sameVolume = false
@@ -213,7 +213,7 @@ final class ShellRootMoveTests: XCTestCase {
     func testTheSafetyRulesOfTheMigrationHold() throws {
         try makeCache()
         XCTAssertEqual(ShellRootMove.plan(from: source, to: source).problem, .same)
-        XCTAssertEqual(ShellRootMove.plan(from: source, to: source + "/frameworks/NX2Apple-shell").problem, .insideCache)
+        XCTAssertEqual(ShellRootMove.plan(from: source, to: source + "/frameworks/switch2mac-shell").problem, .insideCache)
 
         try fm.createDirectory(atPath: destination + "/frameworks", withIntermediateDirectories: true)
         XCTAssertEqual(ShellRootMove.plan(from: source, to: destination).problem, .destinationTaken, "a folder with content is never overwritten")
@@ -237,7 +237,7 @@ final class ShellRootMoveTests: XCTestCase {
 
     // MARK: The saved root
 
-    /// A cache the player moved into `<folder>/NX2Apple-shell` is named like an old one in an output folder. The migration at
+    /// A cache the player moved into `<folder>/switch2mac-shell` is named like an old one in an output folder. The migration at
     /// launch must not move it back to Application Support.
     func testAPickedRootIsNotMigratedBackAtLaunch() throws {
         try makeCache()

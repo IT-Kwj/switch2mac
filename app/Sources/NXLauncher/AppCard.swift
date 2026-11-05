@@ -2,7 +2,7 @@ import SwiftUI
 import NXCore
 import NXModel
 
-/// Settings, "NX2Apple": the language, notifications, the guided setup, the self-update and the uninstaller. Observes the update
+/// Settings, "the original launcher": the language, notifications, the guided setup, the self-update and the uninstaller. Observes the update
 /// store. The two switches that live in the app's defaults come as bindings, and what the uninstaller needs from the library
 /// and the build store as a closure.
 package struct AppCard: View {

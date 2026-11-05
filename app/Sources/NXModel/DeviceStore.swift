@@ -8,7 +8,7 @@ package enum SendWhere {
     package static let drive = "drive"
 }
 
-/// The devices (LNPANDY/NX2Apple#387, step 7): the iPhones and iPads paired with this Mac, the teams it can sign for, the device and
+/// The devices: the iPhones and iPads paired with this Mac, the teams it can sign for, the device and
 /// the team the player chose to install on, and the copy flow of the shared app (the question before the game data goes over, and
 /// the wait for a cable). It follows `AppUpdateStore` (`frontend/ARCHITECTURE.md`, "Stores").
 ///

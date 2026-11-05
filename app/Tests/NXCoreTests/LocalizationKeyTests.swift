@@ -1,7 +1,7 @@
 import XCTest
 @testable import NXCore
 
-/// The keys the code uses and the keys `frontend/l10n/en.json` has have to be the same set (LNPANDY/NX2Apple#388).
+/// The keys the code uses and the keys `frontend/l10n/en.json` has have to be the same set.
 ///
 /// 1. A key that code names in a lookup (`t("key")`, `loc.t("key")`, `L10n.string("key", ...)`, `t('key')` in Python) is in en.json.
 /// 2. A key that code builds at run time (a prefix and a variable) starts with an entry of `dynamicKeys` in
@@ -84,7 +84,7 @@ final class LocalizationKeyTests: XCTestCase {
 
     func testTheSourcesWereFound() {
         let scan = Self.scan
-        XCTAssertTrue(scan.sources.keys.contains { $0.hasSuffix(".py") }, "no Python sources")
+        // switch2mac: only the Mac app (the original launcher's Qt front end, the Python sources this also read, is not carried)
         XCTAssertTrue(scan.sources.keys.contains { $0.hasSuffix(".swift") }, "no Swift sources")
         XCTAssertGreaterThan(scan.lookups.count, 100, "the lookup patterns found almost nothing")
     }

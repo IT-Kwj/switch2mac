@@ -1,6 +1,6 @@
 # Splatoon Raiders
 
-Title ID `0400380020056000`, update v65536. **nxnative reports it plays on an M4 Pro** (the opening, character creation, the first level's beach, inking and the first Salmonids, at 60 fps); not yet tested in switch2mac.
+Title ID `0400380020056000`, update v65536. **nxnative reports it plays on an M4 Pro** (the opening, character creation, the first level's beach, inking and the first Salmonids, at 60 fps).
 
 Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
@@ -25,6 +25,8 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 [`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. switch2mac has not test-built this game: what is known comes from these reports.
 
 ## Build
+
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

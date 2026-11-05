@@ -4,7 +4,7 @@ import NXCore
 import NXModel
 
 // The pieces every card of the Builds and Settings pages is made of: a titled group, a row, a divider, a disclosure row.
-// They are the library's and the launch options' look (LNPANDY/NX2Apple#387, step 8).
+// They are the library's and the launch options' look.
 
 extension StepState {
     package var color: Color {

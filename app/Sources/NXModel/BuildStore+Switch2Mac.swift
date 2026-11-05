@@ -54,7 +54,7 @@ extension BuildStore {
         NSHomeDirectory() + "/Library/Application Support/switch2mac/builds/" + titleID
     }
     /// Where finished games go: /Applications, with the player's other apps (a rebuild replaces the copy there; its save stays, beside it in
-    /// Application Support). Never the dump's folder: NX2Apple's output folder (outDir) follows the input, which for a dump would put the game inside it.
+    /// Application Support). Never the dump's folder: the original launcher's output folder (outDir) follows the input, which for a dump would put the game inside it.
     package var switch2macLibraryDir: String { Self.outputFolder }
     /// Settings → Output: where finished games go, /Applications unless the player chose another folder.
     nonisolated package static let s2mOutputKey = "s2m.outputFolder"
