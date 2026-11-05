@@ -418,8 +418,8 @@ def build(a):
     P.order = ['the dump', 'game files', 'code', 'shader split', 'Metal shaders', 'host', 'app']
     P.stage('the dump'); tid = dump_title(a.dump)
     if tid in GAMES:
-        GAMES[tid] = with_build(GAMES[tid], a.engine); b = GAMES[tid]['build']
-        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {b["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        GAMES[tid] = with_build(GAMES[tid], a.engine); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
+        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
         free_space(w, GAMES[tid])
     if not own_engine(GAMES.get(tid, {'engine': {'kind': 'switch2mac'}})): return engine_build(a, tid, w, e)
     if tid in GAMES: use_engine(GAMES[tid])
