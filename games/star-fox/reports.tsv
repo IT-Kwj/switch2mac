@@ -1,0 +1,3 @@
+# How Star Fox ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source
+Mac	M4 Pro	48		nxnative 67f1d005	56-60		The title, the prologue cinematic and the tutorial flight, with sound; 60 fps in the tutorial	nxnative profile page

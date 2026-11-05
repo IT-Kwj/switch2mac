@@ -30,6 +30,7 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Hyrule Warriors: Age of Imprisonment | update v196608 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays into the first field on a **16 GB M6** (frame median 16.6 ms, frequent long frames); battles not reached. A **Mac Studio M5 Max** froze the display (open). About 102,000 shaders. | [games/hyrule-warriors-age-of-imprisonment](games/hyrule-warriors-age-of-imprisonment) |
 | Fire Emblem Fortune's Weave | v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays through the first battle map at **60 fps** (120 offered; 30 as shipped). | [games/fire-emblem-fortunes-weave](games/fire-emblem-fortunes-weave) |
 | Mario Tennis Fever | update v327680 (1.1.1) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: **60 fps on an M4 Pro** in Free Play matches. A player's **M3 Pro (18 GB)** gets 30-45 fps in Adventure exploration, with black outdoor textures (open). | [games/mario-tennis-fever](games/mario-tennis-fever) |
+| Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -48,6 +49,7 @@ The files your dump tool wrote, for example:
 | Hyrule Warriors: Age of Imprisonment | `base/` and `updates/196608/` |
 | Fire Emblem Fortune's Weave | `exefs/` and `romfs/` |
 | Mario Tennis Fever | `base/` and `updates/327680/` |
+| Star Fox | `base/` and `updates/131072/` |
 
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 

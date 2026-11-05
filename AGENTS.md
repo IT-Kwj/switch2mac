@@ -9,7 +9,7 @@ switch2mac is a Mac app (`app/`, released as `switch2mac-macOS-arm64.zip`) that 
 Each game in `games/<game>/` is built with the engine its port was made with, pinned to a commit in its `game.json`, and fetched into `engines/<kind>-<commit>/` by `build`:
 
 - **switch2mac's own engine**, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) (a fork of [nxnative](https://github.com/seedds/nxnative) with NVN2 on Metal, mesh / task shaders, movies, translator fixes and performance work): Mario Kart World 1.0.0, built step by step by `switch2mac.py`.
-- **upstream nxnative**: Donkey Kong Bananza, Yoshi and the Mysterious Book, Splatoon Raiders, Hyrule Warriors: Age of Imprisonment, Fire Emblem Fortune's Weave, Mario Tennis Fever, and the second builds of Mario Kart World and Pokopia, built by nxnative's own builder.
+- **upstream nxnative**: Donkey Kong Bananza, Yoshi and the Mysterious Book, Splatoon Raiders, Hyrule Warriors: Age of Imprisonment, Fire Emblem Fortune's Weave, Mario Tennis Fever, Star Fox, and the second builds of Mario Kart World and Pokopia, built by nxnative's own builder.
 - **xFractals' pokopia-native**: Pokémon Pokopia's default build.
 
 `tools/engine/patch.py` adds switch2mac's front end (overlay on key 1, settings on key 2, no launch window, the shared shader list offer) to the other engines. A game can have several builds (`game.json` `builds` + `choose`), picked per Mac from players' reports (`games/<game>/reports.tsv`). Most games here are not test-built in switch2mac: their pages and reports say what nxnative and players found.

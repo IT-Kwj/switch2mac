@@ -5,4 +5,4 @@
 - What the build makes (the `.app`, `work/`, captured shaders, the RomFS image) holds the game's data. **Do not share it**, and do not attach game files, shader dumps or builds to issues.
 - No help with console exploits, keys or decryption is given here.
 - The switch2mac app downloads the official eShop banner of each game in your library onto your Mac when it runs (from Nintendo's image server, listed by [titledb](https://github.com/blawar/titledb)). No Nintendo artwork, logos or icons are in this repository or in the app download.
-- Nintendo, Nintendo Switch 2, Mario Kart, Mario Tennis, Donkey Kong, Yoshi, Splatoon, Fire Emblem and Zelda are trademarks of Nintendo; Hyrule Warriors of Nintendo and Koei Tecmo; Pokémon of Nintendo, Creatures and GAME FREAK. This is an independent fan project, not affiliated with or endorsed by Nintendo.
+- Nintendo, Nintendo Switch 2, Mario Kart, Mario Tennis, Donkey Kong, Yoshi, Splatoon, Fire Emblem, Star Fox and Zelda are trademarks of Nintendo; Hyrule Warriors of Nintendo and Koei Tecmo; Pokémon of Nintendo, Creatures and GAME FREAK. This is an independent fan project, not affiliated with or endorsed by Nintendo.

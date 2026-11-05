@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (5)
+
+- New game: **Star Fox**, built with nxnative. nxnative reports it plays through the title, the prologue and the tutorial flight at 56–60 fps on an M4 Pro.
+
 ## 2026-11-05 (4)
 
 - **Try any Switch 2 game on any engine.** Every game can be built on each engine switch2mac knows (switch2mac's, nxnative's, pokopia-native's) as an **untested** build, and so can Switch 2 games switch2mac has no page for yet. Each engine guesses a starting profile from the game's own files. Untested builds will often fail: they're for trying, and for anyone who wants to take a game further in a port of their own.
