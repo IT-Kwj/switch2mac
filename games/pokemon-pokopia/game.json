@@ -21,7 +21,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "ed3c93ee31fcbfaf5f2226e3fa6f9323bc59e681"
+    "commit": "95f9a6a929ede91ab35177987aa8fa15a7dfa031"
    },
    "shader_list": "shader_list-nxnative.tsv",
    "disk_gb": 250,
