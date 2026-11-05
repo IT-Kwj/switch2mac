@@ -67,7 +67,7 @@ static double footprint_gb(void) { task_vm_info_data_t vi; mach_msg_type_number_
         line([NSString stringWithFormat:@"\nGame pacing %d fps", nvn_game_fps()], grey);
         NSSize px = s_layer.drawableSize; line([NSString stringWithFormat:@"\nOutput %.0fx%.0f", px.width, px.height], grey);
     }
-    line(g_ov_mode == 2 ? @"\n1: hide · 2: settings" : @"\n1: more · 2: settings", grey);
+    line(g_ov_mode == 2 ? @"\n1: 隐藏 · 2: 设置" : @"\n1: 更多 · 2: 设置", grey);
     self.label.attributedStringValue = a;
     NSSize z = [self.label sizeThatFits:NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX)];
     CGFloat gw = g_ov_mode == 2 ? 220 : 0, gh = g_ov_mode == 2 ? 74 : 0, cw = fmax(ceil(z.width), gw), m = 10;
@@ -132,16 +132,16 @@ static NSString *setting_value(NSDictionary *s) {
               if (d) list = [NSJSONSerialization JSONObjectWithData:d options:0 error:nil][@"settings"]; }
     NSStackView *st = [NSStackView stackViewWithViews:@[]]; st.orientation = NSUserInterfaceLayoutOrientationVertical; st.alignment = NSLayoutAttributeLeading; st.spacing = 8;
     st.edgeInsets = NSEdgeInsetsMake(18, 20, 18, 20);
-    NSTextField *title = panel_label(@"Settings", 20, NSFontWeightBold, NSColor.whiteColor);
-    NSTextField *sub = panel_label(@"2 or Esc closes · the overlay and display mode change at once, the rest at the next launch", 11, NSFontWeightMedium, ui_accent());
+    NSTextField *title = panel_label(@"设置", 20, NSFontWeightBold, NSColor.whiteColor);
+    NSTextField *sub = panel_label(@"按 2 或 Esc 关闭 · 悬浮层和显示模式即时生效，其余下次启动生效", 11, NSFontWeightMedium, ui_accent());
     [st addArrangedSubview:title]; [st addArrangedSubview:sub];
     NSString *sec = nil;
     for (NSDictionary *s in list) {
-        NSString *sc = [s[@"section"] isEqual:@"Game"] ? @"DISPLAY" : [s[@"section"] uppercaseString];
+        NSString *sc = [s[@"section"] isEqual:@"Game"] ? @"显示" : [s[@"section"] isEqual:@"Controls"] ? @"控制" : @"性能";
         if (![sc isEqual:sec]) { sec = sc; NSTextField *h = panel_label(sc, 11, NSFontWeightBold, [NSColor colorWithWhite:0.6 alpha:1]); [st addArrangedSubview:h]; [st setCustomSpacing:4 afterView:h]; }
         [st addArrangedSubview:[self card:s]];
     }
-    if (!list.count) [st addArrangedSubview:panel_label(@"No settings list in this app (Resources/dm/launcher.json).", 12, NSFontWeightRegular, NSColor.whiteColor)];
+    if (!list.count) [st addArrangedSubview:panel_label(@"此应用中无设置列表（Resources/dm/launcher.json）。", 12, NSFontWeightRegular, NSColor.whiteColor)];
     NSScrollView *sv = [[NSScrollView alloc] initWithFrame:self.bounds]; sv.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     sv.drawsBackground = NO; sv.hasVerticalScroller = YES;
     NSView *doc = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, r.size.width, 10)]; [doc addSubview:st]; st.translatesAutoresizingMaskIntoConstraints = NO;
