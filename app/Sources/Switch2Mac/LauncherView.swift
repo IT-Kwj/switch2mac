@@ -14,6 +14,8 @@ struct LauncherView: View {
     @ObservedObject private var engine: EngineSyncStore   // the engine: the sync banner, and the checks that follow a sync
     @StateObject var library: GameLibrary
     @StateObject private var runs = GameRunStore()   // the Performance page's runs (GameRuns.swift)
+    @StateObject var whatsNew = WhatsNewStore()   // the What's New page, and the Library's update tags (WhatsNew.swift)
+    @State var updateInfoFor: UUID?   // the game whose "Update available" details are open
     @State private var page: LauncherPage = .library
     @State private var search = ""
     @State private var searching = false
@@ -142,6 +144,12 @@ struct LauncherView: View {
             EngineSyncBanner(engine: engine, m: m)
             if page == .library {
                 libraryPage
+            } else if page == .whatsNew {
+                LauncherPageScroll {
+                    WhatsNewPage(store: whatsNew, library: library, artwork: artwork, newBuild: newBuild)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onAppear { if performStartupChecks { whatsNew.refresh(repo: repo.path); whatsNew.markSeen() } }   // not in tests: no network, no saved state
             } else if page == .performance {
                 LauncherPageScroll { PerformancePage(runs: runs, library: library, artwork: artwork) }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -192,6 +200,8 @@ struct LauncherView: View {
                 updates.checkForUpdate(silent: true)
                 BuildNotifier.shared.watch(m, library: library)   // BuildNotifications.swift
                 runs.watch(library)   // a game's run is read from its log when it closes (GameRuns.swift)
+                whatsNew.refresh(repo: repo.path)   // the tab's dot, and the Library's update tags
+                whatsNew.setGames(library.games)
             }
         }
         .onReceive(BuildNotifier.shared.$route) { route in   // a clicked build notification
@@ -200,7 +210,11 @@ struct LauncherView: View {
             if let id = route.game { library.selectedID = id }
             DispatchQueue.main.async { BuildNotifier.shared.route = nil }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            if performStartupChecks { whatsNew.refresh(repo: repo.path) }   // at most every ten minutes (WhatsNewStore)
+        }
         .onChange(of: library.games) { _ in
+            if performStartupChecks { whatsNew.setGames(library.games) }
             refreshArtwork()
             readSignatures()
             if performStartupChecks { fetchArtwork() }
@@ -299,7 +313,7 @@ struct LauncherView: View {
                     .fixedSize(horizontal: true, vertical: false)
                     .padding(.leading, 8)
                     .padding(.trailing, compact ? 16 : 30)
-                    ForEach(LauncherPage.allCases, id: \.self) { destination in
+                    ForEach(LauncherPage.tabs, id: \.self) { destination in
                         Button { page = destination } label: {
                             // The selected tab is bold. The bold text also sizes the (hidden) slot, so a tab never changes width as the selection moves.
                             ZStack {
@@ -310,6 +324,11 @@ struct LauncherView: View {
                                 .background(page == destination ? Color.white.opacity(0.10) : .clear,
                                             in: RoundedRectangle(cornerRadius: 9))
                                 .contentShape(RoundedRectangle(cornerRadius: 9))   // the whole pill takes the click, not only its text
+                                .overlay(alignment: .topTrailing) {   // What's New: something arrived since it was last opened
+                                    if destination == .whatsNew && whatsNew.unread && page != .whatsNew {
+                                        Circle().fill(LauncherPalette.building).frame(width: 7, height: 7).offset(x: -7, y: 7)
+                                    }
+                                }
                         }
                         .buttonStyle(.plain).help(loc.t("nav." + destination.rawValue))
                         .accessibilityAddTraits(page == destination ? .isSelected : [])
@@ -318,17 +337,18 @@ struct LauncherView: View {
                     Spacer(minLength: 8)
                     searchField
                     Button { newBuild() } label: {
-                        Group {
-                            if compact { Image(systemName: "plus").accessibilityLabel(loc.t("library.newBuild")) }
+                        Group {   // while a build runs it says so, and opens the Builds page with its progress and log
+                            if m.running { HStack(spacing: 7) { ProgressView().controlSize(.small); Text("Building…") } }
+                            else if compact { Image(systemName: "plus").accessibilityLabel(loc.t("library.newBuild")) }
                             else { Label(loc.t("library.newBuild"), systemImage: "plus") }
                         }
                             .padding(.horizontal, 12).padding(.vertical, 8)
-                            .background(Color.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 8))
+                            .background(Color.white.opacity(page == .builds ? 0.14 : 0.07), in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.white.opacity(0.1)))
                             .contentShape(RoundedRectangle(cornerRadius: 8))
                     }
-                    .buttonStyle(.plain).disabled(m.running).help(loc.t("library.newBuild")).accessibilityLabel(loc.t("library.newBuild"))
-                    .padTarget("top.build", scope: "main", radius: 8) { if !m.running { newBuild() } }
+                    .buttonStyle(.plain).help(loc.t("library.newBuild")).accessibilityLabel(loc.t("library.newBuild"))
+                    .padTarget("top.build", scope: "main", radius: 8) { newBuild() }
                     .padding(.leading, 12)
                     // A newer release is out: a small icon, last in the bar, opens the update sheet. Without one the bar
                     // stays as it is.
@@ -483,6 +503,12 @@ struct LauncherView: View {
         page = .builds
     }
 
+    /// Rebuild from an "Update available" tag: the same build (switch2mac's or nxnative's, for a game with several) at its newest version.
+    func rebuildForUpdate(_ game: LibraryGame, build: String) {
+        if !build.isEmpty, !GameBuilds.list(titleID: game.titleID, repo: repo.path).isEmpty { GameBuilds.choose(build, titleID: game.titleID) }
+        configureBuild(game)
+    }
+
     func configureBuild(_ game: LibraryGame) {
         guard !m.running else { page = .builds; return }
         if let folder = game.inputs[GameLibrary.folderInput]?.first {
@@ -559,8 +585,8 @@ struct LauncherView: View {
         case .x:
             if !sheetOpen, let game = library.selected, game.isReady { optionsFor = game.id }
         case .l, .r:
-            guard !sheetOpen, let at = LauncherPage.allCases.firstIndex(of: page) else { return }
-            let pages = LauncherPage.allCases
+            guard !sheetOpen else { return }
+            let pages = LauncherPage.tabs, at = pages.firstIndex(of: page) ?? 0
             page = pages[(at + (action == .l ? pages.count - 1 : 1)) % pages.count]
         case .y, .plus, .select:   // Y is the Manage menu: ManagePad.route opened it above
             return

@@ -73,6 +73,25 @@ extension LauncherView {
                             .overlay(Capsule().strokeBorder(Color.white.opacity(0.25)))
                             .help("This game can be built more than one way. Manage → Build with … switches.")
                     }
+                    // a newer build of this game is out with changes a player would notice: the tag opens them, with Rebuild
+                    if game.isReady, let standing = whatsNew.standings[game.id], standing.state == .behind, !standing.changes.isEmpty {
+                        Button { updateInfoFor = game.id } label: {
+                            Label("Update available", systemImage: "sparkles")
+                                .font(.manrope(12, .semibold)).foregroundStyle(LauncherPalette.progress)
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .overlay(Capsule().strokeBorder(LauncherPalette.progress.opacity(0.45)))
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .help("What changed since your build")
+                        .popover(isPresented: Binding(get: { updateInfoFor == game.id }, set: { if !$0 { updateInfoFor = nil } }), arrowEdge: .bottom) {
+                            UpdateDetails(standing: standing, rebuildDisabled: m.running || game.inputs["base", default: []].isEmpty) {
+                                updateInfoFor = nil
+                                rebuildForUpdate(game, build: standing.build)
+                            }
+                        }
+                        .padTarget("hero.update", scope: "main", radius: 12) { updateInfoFor = game.id }
+                    }
                     if toolsAge.older.contains(game.id) && !(m.running && activeBuildID == game.id) {
                         Button { configureBuild(game) } label: {
                             Label(loc.t("library.rebuildShort"), systemImage: "arrow.clockwise")

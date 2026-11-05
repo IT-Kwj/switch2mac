@@ -13,9 +13,10 @@ struct PerformancePage: View {
     let artwork: [UUID: NSImage]
     @State private var sharing: GameRun?
     @State private var specs = MacSpecs()
+    @State private var open: String?   // the history row shown in full
 
     var body: some View {
-        CardPageHeading("Performance", note: "Your last three game runs, read from each game's log when it closes. Nothing leaves your Mac unless you share a run.")
+        CardPageHeading("Performance", note: "Your last \(GameRuns.kept) game runs, read from each game's log when it closes. Nothing leaves your Mac unless you share a run.")
         if runs.runs.isEmpty {
             CardGroup("No runs yet") {
                 Text("Play a game from the Library. When you close it, how it ran shows here.")
@@ -24,13 +25,30 @@ struct PerformancePage: View {
                     .padding(.horizontal, 20).padding(.vertical, 18)
             }
         }
-        ForEach(runs.runs.prefix(3)) { run in
-            RunCard(run: run, banner: banner(run), cores: specs.performanceCores + specs.efficiencyCores) { sharing = run }
+        // the latest run in full, then the history as one row each, like a game's match history; a row opens to the full card
+        if let latest = runs.runs.first {
+            RunCard(run: latest, banner: banner(latest), cores: cores) { sharing = latest }
+        }
+        if runs.runs.count > 1 {
+            CardGroup("History") {
+                ForEach(Array(runs.runs.dropFirst().enumerated()), id: \.element.id) { index, run in
+                    if index > 0 { CardDivider() }
+                    RunHistoryRow(run: run, banner: banner(run), open: open == run.id) {
+                        withAnimation(.easeInOut(duration: 0.2)) { open = open == run.id ? nil : run.id }
+                    }
+                    if open == run.id {
+                        RunCard(run: run, banner: nil, cores: cores, compact: true) { sharing = run }
+                            .padding(.horizontal, 14).padding(.bottom, 14)
+                    }
+                }
+            }
         }
         Color.clear.frame(height: 1)
             .sheet(item: $sharing) { run in ShareRunSheet(run: run, specs: specs) }
             .task { specs = await Task.detached { MacSpecs.read() }.value }
     }
+
+    private var cores: Int { specs.performanceCores + specs.efficiencyCores }
 
     private func banner(_ run: GameRun) -> NSImage? {
         library.games.first { $0.titleID == run.titleID }.flatMap { artwork[$0.id] }
@@ -42,9 +60,24 @@ struct RunCard: View {
     let run: GameRun
     let banner: NSImage?
     let cores: Int
+    var compact = false   // inside a history row: the numbers and Share only, the row above shows the rest
     let share: () -> Void
 
     var body: some View {
+        if compact {
+            HStack(alignment: .bottom) { numbers; Spacer(minLength: 12); shareButton }
+        } else {
+            full
+        }
+    }
+
+    private var shareButton: some View {
+        Button(action: share) { Label("Share", systemImage: "square.and.arrow.up") }
+            .buttonStyle(LauncherSecondaryButtonStyle())
+            .help("Send how this run went to the game's reports table, through the How it ran form")
+    }
+
+    private var full: some View {
         CardGroup(Self.when(run.start)) {
             HStack(alignment: .top, spacing: 22) {
                 Group {
@@ -60,34 +93,36 @@ struct RunCard: View {
                             Text(subtitle).font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1)
                         }
                         Spacer(minLength: 12)
-                        Button(action: share) { Label("Share", systemImage: "square.and.arrow.up") }
-                            .buttonStyle(LauncherSecondaryButtonStyle())
-                            .help("Send how this run went to the game's reports table, through the How it ran form")
+                        shareButton
                     }
-                    // The average, then the other numbers in columns that wrap to a second line when the window is narrow,
-                    // so a number or its unit is never cut or broken over two lines.
-                    HStack(alignment: .bottom, spacing: 26) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Average").font(.manrope(12, .medium)).foregroundStyle(LauncherPalette.unbuilt)
-                            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text(run.avgFPS.map { String(format: "%.0f", $0) } ?? "—").font(.manrope(34, .heavy)).tracking(-0.8)
-                                    .foregroundStyle(Self.color(run.avgFPS))
-                                Text("fps").font(.manrope(14, .semibold)).foregroundStyle(.secondary)
-                            }
-                        }
-                        .fixedSize()
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 18, alignment: .leading)], alignment: .leading, spacing: 14) {
-                            stat("Min", run.minFPS.map { String(format: "%.0f", $0) }, "fps")
-                            stat("Max", run.maxFPS.map { String(format: "%.0f", $0) }, "fps")
-                            stat("1% low", run.lowFPS.map { String(format: "%.0f", $0) }, "fps", help: "The frame rate of the slowest 1% of frames, in a typical stretch of play")
-                            stat("Peak memory", run.peakMemoryMB.map { String(format: "%.1f", Double($0) / 1024) }, "GB")
-                            stat("GPU", run.gpuMs.map { String(format: "%.1f", $0) }, "ms", help: "The graphics chip's typical time for one frame")
-                            stat("CPU", cpu, "%", help: "How busy the processor was on average, out of all its cores")
-                        }
-                    }
+                    numbers
                 }
             }
             .padding(.horizontal, 20).padding(.vertical, 18)
+        }
+    }
+
+    private var numbers: some View {
+        // The average, then the other numbers in columns that wrap to a second line when the window is narrow,
+        // so a number or its unit is never cut or broken over two lines.
+        HStack(alignment: .bottom, spacing: 26) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Average").font(.manrope(12, .medium)).foregroundStyle(LauncherPalette.unbuilt)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(run.avgFPS.map { String(format: "%.0f", $0) } ?? "—").font(.manrope(34, .heavy)).tracking(-0.8)
+                        .foregroundStyle(Self.color(run.avgFPS))
+                    Text("fps").font(.manrope(14, .semibold)).foregroundStyle(.secondary)
+                }
+            }
+            .fixedSize()
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 18, alignment: .leading)], alignment: .leading, spacing: 14) {
+                stat("Min", run.minFPS.map { String(format: "%.0f", $0) }, "fps")
+                stat("Max", run.maxFPS.map { String(format: "%.0f", $0) }, "fps")
+                stat("1% low", run.lowFPS.map { String(format: "%.0f", $0) }, "fps", help: "The frame rate of the slowest 1% of frames, in a typical stretch of play")
+                stat("Peak memory", run.peakMemoryMB.map { String(format: "%.1f", Double($0) / 1024) }, "GB")
+                stat("GPU", run.gpuMs.map { String(format: "%.1f", $0) }, "ms", help: "The graphics chip's typical time for one frame")
+                stat("CPU", cpu, "%", help: "How busy the processor was on average, out of all its cores")
+            }
         }
     }
 
@@ -261,5 +296,44 @@ enum ShareReport {
         let query = items.filter { !$0.1.isEmpty }
             .map { "\($0.0)=\($0.1.addingPercentEncoding(withAllowedCharacters: allowed) ?? "")" }.joined(separator: "&")
         return URL(string: form + "?" + query)
+    }
+}
+
+/// A run in the history: one line, as a game's match history shows a match. A click opens its numbers and Share.
+struct RunHistoryRow: View {
+    let run: GameRun
+    let banner: NSImage?
+    let open: Bool
+    let toggle: () -> Void
+
+    var body: some View {
+        Button(action: toggle) {
+            HStack(spacing: 16) {
+                Rectangle().fill(RunCard.color(run.avgFPS)).frame(width: 4).clipShape(Capsule())   // the run's colour at a glance
+                Group {
+                    if let banner { Image(nsImage: banner).resizable().interpolation(.high).aspectRatio(contentMode: .fill) }
+                    else { LinearGradient(colors: [LauncherPalette.surface, .black], startPoint: .top, endPoint: .bottom) }
+                }
+                .frame(width: 96, height: 54).clipShape(RoundedRectangle(cornerRadius: 7))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(run.name).font(.manrope(14.5, .semibold)).lineLimit(1)
+                    Text([RunCard.when(run.start), RunCard.duration(run.seconds), run.build].filter { !$0.isEmpty }.joined(separator: " · "))
+                        .font(.manrope(12.5)).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Spacer(minLength: 12)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(run.avgFPS.map { String(format: "%.0f", $0) } ?? "—").font(.manrope(22, .heavy)).foregroundStyle(RunCard.color(run.avgFPS))
+                    Text("fps").font(.manrope(12, .semibold)).foregroundStyle(.secondary)
+                }
+                .fixedSize().frame(width: 84, alignment: .trailing)
+                Text(run.peakMemoryMB.map { String(format: "%.1f GB", Double($0) / 1024) } ?? "—")
+                    .font(.manrope(13, .semibold)).monospacedDigit().foregroundStyle(.secondary).fixedSize().frame(width: 70, alignment: .trailing)
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
+                    .rotationEffect(.degrees(open ? 90 : 0))
+            }
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

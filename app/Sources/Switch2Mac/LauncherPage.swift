@@ -2,11 +2,14 @@ import SwiftUI
 import NXCore
 
 enum LauncherPage: String, CaseIterable {
-    case library, builds, performance, settings
+    case library, builds, whatsNew, performance, settings
+    /// The tabs in the header. Builds has none: + Build game opens it (and shows a running build).
+    static let tabs: [LauncherPage] = [.library, .whatsNew, .performance, .settings]
     var symbol: String {
         switch self {
         case .library: return "gamecontroller"
         case .builds: return "shippingbox"
+        case .whatsNew: return "sparkles"
         case .performance: return "gauge.with.dots.needle.67percent"
         case .settings: return "slider.horizontal.3"
         }

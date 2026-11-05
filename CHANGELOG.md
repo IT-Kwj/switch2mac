@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-05 (10): switch2mac app 0.3.0
+
+- **New What's New tab.** News about switch2mac first (the newest five, Show all for the rest), then new games, every build update day by day, and nxnative's latest changes with the games each one names. A dot on the tab shows something arrived since you last looked.
+- **Update available in the Library.** When a newer build of one of your games is out, its banner says so: click to see what changed since your build, and Rebuild (your saves are kept).
+- **Performance shows your last 20 runs** as a history: the newest in full, the others one line each; click one for its numbers and Share.
+- **+ Build game replaces the Builds tab.** It opens the build page, and shows a running build.
+- Builds now update reliably: GitHub's updater runs on a Mac with Xcode 27, which nxnative's newest code needs.
+
 ## 2026-11-05 (9)
 
 - Builds now check for updates every 5 minutes instead of every 30 (the shortest GitHub allows; GitHub sometimes starts a check a few minutes late).

@@ -1025,6 +1025,7 @@
   "nav.library": "Library",
   "nav.performance": "Performance",
   "nav.settings": "Settings",
+  "nav.whatsNew": "What's New",
   "notify.doneTitle": "%@ is built",
   "notify.failedTitle": "%@ couldn’t be built",
   "notify.forIOS": "For iPhone / iPad",
