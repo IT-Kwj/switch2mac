@@ -4,7 +4,9 @@
 
 It is not an emulator. The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
 
-## Get started
+## The switch2mac app
+
+A Mac app that builds your games for you: choose a dump folder, press **Build**, and the game lands in Applications. It keeps a **Library** of your games with their eShop banners (downloaded onto your Mac when it runs; none are stored here), shows **Your Mac** (chip, memory, macOS) and the build of each game that suits it, with how that build ran on other players' Macs.
 
 1. **Download** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to your Applications folder.
 2. **Open it.** The first time, macOS says it cannot verify the app (it is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
