@@ -12,7 +12,7 @@ Each game in `games/<game>/` is built with the engine its port was made with, pi
 - **upstream nxnative**: Donkey Kong Bananza, Yoshi and the Mysterious Book, Splatoon Raiders, Hyrule Warriors: Age of Imprisonment, Fire Emblem Fortune's Weave, Mario Tennis Fever, Star Fox, and the second builds of Mario Kart World and Pokopia, built by nxnative's own builder.
 - **xFractals' pokopia-native**: Pokémon Pokopia's default build.
 
-`tools/engine/patch.py` adds switch2mac's front end (overlay on key 1, settings on key 2, no launch window, the shared shader list offer) to the other engines. A game can have several builds (`game.json` `builds` + `choose`), picked per Mac from players' reports (`games/<game>/reports.tsv`). Most games here are not test-built in switch2mac: their pages and reports say what nxnative and players found.
+A GitHub workflow (`.github/workflows/update-builds.yml`, every 30 minutes) moves each game to its engine's newest commit and adds the Switch 2 games nxnative gains a profile for, committing to `main` (`tools/engine/update.py --new-games --apply --compile --ci`); work locally on `dev` and merge `main` into it often. `tools/engine/patch.py` adds switch2mac's front end (overlay on key 1, settings on key 2, no launch window, the shared shader list offer) to the other engines. A game can have several builds (`game.json` `builds` + `choose`), picked per Mac from players' reports (`games/<game>/reports.tsv`). Most games here are not test-built in switch2mac: their pages and reports say what nxnative and players found.
 
 ## Rules
 
