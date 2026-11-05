@@ -19,6 +19,8 @@ body:
         - "Hyrule Warriors: Age of Imprisonment"
         - Fire Emblem Fortune's Weave
         - Mario Tennis Fever
+        - Star Fox
+        - Another Switch 2 game (say which in How it went)
     validations:
       required: true
   - type: dropdown
@@ -31,9 +33,16 @@ body:
         - switch2mac's engine
         - nxnative's engine
         - pokopia-native
+        - An untested build
         - Not sure
     validations:
       required: true
+  - type: input
+    id: version
+    attributes:
+      label: Build version (optional)
+      description: In the game, press 1 twice for the overlay's detailed view; its Engine line shows it.
+      placeholder: "nxnative 84dea698"
   - type: input
     id: mac
     attributes:

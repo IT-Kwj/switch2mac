@@ -142,7 +142,7 @@ Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 w
 
 ## Contributing
 
-**Tell us how a game ran on your Mac.** Each game's reports table, and the build switch2mac picks for each Mac, come from players' reports. Use the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form: the game, your Mac (model, chip, memory), macOS, the frame rate and how far you played. Nothing about you is recorded.
+**Tell us how a game ran on your Mac.** Each game's reports table, and the build switch2mac picks for each Mac, come from players' reports. Use the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form: the game, your Mac (model, chip, memory), macOS, the frame rate and how far you played. Nothing about you is recorded. The form is read automatically: a maintainer checks the row it makes and adds it to the game's reports.
 
 **No code needed: send your shaders and pipelines.** Every game has its own shared shader list, `games/<game>/shader_list.tsv`: the shaders and Metal pipelines players have met, which each build prepares before the first frame so new places don't stutter. A list belongs to one game and to the engine its app is built with (its first line says which), so rows never mix between games. It holds identifiers only: no game data.
 

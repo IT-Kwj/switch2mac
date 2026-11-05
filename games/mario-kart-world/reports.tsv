@@ -1,5 +1,5 @@
 # How Mario Kart World ran on players' Macs, by build: what game.json "choose" is decided from. Only reports that name the Mac are kept.
-# Columns: Mac, chip, memory (GB), macOS, build (game.json id, with its commit when known), fps, peak memory (GB), notes, source
+# Columns: Mac, chip, memory (GB), macOS, build (game.json id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
 MacBook Pro	M1 Max	64	26.6	switch2mac	58.7	20.1	Races, 2560x1440, Performance mode on; up to ~20 GB in long free roam	maintainer playtest
 MacBook Pro	M1 Max	64	26.6	nxnative a3d85ae1	46.7	14.8	Same race; 3D at 2048x1152 (dynamic resolution dropping); sky streaks (fixed in 5ae0d9ae)	maintainer playtest
 MacBook Pro	M1 Pro	32	27	switch2mac	60		Handheld mode: locked 60 (GPU ~14.3 ms); docked ~26 ms, so the game paces at 30	player report

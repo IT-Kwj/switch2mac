@@ -1,5 +1,5 @@
 # How Pokemon Pokopia ran on players' Macs, by build. Only reports that name the Mac are kept.
-# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
 MacBook Air	M3			pokopia-native			Black window, then a crash at boot (main+0xa34030); closed	xFractals/pokopia-native#3
 MacBook Pro	M5		27.2	pokopia-native			Screen mostly black on the first runs: shaders the game makes while it runs; plays a few minutes, then refresh (closed)	xFractals/pokopia-native#5
 MacBook Air	M3	8		pokopia-native			All shaders black at first: the same first-run shaders; 8 GB may also be short of memory (closed)	xFractals/pokopia-native#8

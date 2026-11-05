@@ -160,7 +160,7 @@ def add_game(tid, name, version, sha):
                                        '(its profile\'s pso_manifest.tsv) at build time; shipped in the app as pso_manifest.tsv.\n# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / '
                                        'R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.\n')
     (d / 'reports.tsv').write_text(f"# How {name} ran on players' Macs, by build. Only reports that name the Mac are kept.\n"
-                                   '# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source\n')
+                                   '# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)\n')
     notes = f'{NX_REPO}/tree/{sha}/dm/games/{tid}'
     (d / 'README.md').write_text(f"""# {name}
 
@@ -197,6 +197,10 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
     while j < len(lines) and lines[j].startswith('|'): j += 1
     lines.insert(j, f'| {name} | {upd} |')
     r.write_text('\n'.join(lines))
+    form = ROOT / '.github/ISSUE_TEMPLATE/how-it-ran.yml'   # the How it ran form lists it too
+    if form.exists():
+        ft = form.read_text(); k = '        - Another Switch 2 game'
+        if k in ft and f'        - {name}\n' not in ft: form.write_text(ft.replace(k, f'        - {json.dumps(name) if ":" in name else name}\n' + k, 1))
     return d
 
 
@@ -236,7 +240,7 @@ def main():
             try: prepare(g, sha, compile_host)
             except RuntimeError as x: say(f'  NOT added: {x}'); continue
             d = add_game(tid, name, version, sha)
-            git('-C', str(ROOT), 'add', '-A', str(d), 'README.md')
+            git('-C', str(ROOT), 'add', '-A', str(d), 'README.md', '.github/ISSUE_TEMPLATE/how-it-ran.yml')
             subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); switch2mac builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
                            env=dict(os.environ, TZ='UTC'), check=True)
             say(f'  added: {git("-C", str(ROOT), "log", "--oneline", "-1")}')

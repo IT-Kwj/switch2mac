@@ -98,7 +98,7 @@ def with_build(g, bid=None):   # the game as one of its builds: its engine and s
 
 def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
     if not g.get('dir'): return []
-    f = g['dir'] / 'reports.tsv'; keys = ('mac', 'chip', 'memory_gb', 'macos', 'build', 'fps', 'peak_gb', 'notes', 'source')
+    f = g['dir'] / 'reports.tsv'; keys = ('mac', 'chip', 'memory_gb', 'macos', 'build', 'fps', 'peak_gb', 'notes', 'source', 'date')
     return [dict(zip(keys, l.split('\t'))) for l in (f.read_text().splitlines() if f.exists() else []) if l.strip() and not l.startswith('#')]
 
 

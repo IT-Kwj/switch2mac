@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (7)
+
+- **Tell others how a game ran, and it's added for you.** Fill in the How it ran form (now with Star Fox, the build version and untested builds): it is read automatically and becomes a row in the game's reports, once a maintainer has checked it. Reports now record their date and build version.
+
 ## 2026-11-05 (6)
 
 - **Builds now keep themselves up to date.** Every 30 minutes GitHub checks each game's engine for a newer version, and nxnative for new Switch 2 games; anything that passes a compile check is added here automatically, and your app picks it up when it opens.

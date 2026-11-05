@@ -1,5 +1,5 @@
 # How Splatoon Raiders ran on players' Macs, by build. Only reports that name the Mac are kept.
-# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
 MacBook Pro	M4 Pro			nxnative	60		The opening to the first Salmonids, about 4.5 min with no crash; frame p50 16.6-16.9 ms	nxnative profile page
 MacBook Air	M2	16	27.0	nxnative	1	14.2	Docked, MetalFX: memory 11 → 14.2 GB in 5.5 min, macOS swapped 6.8 GB and the game fell to about 1 fps (open)	seedds/nxnative#1281
 MacBook Air	M2		27.0	nxnative	38-45		Handheld 1920x1080: inked stages took 22-26 ms of GPU; an ink fix brought it to 13-16 ms (closed)	seedds/nxnative#1063
