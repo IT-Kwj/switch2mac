@@ -650,9 +650,15 @@ struct LauncherView: View {
     }
 
     private func recordBuild() {
-        guard m.done, let id = activeBuildID else { return }
-        if m.target == BuildTarget.mac { library.recordCompletedApp(path: m.macAppPath, commit: buildCommit, for: id) }
-        else { library.recordCompletedIOS(archive: m.archivePath, app: m.installedAppPath, device: m.installedOn, commit: buildCommit, for: id) }
+        guard m.done else { return }
+        if let id = activeBuildID {
+            if m.target == BuildTarget.mac { library.recordCompletedApp(path: m.macAppPath, commit: buildCommit, for: id) }
+            else { library.recordCompletedIOS(archive: m.archivePath, app: m.installedAppPath, device: m.installedOn, commit: buildCommit, for: id) }
+        }
+        // a build started from the Builds page (a dump folder, no library entry yet): the game shows in the library at once
+        if m.target == BuildTarget.mac, !m.macAppPath.isEmpty, !library.games.contains(where: { $0.appPath == m.macAppPath }) {
+            library.recordBuiltApp(path: m.macAppPath, commit: buildCommit)
+        }
         refreshArtwork()
         if performStartupChecks { checkTools() }
     }

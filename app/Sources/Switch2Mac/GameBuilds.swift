@@ -25,7 +25,7 @@ enum GameBuilds {
     }
 
     /// The next build of this game uses `id` (the Builds page's Build card reads the same choice: BuildStore.buildChoice).
-    static func choose(_ id: String, titleID: String) { UserDefaults.standard.set(id, forKey: "s2m.build." + titleID) }
+    static func choose(_ id: String, titleID: String) { UserDefaults.standard.set(id, forKey: "s2m.pendingBuild." + titleID) }
 }
 
 private extension String { var nilIfEmpty: String? { isEmpty ? nil : self } }

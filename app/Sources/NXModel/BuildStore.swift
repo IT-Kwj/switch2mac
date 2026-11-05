@@ -76,6 +76,8 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     @Published package var gameDir = ""
     @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Switch2Mac.swift)
     @Published package var identifying = false
+    /// The build picked for each game this time (the Build card's menu); a game chosen again starts on its recommended build (BuildStore+Switch2Mac.swift).
+    @Published package var buildChoices: [String: String] = [:]
     @Published package var slots: [Slot] = [
         Slot(id: "base", kind: .base, title: "data.base", optional: false),
         Slot(id: "update", kind: .update, title: "data.update", optional: true),

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-05 (4)
+
+- **Try any Switch 2 game on any engine.** Every game can be built on each engine switch2mac knows (switch2mac's, nxnative's, pokopia-native's) as an **untested** build, and so can Switch 2 games switch2mac has no page for yet. Each engine guesses a starting profile from the game's own files. Untested builds will often fail: they're for trying, and for anyone who wants to take a game further in a port of their own.
+- The performance overlay now shows which engine the game was built with, next to the frame rate (the detailed view shows its version too). It appears after your next build of a game.
+- A damaged dump now stops the build at its first step and says how to fix it.
+- App fixes, coming in the next app release: a game you build shows in the Library straight away; the Build menu starts on the build recommended for your Mac; untested builds ask before you pick them.
+- A new report for Mario Kart World on nxnative's build (M1 Max, 64 GB). Pokopia's pokopia-native build moved to its newest version.
+
 ## 2026-11-05 (3)
 
 - The README now starts with the app: download it, open it, choose your dump folder, press Build. `Build a Game.command` is gone; the Terminal commands are still there.

@@ -72,10 +72,12 @@ package struct CardRow<Trailing: View>: View {
     let dot: Color?
     let help: String
     let open: Bool?
+    let detail2Bold: Bool   // a warning on the second line (an untested build's)
     let trailing: Trailing
 
     package init(_ title: String, detail: String = "", detail2: String = "", dot: Color? = nil, help: String = "", open: Bool? = nil,
-                 @ViewBuilder trailing: () -> Trailing) {
+                 detail2Bold: Bool = false, @ViewBuilder trailing: () -> Trailing) {
+        self.detail2Bold = detail2Bold
         self.title = title
         self.detail = detail
         self.detail2 = detail2
@@ -108,7 +110,7 @@ package struct CardRow<Trailing: View>: View {
                     }
                 }
                 if !detail2.isEmpty {
-                    Text(detail2).font(.mono(12)).foregroundStyle(.secondary)
+                    Text(detail2).font(.mono(12, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
                         .lineLimit(1).truncationMode(.middle).help(detail2)
                 }
             }

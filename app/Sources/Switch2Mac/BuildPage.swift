@@ -23,7 +23,7 @@ struct BuildPage: View {
         SetupHintCard(repo: repo, dependencies: dependencies, onOpenSettings: onOpenSettings)
         YourMacCard()
         DumpCard(build: build)
-        if let info = build.dumpInfo, info.ok, info.builds.count > 1 { GameBuildCard(build: build, info: info) }
+        if let info = build.dumpInfo, info.ok, info.allBuilds.count > 1 { GameBuildCard(build: build, info: info) }
         LogCard(log: build.log, devices: devices, isOpen: $logOpen,
                 showRequests: BuildNotifier.shared.$showLog.eraseToAnyPublisher(),   // a clicked notification of a failed build
                 didShow: { BuildNotifier.shared.showLog = false })
@@ -66,7 +66,7 @@ struct DumpCard: View {
     private var detail: String {
         guard let i = build.dumpInfo else { return "" }
         guard i.ok else { return i.problem }
-        let chosen = i.builds.first { $0.id == build.buildChoice(i) }
+        let chosen = i.allBuilds.first { $0.id == build.buildChoice(i) }
         let engine = chosen?.name ?? (i.engine == "switch2mac" ? "switch2mac's engine" : i.engine)
         return [i.version, "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
             .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
@@ -83,21 +83,25 @@ struct GameBuildCard: View {
     @ObservedObject var build: BuildStore
     let info: DumpInfo
     @State private var specs = MacSpecs()
+    @State private var askUntested: DumpInfo.BuildOption?   // an untested build picked from the menu: confirmed in a small popup first
 
     var body: some View {
         let chosen = build.buildChoice(info), recommended = chosen == info.recommended
-        let option = info.builds.first { $0.id == chosen }
+        let option = info.allBuilds.first { $0.id == chosen }, untested = info.isUntested(chosen)
         CardGroup("Build", footnote: "Each build is the same game on a different engine. switch2mac picks the one that runs best on Macs like yours, from players' reports.") {
             CardRow(option?.name ?? chosen, detail: option?.about ?? "",
-                    detail2: recommended ? "Recommended for your Mac: " + info.why : "Not the one recommended for your Mac (\(name(info.recommended))): it may run slower here.",
-                    dot: recommended ? LauncherPalette.ready : LauncherPalette.building) {
-                LauncherDropdown(options: info.builds.map { (value: $0.id, label: $0.name + ($0.id == info.recommended ? " (recommended)" : "")) },
-                                 selection: chosen, label: "Build", style: .button) { build.chooseBuild($0, for: info) }
+                    detail2: untested ? "Untested build: at your own risk. Stop ends it at any time."
+                        : recommended ? "Recommended for your Mac: " + info.why : "Not the one recommended for your Mac (\(name(info.recommended))): it may run slower here.",
+                    dot: recommended && !untested ? LauncherPalette.ready : LauncherPalette.building, detail2Bold: untested) {
+                LauncherDropdown(options: info.allBuilds.map { (value: $0.id, label: $0.name + ($0.id == info.recommended ? " (recommended)" : "")) },
+                                 selection: chosen, label: "Build", style: .button) { id in
+                    if info.isUntested(id), id != chosen { askUntested = info.allBuilds.first { $0.id == id } } else { build.chooseBuild(id, for: info) }
+                }
                     .disabled(build.running)
             }
             let rs = info.reports(of: chosen)
             if rs.isEmpty {
-                CardRow("No reports yet", detail: "Nobody has said how this build ran on their Mac so far.", dot: LauncherPalette.unbuilt) { EmptyView() }
+                CardRow("No reports yet", detail: untested ? "Nobody has built the game this way yet." : "Nobody has said how this build ran on their Mac so far.", dot: LauncherPalette.unbuilt) { EmptyView() }
             }
             ForEach(Array(rs.enumerated()), id: \.offset) { _, r in
                 CardRow([r.mac, r.chip, r.memoryGB.isEmpty ? "" : r.memoryGB + " GB"].filter { !$0.isEmpty }.joined(separator: " · "),
@@ -108,9 +112,15 @@ struct GameBuildCard: View {
             }
         }
         .task { specs = await Task.detached { MacSpecs.read() }.value }
+        .alert("Untested build", isPresented: Binding(get: { askUntested != nil }, set: { if !$0 { askUntested = nil } }), presenting: askUntested) { b in
+            Button("Use untested build") { build.chooseBuild(b.id, for: info) }
+            Button("Cancel", role: .cancel) {}
+        } message: { b in
+            Text("Nobody has built \(info.name) with \(b.name.replacingOccurrences(of: " (untested)", with: "")) yet. It may stop partway, or build and not start. Try it at your own risk: you can press Stop at any time.")
+        }
     }
 
-    private func name(_ id: String) -> String { info.builds.first { $0.id == id }?.name ?? id }
+    private func name(_ id: String) -> String { info.allBuilds.first { $0.id == id }?.name ?? id }
     /// A report from a Mac with this Mac's chip generation (M1, M2, ...).
     private func sameKind(_ r: DumpInfo.MacReport) -> Bool {
         let g = Int(r.chip.split(separator: " ").first { $0.hasPrefix("M") }?.dropFirst() ?? "") ?? -1

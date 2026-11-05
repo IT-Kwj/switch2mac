@@ -530,6 +530,18 @@ final class GameLibrary: ObservableObject {
         return game.id
     }
 
+    /// A finished Mac app that no library entry stands for yet (a build started from the Builds page with a dump folder): its game, by the
+    /// title ID in the app, gets the app, or a new entry is made for it. It shows in the library at once, without waiting for a scan.
+    func recordBuiltApp(path: String, commit: String = "") {
+        guard let app = try? MacGameBundle.read(URL(fileURLWithPath: path)) else { return }
+        var game = games.first { $0.titleID == app.titleID } ?? LibraryGame(titleID: app.titleID, name: app.name)
+        game.appPath = path
+        game.name = app.name
+        game.toolsCommit = commit
+        upsert(game)
+        selectedID = game.id
+    }
+
     func recordCompletedApp(path: String, commit: String = "", for id: UUID) {
         guard var game = games.first(where: { $0.id == id }),
               let app = try? MacGameBundle.read(URL(fileURLWithPath: path)),

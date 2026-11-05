@@ -87,6 +87,18 @@ import NXModel
     }
 
     /// A game without a Mac build has an empty path. That path is not read as the current folder, even when the current folder is a game.
+    @MainActor func testABuildFromTheBuildsPageShowsInTheLibraryAtOnce() throws {   // a dump folder, no library entry: the finished app makes one
+        let file = temporary.appendingPathComponent("library-built.json")
+        let library = GameLibrary(file: file)
+        let app = try makeApp(titleID)
+        library.recordBuiltApp(path: app.path, commit: "abc")
+        let game = try XCTUnwrap(library.games.first { $0.titleID == titleID })
+        XCTAssertEqual(game.appPath, app.path)
+        XCTAssertEqual(library.selectedID, game.id)
+        library.recordBuiltApp(path: app.path)   // built again: the same entry, not a second one
+        XCTAssertEqual(library.games.filter { $0.titleID == titleID }.count, 1)
+    }
+
     func testAGameWithoutAnAppIsNotReady() throws {
         let app = try makeApp(titleID)
         let previous = FileManager.default.currentDirectoryPath
@@ -631,14 +643,10 @@ import NXModel
         XCTAssertTrue(model.logTail.contains("✓ Mac app (4s): Test build.app"))
         XCTAssertFalse(model.logTail.contains("\"ev\""))
         RunLoop.main.run(until: Date().addingTimeInterval(0.5))   // recordBuild runs on the next turn of the main queue
-        // switch2mac bug (reported, not fixed here): the library records a finished build only for an entry that
-        // GameLibrary.rememberInputs made when the build started, and that needs the original launcher's base package row (basePath),
-        // which a switch2mac dump-folder build never fills. So the game appears only after the next launch's scan or Rescan.
-        XCTExpectFailure("switch2mac: a finished build is not added to the library until the next scan (rememberInputs needs basePath)") {
-            XCTAssertEqual(library.games.count, 1)
-            XCTAssertEqual(library.games.first?.isReady, true)
-            XCTAssertEqual(library.games.first?.appPath, model.macAppPath)
-        }
+        // a dump-folder build has no library entry when it starts: the finished app makes one (GameLibrary.recordBuiltApp)
+        XCTAssertEqual(library.games.count, 1)
+        XCTAssertEqual(library.games.first?.isReady, true)
+        XCTAssertEqual(library.games.first?.appPath, model.macAppPath)
     }
 
     /// Opt-in: the README's screenshots (frontend/screenshots/launcher-*.png), framed as macOS windows. They show a copy of
