@@ -75,7 +75,6 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
             var snapshot = OnboardingState()
             snapshot.step = .games
             snapshot.platform = .selected(.both)
-            snapshot.keys = .valid
             snapshot.games = .found([.init(id: "game", title: "Game", version: "1")])
             snapshot.done = .ready
             let d = MockOnboardingDriver(state: snapshot, animated: false)
@@ -100,7 +99,7 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
     func testDriverIntentsAreGated() async {
         await MainActor.run {
             let d = MockOnboardingDriver(animated: false)
-            d.getXcode(); d.finishXcodeSetup(); d.confirmKeys(); d.openLibrary()
+            d.getXcode(); d.finishXcodeSetup(); d.openLibrary()
             XCTAssertEqual(d.state.step, .welcome)
             XCTAssertEqual(d.state.xcode, .checking)
             XCTAssertNil(d.state.exit)
@@ -151,7 +150,6 @@ final class OnboardingTests: IsolatedDefaultsTestCase {
                 s.xcode = .settingUp
                 s.setup = [.selected: .done, .license: .done, .firstLaunch: .done, .metal: .running(0.65), .ios: .queued]
                 s.background = [.python: .done, .dotnet: .running(0.5), .tools: .queued]
-                s.keys = .found(URL(fileURLWithPath: "/Demo/Switch/prod.keys"))
                 s.games = .found([.init(id: "a", title: "Super Mario Odyssey", version: "1.0.0"),
                                   .init(id: "b", title: "Balatro", version: "1.0.0")])
                 s.done = .ready

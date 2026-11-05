@@ -80,7 +80,6 @@ func hop(_ body: @escaping @MainActor () -> Void) {
         Slot(id: "base", kind: .base, title: "data.base", optional: false),
         Slot(id: "update", kind: .update, title: "data.update", optional: true),
         Slot(id: "dlc", kind: .dlc, title: "data.dlc", optional: true),
-        Slot(id: "keys", kind: .keys, title: "data.keys", optional: false),
     ]
     /// The game folder the rows came from (BuildStore+GameFolder.swift), nil for packages.
     @Published package var gameFolder: GameFolder.Contents?
@@ -157,7 +156,6 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     package var home = NSHomeDirectory()
 
     // ---- The app's side: AppKit and the wiring, as closures ----
-    package var chooseKeys: (() -> Void)?          // tests stand in for the file picker
     /// The open panel: the paths the player picked, none when they cancelled.
     package var choosePaths: (FilePick) -> [String] = { _ in [] }
     /// The folder panel of "Save to": the folder's path, nil when they cancelled.
@@ -226,7 +224,6 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     package func shortPath(_ path: String) -> String { RepoLayout.shortPath(path) }
 
     package var basePath: String { slot("base").paths.first ?? "" }
-    package var keysPath: String { slot("keys").paths.first ?? "" }
     package var updatePath: String { slot("update").paths.first ?? "" }
     package var dlcPaths: [String] { slot("dlc").paths }
 

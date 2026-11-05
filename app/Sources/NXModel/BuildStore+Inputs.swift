@@ -6,7 +6,7 @@ import NXCore
 
 extension BuildStore {
     /// Fill every slot from a folder: NSP/XCI classified by title ID (…000 base,
-    /// …800 update, anything above base+0x1000 add-on content), plus prod.keys.
+    /// …800 update, anything above base+0x1000 add-on content).
     /// Subfolders are scanned too — a dump usually arrives as 本体/ 更新/ DLC/ folders —
     /// pruning the build folders this pipeline itself writes so a rescan is not slow.
     /// A folder of the game's files (base/, updates/, dlc/: a Switch 2 game) is read as one game instead (BuildStore+GameFolder.swift).
@@ -18,7 +18,6 @@ extension BuildStore {
         updateSlot("base") { $0.paths = found.base.map { [$0] } ?? []; $0.problem = found.base == nil ? "data.noBase" : "" }
         updateSlot("update") { $0.paths = found.update.map { [$0] } ?? []; $0.problem = ""; $0.note = updateNote(found) }
         updateSlot("dlc") { $0.paths = found.dlc; $0.problem = "" }
-        updateSlot("keys") { $0.paths = found.keys.map { [$0] } ?? []; $0.problem = "" }
         if !found.anyGame {
             updateSlot("base") { $0.problem = "data.noNsp" }
         }
@@ -61,7 +60,7 @@ extension BuildStore {
     package func take(picked: [String], kind: InputKind) {
         if kind == .base, picked.count == 1, GameFolder.isCandidate(picked[0]) { scan(folder: picked[0]); return }   // a .nup file is one game
         leaveGameFolder()   // a package picked for a row ends a game folder: the two never mix
-        let id = kind == .base ? "base" : kind == .update ? "update" : kind == .dlc ? "dlc" : "keys"
+        let id = kind == .base ? "base" : kind == .update ? "update" : "dlc"
         let baseName = kind == .base ? nil : (basePath as NSString).lastPathComponent
         var fitting: [String] = [], problem = ""
         for path in picked {

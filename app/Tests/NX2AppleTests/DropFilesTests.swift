@@ -89,7 +89,7 @@ import NXModel
         XCTAssertEqual(m.basePath, base, "a drop without a base game keeps the chosen one")
         XCTAssertEqual(m.updatePath, update)
         XCTAssertEqual(m.dlcPaths, [dlc1, dlc2], "add-on content is added to")
-        XCTAssertEqual(m.keysPath, keys)
+        _ = keys   // switch2mac: a keys file is never taken
         XCTAssertEqual(m.gameDir, (base as NSString).deletingLastPathComponent)
 
         // nothing usable: the slots stay; a note only on an empty base row
@@ -112,7 +112,7 @@ import NXModel
         XCTAssertEqual(m.gameDir, folder)
         XCTAssertEqual(m.basePath, base)
         XCTAssertEqual(m.updatePath, update)
-        XCTAssertEqual(m.keysPath, keys)
+        _ = keys   // switch2mac: a keys file is never taken
 
         // a folder with a file beside it: the folder's files and the file, added to what is chosen
         let otherStores = LauncherStores(defaults: testDefaults); let other = otherStores.build

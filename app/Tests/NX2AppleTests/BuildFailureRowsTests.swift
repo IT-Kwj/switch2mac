@@ -20,26 +20,7 @@ import NXModel
 
     // ---- what sets each row
 
-    func testTheKeysFileMissingFromTheScriptsMessage() throws {
-        let f = BuildFailureClassifier.classify(try fixture("keys.missing").text)
-        XCTAssertEqual(f.kind, .keys)
-        // only the script's own line: the words inside another line are not it
-        XCTAssertEqual(BuildFailureClassifier.classify("copying: no such file: x").kind, .unknown)
-    }
 
-    func testTheKeysFileThatCannotBeReadIsKnownFromTheFileNotFromTheLog() throws {
-        let dir = try tempFolder(), keys = dir.appendingPathComponent("prod.keys")
-        try Data("header_key = 00".utf8).write(to: keys)
-        let log = "[RED] nx_extract exit code 1 (full output: /w/extract.log)"
-        var inputs = BuildFailureClassifier.Inputs(keysPath: keys.path, paths: [], volumes: dir.path)
-        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: inputs).kind, .unknown, "a readable file is not the cause")
-        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: keys.path)
-        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: keys.path) }
-        if getuid() != 0 { XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: inputs).kind, .keys) }
-        inputs.isReadable = { _ in false }
-        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: inputs).kind, .keys)
-        XCTAssertEqual(BuildFailureClassifier.classify("[RED] the iOS SDK is not installed", inputs: inputs).kind, .iosSDK, "a known stop keeps its own row")
-    }
 
     func testAMissingZbicPackageIsItsOwnRowWithAnInstallButton() throws {
         let log = "[3/9] extract\n" + (try fixture("zbic.missing").text) + "\n"
@@ -78,11 +59,11 @@ import NXModel
         let volumes = try tempFolder()
         let gone = volumes.path + "/Games/Zelda/zelda.nsp"
         let log = try fixture("games.noTitleID").text
-        let f = BuildFailureClassifier.classify(log, inputs: .init(keysPath: "", paths: [gone], volumes: volumes.path))
+        let f = BuildFailureClassifier.classify(log, inputs: .init(paths: [gone], volumes: volumes.path))
         XCTAssertEqual(f, BuildFailure(kind: .driveMissing, gameName: nil, detail: "Games"))
         try FileManager.default.createDirectory(at: volumes.appendingPathComponent("Games"), withIntermediateDirectories: true)
-        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: .init(keysPath: "", paths: [gone], volumes: volumes.path)).kind, .noTitleID, "the drive is there")
-        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: .init(keysPath: "/Users/x/prod.keys", paths: ["/Users/x/g.nsp"], volumes: volumes.path)).kind, .noTitleID, "a path off /Volumes is no drive")
+        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: .init(paths: [gone], volumes: volumes.path)).kind, .noTitleID, "the drive is there")
+        XCTAssertEqual(BuildFailureClassifier.classify(log, inputs: .init(paths: ["/Users/x/g.nsp"], volumes: volumes.path)).kind, .noTitleID, "a path off /Volumes is no drive")
         let mStores = LauncherStores(defaults: testDefaults); let m = mStores.build
         m.lang = .en   // the quotes are English ones whatever the device language is
         XCTAssertTrue(m.failureWhat(f).contains("“Games”"))
@@ -104,7 +85,6 @@ import NXModel
 
     func testEveryRowSaysWhatToDoNext() {
         let next: [(BuildFailureKind, [String])] = [
-            (.keys, ["Choose your prod.keys again", "build again"]),
             (.severalGames, ["Move the other games", "folder of their own"]),
             (.noTitleID, ["Rename the file", "0100XXXXXXXXXXXX", "exact package", ".nsp, .xci, .nsz or .xcz", ".00 or .rar", "iCloud", "Show folder"]),
             (.driveMissing, ["Connect the drive"]),
@@ -120,8 +100,8 @@ import NXModel
     }
 
     func testTheNewRowsAreInAllThreeLanguagesWithoutSemicolonsOrTheProductName() {
-        var keys = ["fail.showFolder", "fail.openXcode", "fail.retry", "fail.keys.button", "fail.driveMissing.whatNamed", "fail.diskFull.whatNeeds", "fail.cloudFolder.button", "engine.syncing"]
-        let kinds = BuildFailureTests.stateKinds.union([.keys, .severalGames, .noTitleID, .diskFull, .cloudFolder])
+        var keys = ["fail.showFolder", "fail.openXcode", "fail.retry", "fail.driveMissing.whatNamed", "fail.diskFull.whatNeeds", "fail.cloudFolder.button", "engine.syncing"]
+        let kinds = BuildFailureTests.stateKinds.union([.severalGames, .noTitleID, .diskFull, .cloudFolder])
         for k in BuildFailureKind.allCases where kinds.contains(k) { keys += [k.whatKey, k.nextKey] }
         for key in keys {
             let row = L10n.table[key]
@@ -142,7 +122,7 @@ import NXModel
     // ---- the card and its buttons
 
     func testAFailedBuildShowsTheRowForItsLogLine() throws {
-        for (id, kind) in [("keys.missing", BuildFailureKind.keys), ("games.several", .severalGames), ("games.noTitleID", .noTitleID), ("disk.low", .diskFull), ("disk.full", .diskFull)] {
+        for (id, kind) in [("games.several", BuildFailureKind.severalGames), ("games.noTitleID", .noTitleID), ("disk.low", .diskFull), ("disk.full", .diskFull)] {
             let mStores = LauncherStores(defaults: testDefaults); let m = mStores.build
             m.logTail = try fixture(id).text + "\n"
             m.noteFailure()
@@ -151,14 +131,6 @@ import NXModel
         }
     }
 
-    func testTheKeysButtonOpensTheKeysPicker() {
-        let mStores = LauncherStores(defaults: testDefaults); let m = mStores.build
-        var opened = 0
-        m.chooseKeys = { opened += 1 }
-        m.failure = BuildFailure(kind: .keys, gameName: nil)
-        m.fixBuildFailure(.keys)
-        XCTAssertEqual(opened, 1)
-    }
 
     func testShowFolderRevealsTheGameFolderAndForAFullDiskTheBuildFolder() throws {
         let dir = try tempFolder()

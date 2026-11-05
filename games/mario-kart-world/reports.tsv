@@ -4,4 +4,9 @@ MacBook Pro	M1 Max	64	26.6	switch2mac	58.7	20.1	Races, 2560x1440, Performance mo
 MacBook Pro	M1 Max	64	26.6	nxnative a3d85ae1	46.7	14.8	Same race; 3D at 2048x1152 (dynamic resolution dropping); sky streaks (fixed in 5ae0d9ae)	maintainer playtest
 MacBook Pro	M1 Pro	32	27	switch2mac	60		Handheld mode: locked 60 (GPU ~14.3 ms); docked ~26 ms, so the game paces at 30	player report
 MacBook Air	M5	24	27.0	switch2mac	60	20.2	~60 at first, slows as memory grows: 7 fps after ~19 min	issue #6
-Mac	M6	16		nxnative 1110473c	60		Races at 60 with GPU heaps flat at 1 GB (shared terrain tiles)	nxnative commit 1110473c
+Mac	M6	16	27	nxnative 1110473c	60	11.3	First race: frame p50 16.7 ms; shared terrain tiles, 4 GPU heaps (1 GB) instead of 12	nxnative profile page
+MacBook Pro	M1 Pro	16		nxnative	36-40		Same race: frame median 25-28 ms, GPU about 24 ms	nxnative profile page (2026-11-04)
+MacBook Pro	M4 Pro	24	27.0	nxnative a3d85ae1	60	13.6	Update 1.8.0, free roam: frame p50 16.7 ms, GPU 7-11.6 ms; no crash	seedds/nxnative#1186
+MacBook Pro	M5 Pro	24	27.0.1	nxnative	60	8.3	Update 1.8.0: title and menus only, no race played yet	seedds/nxnative#1237
+MacBook Pro	M5 Pro	24	27.2	nxnative ae031161			Scenery outside the track flickers in Mario Bros. Circuit (open)	seedds/nxnative#1166
+Mac mini	M6	16		nxnative			GPU out-of-memory crash in play; gone on a later nxnative build, played a long while	seedds/nxnative#1193

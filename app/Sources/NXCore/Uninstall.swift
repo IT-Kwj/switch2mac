@@ -10,7 +10,7 @@ import Foundation
 ///   download; a checkout the player made by hand is not touched)
 /// - the launcher's settings (its UserDefaults domain)
 ///
-/// What stays: the games folder and everything in it, the build output folder, `prod.keys`, Homebrew, and the
+/// What stays: the games folder and everything in it, the build output folder, Homebrew, and the
 /// app itself, which goes to the Trash when the player confirms — never deleted. A folder that holds the games
 /// folder or the build output folder stays as a whole.
 package enum Uninstall {

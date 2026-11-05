@@ -142,8 +142,7 @@ extension BuildStore {
             }
         }
         let engine = EngineLayout.root(repo.path)   // the checkout's engine/ (#214)
-        // A game folder's files are not encrypted: the script ignores -k for it, and the launcher does not ask for the keys.
-        var args = [engine + "/" + RepoLayout.buildScript, inputDir] + (folder != nil ? [] : ["-k", keysPath]) + ["--progress", "json"]
+        var args = [engine + "/" + RepoLayout.buildScript, inputDir, "--progress", "json"]   // switch2mac: no keys
         // A compatibility switch the player turned on: written to a small env file the pipeline
         // copies into the app bundle (main.m sets one variable per line at boot). Only for an iPhone or iPad build;
         // a Mac app runs on this Mac's GPU, which always has BC support.

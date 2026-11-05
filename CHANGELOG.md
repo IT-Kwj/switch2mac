@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-05 (2)
+
+- Five more Switch 2 games, built with nxnative: **Yoshi and the Mysterious Book**, **Splatoon Raiders**, **Hyrule Warriors: Age of Imprisonment**, **Fire Emblem Fortune's Weave** and **Mario Tennis Fever**. Like Donkey Kong Bananza, they start straight into the game, with the performance overlay on key 1 and the settings on key 2. None has been test-built in switch2mac yet: each game's page says what nxnative and players report. Thanks to seedds and nxnative's contributors.
+- **Pokémon Pokopia now has two builds**: xFractals' pokopia-native (the default, about an hour to build) and nxnative's (2.0.1 only; it builds all ~131,000 shaders, which takes hours and over 200 GB of disk).
+- Every game now has a **reports table** (`reports.tsv`): how it ran on players' Macs, from GitHub issues and nxnative's notes, with fixes noted. Mario Kart World's adds nxnative's build on 16 GB Macs (60 fps on an M6, 36–40 on an M1 Pro) and update 1.8.0 on 24 GB Macs.
+- The switch2mac app no longer contains the prod.keys and cheats code it inherited from NX2Apple; switch2mac never used either.
+
 ## 2026-11-05
 
 - New: the **switch2mac app** (preview). Choose your dump folder, press Build, and the game lands in Applications, with a library of your built games and their eShop banners (downloaded onto your Mac, never stored here). It shows your Mac's chip, memory and macOS. Download it from [Releases](https://github.com/azmasm/switch2mac/releases/latest) (version 0.1.0; the README says how to open it the first time). Its design comes from NX2Apple (MIT), with thanks to LNPANDY and its contributors.

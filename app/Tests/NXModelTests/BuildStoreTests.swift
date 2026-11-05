@@ -260,15 +260,11 @@ import XCTest
         deps.busy = ["dotnet"]
         XCTAssertTrue(store.fixBusy(.translator))
         XCTAssertFalse(store.fixBusy(.zbic))
-        XCTAssertFalse(store.fixBusy(.keys), "a fix that is no install is never busy")
+        XCTAssertFalse(store.fixBusy(.cloudFolder), "a fix that is no install is never busy")
     }
 
-    func testTheKeysFixUsesTheKeysPickerAndTheCloudFixTheFolderPanel() {
+    func testTheCloudFixUsesTheFolderPanel() {   // switch2mac: no keys fix
         let store = makeStore()
-        var keysAsked = 0
-        store.chooseKeys = { keysAsked += 1 }
-        store.fixBuildFailure(.keys)
-        XCTAssertEqual(keysAsked, 1)
         store.failure = BuildFailure(kind: .cloudFolder, gameName: nil, detail: "/iCloud/x")
         store.doneNote = "stopped"
         store.chooseFolder = { nil }

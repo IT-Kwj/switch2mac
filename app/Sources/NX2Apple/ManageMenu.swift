@@ -9,7 +9,6 @@ struct ManageActions {
     var switchBuild: (String) -> Void = { _ in }   // switch2mac: build the game again with another of its builds (GameBuilds)
     var options: () -> Void = {}
     var saves: () -> Void = {}
-    var cheats: () -> Void = {}
     var changeArtwork: () -> Void = {}
     var resetArtwork: () -> Void = {}
     var reveal: () -> Void = {}

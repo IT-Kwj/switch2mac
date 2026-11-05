@@ -49,9 +49,6 @@ struct OnboardingEnvironment {
     /// One install through the launcher's own mechanics (`DependencyStore.install`); its end shows as a new detection.
     var installDep: (DependencyStore, Dep) -> Void = { dependencies, d in MainActor.assumeIsolated { _ = dependencies.install(d) } }
     var openURL: (URL) -> Void = { NSWorkspace.shared.open($0) }
-    var keyCheck: (_ keys: String, _ base: String) async -> KeyCheck.Outcome = { keys, base in
-        await Task.detached { KeyCheck.run(KeyCheck.Inputs(keys: keys, files: base.isEmpty ? [] : [base])) }.value
-    }
     var scanGames: (_ folder: URL, _ repo: String) async -> [LibraryGame] = { folder, repo in
         await Task.detached { GameLibrary.sourceGames(in: folder, repo: repo) }.value
     }
@@ -59,12 +56,6 @@ struct OnboardingEnvironment {
     var pollInterval = 3.0
     var advanceDelay = 0.7
 
-    /// The files `~/.switch/prod.keys`, `~/Downloads/prod.keys` and the games folder's, whichever exist.
-    func keyCandidates(gamesFolder: String) -> [String] {
-        var paths = [home + "/.switch/prod.keys", home + "/Downloads/prod.keys"]
-        if !gamesFolder.isEmpty { paths += [gamesFolder + "/prod.keys", gamesFolder + "/keys/prod.keys"] }
-        return paths.filter { FileManager.default.fileExists(atPath: $0) }
-    }
 
     static func homeVolumeFreeBytes() -> Int64? {
         let values = try? URL(fileURLWithPath: NSHomeDirectory())
@@ -167,9 +158,9 @@ extension DependencyStore {
 
 /// What the app does on launch, and from where the launcher asks for the setup again.
 enum OnboardingLaunch {
-    /// Setup counts as complete when the tools are all present, a keys file is known and a games folder is set. A player
-    /// who has built a game already has all three in effect.
-    static func setupComplete(depsPresent: Bool, keysKnown: Bool, gamesKnown: Bool) -> Bool { depsPresent && keysKnown && gamesKnown }
+    /// Setup counts as complete when the tools are all present and a games folder is set (switch2mac: no keys). A player
+    /// who has built a game already has both in effect.
+    static func setupComplete(depsPresent: Bool, gamesKnown: Bool) -> Bool { depsPresent && gamesKnown }
     /// `force` (NSPB_ONBOARDING_FORCE=1) shows it whatever the state.
     static func shouldShow(completed: Bool, setupComplete: Bool, force: Bool = false) -> Bool { force || (!completed && !setupComplete) }
     static func forced(_ environment: [String: String] = ProcessInfo.processInfo.environment) -> Bool { environment["NSPB_ONBOARDING_FORCE"] == "1" }
@@ -178,9 +169,8 @@ enum OnboardingLaunch {
 /// The real driver: the guided setup over the launcher's own `LauncherStores` (detection and installs) and `GameLibrary`.
 ///
 /// One value, `state`, is what the view draws. Detection comes from `stores.dependencies.deps` (refreshed through `stores.dependencies.check`),
-/// installs run through `stores.dependencies.install` one at a time, the keys and game slots are the ones the Builds page uses, and
-/// the games folder is the library's. Nothing about prod.keys' content is kept: the keys are checked by `KeyCheck`, and
-/// only their path is stored.
+/// installs run through `stores.dependencies.install` one at a time, the game slots are the ones the Builds page uses, and
+/// the games folder is the library's.
 @MainActor final class LiveOnboardingDriver: OnboardingDriver {
     @Published private(set) var state = OnboardingState()
     let stores: LauncherStores
@@ -319,15 +309,7 @@ enum OnboardingLaunch {
         }
     }
 
-    func chooseKeys(_ url: URL) {
-        guard false else { return }   // switch2mac: Switch 2 dumps need no keys
-        validateKeys(url)
-    }
 
-    func confirmKeys() {
-        guard false, case let .found(url) = state.keys else { return }   // switch2mac: no keys
-        validateKeys(url)
-    }
 
     func chooseGames(_ url: URL) {
         guard state.step == .games, state.exit == nil else { return }
@@ -613,32 +595,8 @@ enum OnboardingLaunch {
         }
     }
 
-    // MARK: Keys
 
-    func searchKeys() async {
-        let known = model.keysPath
-        let candidates = ([known].filter { !$0.isEmpty && FileManager.default.fileExists(atPath: $0) })
-            + env.keyCandidates(gamesFolder: library.folder.isEmpty ? model.gameDir : library.folder)
-        if let first = candidates.first { state.keys = .found(URL(fileURLWithPath: first)) } else { state.keys = .empty }
-    }
 
-    private func validateKeys(_ url: URL) {
-        state.keys = .validating
-        spawn("keys") { d in
-            let scoped = url.startAccessingSecurityScopedResource()   // a no-op outside a sandbox
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            let outcome = await d.env.keyCheck(url.path, d.model.basePath)
-            guard d.state.exit == nil else { return }
-            switch outcome {
-            case .fits, .cannotCheck:
-                d.model.updateSlot("keys") { $0.paths = [url.path]; $0.problem = "" }
-                d.state.keys = .valid
-                d.advanceIfReady()
-            default:
-                d.state.keys = .invalid(KeyCheck.message(outcome, d.t))   // names a key or a file, never a value
-            }
-        }
-    }
 
     // MARK: Games
 
@@ -656,9 +614,7 @@ enum OnboardingLaunch {
         guard state.exit == nil else { return }
         guard !found.isEmpty else { state.games = .none; return }
         // The same slots and folder the main UI sets: the Builds page's inputs and the library's games folder.
-        let keys = model.keysPath
         model.scan(folder: url.path)
-        if !keys.isEmpty { model.updateSlot("keys") { $0.paths = [keys]; $0.problem = "" } }   // the keys the player confirmed stay
         library.setFolder(url)
         if !model.running { model.outDir = url.path }
         state.games = .found(found.map { OnboardingGame(id: $0.titleID, title: $0.name, version: "",
@@ -672,21 +628,11 @@ enum OnboardingLaunch {
             }
             d.state.games = .found(games)
         }
-        // The keys against the game they will open: a mismatch sends the player back to the keys, with the reason.
-        if !model.keysPath.isEmpty, !model.basePath.isEmpty {
-            let outcome = await env.keyCheck(model.keysPath, model.basePath)
-            switch outcome {
-            case .fits, .cannotCheck: break
-            default:
-                state.keys = .invalid(KeyCheck.message(outcome, t))
-                state.step = .games; persistStep()
-            }
-        }
     }
 
     // MARK: Advancing
 
-    /// Xcode with its background tasks and the keys move on by themselves after a moment; the games wait for Continue.
+    /// Xcode with its background tasks move on by themselves after a moment; the games wait for Continue.
     func advanceIfReady() {
         guard !suppressAdvance, state.exit == nil, state.step == .xcode, state.canAdvance else { return }
         let step = state.step

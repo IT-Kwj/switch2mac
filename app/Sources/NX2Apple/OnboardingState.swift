@@ -99,23 +99,10 @@ struct OnboardingState: Equatable {
             }
         }
     }
-    enum Keys: Equatable {
-        case searching, found(URL), validating, valid, invalid(String), empty
-        var statusKey: String {
-            switch self {
-            case .searching: return "onboarding.keys.searching"
-            case .found: return "onboarding.keys.found"
-            case .validating: return "onboarding.keys.validating"
-            case .valid: return "onboarding.keys.valid"
-            case .invalid: return "onboarding.keys.invalid"
-            case .empty: return "onboarding.keys.empty"
-            }
-        }
-    }
     enum Games: Equatable { case empty, scanning, found([OnboardingGame]), none }
     enum Done: Equatable { case celebrating, ready }
     enum Exit: Equatable { case later, library }
-    enum Primary: Equatable { case start, next, getXcode, finishXcodeSetup, retry, confirmKeys, openLibrary, waiting }
+    enum Primary: Equatable { case start, next, getXcode, finishXcodeSetup, retry, openLibrary, waiting }
 
     var step: OnboardingStep = .welcome
     var welcome: Welcome = .requirements(freeGB: 0, neededGB: 0)
@@ -123,7 +110,6 @@ struct OnboardingState: Equatable {
     var xcode: Xcode = .checking
     var setup: [OnboardingSetupTask: OnboardingTaskState] = [:]
     var background: [OnboardingBackgroundTask: OnboardingTaskState] = [:]
-    var keys: Keys = .empty
     var games: Games = .empty
     var done: Done = .celebrating
     var exit: Exit? = nil
@@ -177,7 +163,6 @@ struct OnboardingState: Equatable {
         case .getXcode: return "onboarding.getXcode"
         case .finishXcodeSetup: return "onboarding.finishSetup"
         case .retry: return "onboarding.retry"
-        case .confirmKeys: return "onboarding.confirmKeys"
         case .openLibrary: return "onboarding.openLibrary"
         case .waiting: return "onboarding.waiting"
         }
@@ -203,8 +188,6 @@ struct OnboardingState: Equatable {
     func getXcode()
     func finishXcodeSetup()
     func retry(_ step: OnboardingStep)
-    func chooseKeys(_ url: URL)
-    func confirmKeys()
     func chooseGames(_ url: URL)
     func back()
     func next()

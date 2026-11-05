@@ -8,12 +8,17 @@ It is not an emulator: the game's own ARM64 code runs directly on the Mac, rewri
 |---|---|---|---|---|
 | Mario Kart World | 1.0.0 | switch2mac's engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine)) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
 | Donkey Kong Bananza | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level's opening areas (busy scenes dip to 30 for a few seconds). Not yet tested in switch2mac | [games/donkey-kong-bananza](games/donkey-kong-bananza) |
-| Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". Not yet tested in switch2mac | [games/pokemon-pokopia](games/pokemon-pokopia) |
+| Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals (default), or [nxnative](https://github.com/seedds/nxnative)'s (2.0.1 only, hours of shader building) | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". Not yet tested in switch2mac | [games/pokemon-pokopia](games/pokemon-pokopia) |
+| Yoshi and the Mysterious Book | update v131072 (1.0.2) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on a 16 GB M6** through the first habitat, a save and a reload. About 133,000 shaders: a full build can take many hours. Not yet tested in switch2mac | [games/yoshi-and-the-mysterious-book](games/yoshi-and-the-mysterious-book) |
+| Splatoon Raiders | update v65536 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level. A player's **16 GB M2 Air** swapped and slowed to about 1 fps after 5 minutes (open). Not yet tested in switch2mac | [games/splatoon-raiders](games/splatoon-raiders) |
+| Hyrule Warriors: Age of Imprisonment | update v196608 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays into the first field on a **16 GB M6** (frame median 16.6 ms, frequent long frames); battles not reached. A **Mac Studio M5 Max** froze the display (open). About 102,000 shaders. Not yet tested in switch2mac | [games/hyrule-warriors-age-of-imprisonment](games/hyrule-warriors-age-of-imprisonment) |
+| Fire Emblem Fortune's Weave | v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays through the first battle map at **60 fps** (120 offered; 30 as shipped). Not yet tested in switch2mac | [games/fire-emblem-fortunes-weave](games/fire-emblem-fortunes-weave) |
+| Mario Tennis Fever | update v327680 (1.1.1) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: **60 fps on an M4 Pro** in Free Play matches. A player's **M3 Pro (18 GB)** gets 30-45 fps in Adventure exploration, with black outdoor textures (open). Not yet tested in switch2mac | [games/mario-tennis-fever](games/mario-tennis-fever) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > This repository holds no game content. You need a dump of a game you own; what the build makes from it must not be shared. See [LEGAL.md](LEGAL.md).
 
-> **Mario Kart World on a 16 GB Mac:** the game currently uses about 13-16 GB of memory, and up to about 20 GB in long free-roam sessions. On a Mac with 16 GB it may not run smoothly (stutters, slowdowns, or macOS asking you to quit other apps). Work to bring its memory down is under way. Macs with 24 GB or more have run it fine so far (tested on 64 GB, reported on 24 GB).
+> **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
 
 ## Quick start (no experience needed)
 
@@ -35,6 +40,11 @@ It is not an emulator: the game's own ARM64 code runs directly on the Mac, rewri
 > | Mario Kart World 1.0.0 | `exefs/` and `romfs/` (or `base/exefs` and `base/romfs`) |
 > | Donkey Kong Bananza | `base/` and `updates/458752/` (and `dlc/`, if you have it) |
 > | Pokémon Pokopia | `base/exefs` and `updates/<version>/` |
+> | Yoshi and the Mysterious Book | `base/` and `updates/131072/` |
+> | Splatoon Raiders | `base/` and `updates/65536/` |
+> | Hyrule Warriors: Age of Imprisonment | `base/` and `updates/196608/` |
+> | Fire Emblem Fortune's Weave | `exefs/` and `romfs/` |
+> | Mario Tennis Fever | `base/` and `updates/327680/` |
 >
 > Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged.
 >
@@ -64,7 +74,7 @@ A Mac app that does the same with buttons: choose your dump folder, press Build,
 - **Xcode** with the Metal toolchain (Xcode → Settings → Components), and its command line tools.
 - **.NET 10 SDK** ([dot.net](https://dot.net)): the shader translator runs on it.
 - **Python 3.12 or newer** (python.org or Homebrew).
-- **git** (comes with Xcode's command line tools): Donkey Kong Bananza and Pokémon Pokopia fetch their engine once.
+- **git** (comes with Xcode's command line tools): Donkey Kong Bananza and Pokémon Pokopia fetch their engine once (as do the other games built with nxnative).
 - Free disk space and your dump: each game's page says how much and how the dump folder must look. Dump tools write the files already extracted: switch2mac needs no keys and decrypts nothing.
 
 ## Build it in Terminal

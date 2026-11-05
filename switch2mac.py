@@ -54,7 +54,7 @@ def with_build(g, bid=None):   # the game as one of its builds: its engine and s
     if not bid: bid = recommend(g, this_mac())[0]
     b = next((b for b in bs if b['id'] == bid), None)
     if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
-    return dict(g, engine=b['engine'], build=b)
+    return dict(g, engine=b['engine'], build=b, disk_gb=b.get('disk_gb', g.get('disk_gb')))   # a build may need more disk than the game's usual (Pokopia's full nxnative build)
 
 
 def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
@@ -503,7 +503,7 @@ def builds_cmd(a):   # the builds a game has and which one this Mac gets, for pe
         if b.get('about'): print(f'      {b["about"]}')
         for r in rs:
             if r['build'].split()[0] == b['id']:
-                print(f'      {r["mac"]} {r["chip"]}, {r["memory_gb"]} GB: {r["fps"] or "?"} fps' + (f', {r["peak_gb"]} GB peak' if r['peak_gb'] else '') + f' ({r["notes"]}; {r["source"]})')
+                print(f'      {r["mac"]} {r["chip"]}' + (f', {r["memory_gb"]} GB' if r['memory_gb'] else '') + (f': {r["fps"]} fps' if r['fps'] else '') + (f', {r["peak_gb"]} GB peak' if r['peak_gb'] else '') + f' ({r["notes"]}; {r["source"]})')
     if len(builds(g)) > 1: print(f'\n./switch2mac.py build <dump> builds {rec}; --engine <id> builds another.')
 
 

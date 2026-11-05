@@ -65,9 +65,8 @@ struct RootView: View {
         if defaults.bool(forKey: OnboardingDefaults.completed) { mode = .launcher; return }
         await stores.dependencies.refreshDepsAndWait()
         let env = OnboardingEnvironment()
-        let keysKnown = stores.build.slot("keys").ok || !env.keyCandidates(gamesFolder: library.folder).isEmpty || library.games.contains(where: \.isReady)
         let gamesKnown = !library.folder.isEmpty || !library.games.isEmpty
-        let complete = OnboardingLaunch.setupComplete(depsPresent: stores.dependencies.allPresent, keysKnown: keysKnown, gamesKnown: gamesKnown)
+        let complete = OnboardingLaunch.setupComplete(depsPresent: stores.dependencies.allPresent, gamesKnown: gamesKnown)
         if OnboardingLaunch.shouldShow(completed: false, setupComplete: complete) {
             show(fresh: false)
         } else {

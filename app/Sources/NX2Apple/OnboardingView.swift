@@ -10,7 +10,6 @@ import NXLauncher
     @StateObject private var padFocus = PadFocus()
     @StateObject private var gamepad: LauncherGamepad
     @State private var pickerOpen = false
-    @State private var pickingKeys = true
     @State private var detailsOpen = false
     @State private var pickerError: String?
     @State private var backwards = false
@@ -94,9 +93,9 @@ import NXLauncher
                                  userInfo: [.announcement: status, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
         }
         .onExitCommand { goBack() }
-        .fileImporter(isPresented: $pickerOpen, allowedContentTypes: pickingKeys ? [.data] : [.folder]) { result in
+        .fileImporter(isPresented: $pickerOpen, allowedContentTypes: [.folder]) { result in
             switch result {
-            case let .success(url): pickingKeys ? driver.chooseKeys(url) : driver.chooseGames(url)
+            case let .success(url): driver.chooseGames(url)
             case .failure: pickerError = t("onboarding.chooseFailed")
             }
         }
@@ -344,32 +343,8 @@ import NXLauncher
         }
     }
 
-    /// Content height of the keys card and the least of the games card, so their states do not resize them.
+    /// The least content height of the games card, so its states do not resize it.
 
-    private var keys: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 12) {
-                if state.keys == .valid { OnboardingCheck(lang: lang).frame(width: 26, height: 26) }
-                else if state.keys == .searching || state.keys == .validating {
-                    OnboardingWaiting(label: t(state.keys.statusKey)).frame(width: 24, height: 24)
-                } else { Image(systemName: "key").foregroundStyle(LauncherPalette.cream).accessibilityHidden(true) }
-                Text(t(state.keys.statusKey)).font(.manrope(17, .semibold))
-            }.accessibilityElement(children: .combine)
-            if case let .found(url) = state.keys {
-                Text(url.path).font(.mono(12)).foregroundStyle(.secondary).textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            if case let .invalid(reason) = state.keys {
-                Text(reason).foregroundStyle(LauncherPalette.building).fixedSize(horizontal: false, vertical: true)
-            }
-            if state.keys != .valid {
-                dropZone(keys: true, enabled: state.keys != .validating)
-            }
-            Text(t("onboarding.keys.privacy")).font(.manrope(12)).foregroundStyle(.secondary)
-        }
-        .frame(minHeight: onboardingDropCardHeight, alignment: .topLeading)   // the same size whether it asks, checks or is done
-        .modifier(OnboardingCard())
-    }
 
     private var games: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -408,16 +383,16 @@ import NXLauncher
                 Text(t("onboarding.games.noneHint")).foregroundStyle(.secondary)
             case .empty: EmptyView()
             }
-            dropZone(keys: false, enabled: state.games != .scanning)
+            dropZone(enabled: state.games != .scanning)
         }
         .frame(minHeight: onboardingDropCardHeight, alignment: .topLeading)
     }
 
-    private func dropZone(keys: Bool, enabled: Bool) -> some View {
-        OnboardingDropZone(label: t(keys ? "onboarding.keys.drop" : "onboarding.games.drop"),
-                           chooseLabel: t("onboarding.choose"), id: keys ? "keys" : "games", enabled: enabled,
-                           choose: { pickingKeys = keys; pickerOpen = true },
-                           receive: { url in keys ? driver.chooseKeys(url) : driver.chooseGames(url) })
+    private func dropZone(enabled: Bool) -> some View {
+        OnboardingDropZone(label: t("onboarding.games.drop"),
+                           chooseLabel: t("onboarding.choose"), id: "games", enabled: enabled,
+                           choose: { pickerOpen = true },
+                           receive: { url in driver.chooseGames(url) })
     }
 
     private var footer: some View {
@@ -456,7 +431,6 @@ import NXLauncher
         case .getXcode: driver.getXcode()
         case .finishXcodeSetup: driver.finishXcodeSetup()
         case .retry: driver.retry(state.step)
-        case .confirmKeys: driver.confirmKeys()
         case .openLibrary: driver.openLibrary()
         case .waiting: break
         }

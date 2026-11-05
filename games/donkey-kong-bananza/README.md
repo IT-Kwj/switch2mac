@@ -19,6 +19,10 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 
 [`shader_list.tsv`](shader_list.tsv): this game's own list of shaders and pipelines players have met, for this engine version only (its first line says which). Its build ships nxnative's own seed list for the game (3,793 rows from nxnative's playtests) followed by this list's rows; the app prepares them before the first frame. It starts empty: when you close the game, the app offers to send what it built (every 100 new rows), as described in the main README's Contributing section.
 
+## How it runs on players' Macs
+
+[`reports.tsv`](reports.tsv): every report that names the Mac (from GitHub issues on this game's builder), with the fps and memory where given, and whether it was fixed.
+
 ## Build
 
 ```bash

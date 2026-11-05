@@ -78,13 +78,12 @@ extension BuildStore {
             guard let newest = f.newestUpdate else { return t("data.notSelectedOptional") }
             return f.updates.count > 1 ? String(format: t("folder.updates"), newest.version, f.updates.count) : String(format: t("folder.update"), newest.version)
         case "dlc": return f.dlc.isEmpty ? t("data.notSelectedDlc") : String(format: t("folder.dlc"), f.dlc.count)
-        case "keys": return t("folder.keys")
         default: return nil
         }
     }
 
-    /// The base game and the keys are there, or a game folder that needs no keys.
-    package var inputsReady: Bool { gameFolder != nil ? slot("base").ok : slot("base").ok && slot("keys").ok }
+    /// The base game is there (switch2mac: no keys, ever).
+    package var inputsReady: Bool { slot("base").ok }
 
     /// The key of the build folder and the app (`<key>_build`, `<key>.app`): the folder's title ID, else the base package's (TitleID.buildKey).
     package var buildKey: String {

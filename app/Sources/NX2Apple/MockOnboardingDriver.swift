@@ -4,7 +4,7 @@ import NXLauncher
 
 /// A scripted demo only. No detection, file reads, installs, preferences or subprocesses.
 @MainActor final class MockOnboardingDriver: OnboardingDriver {
-    enum Scenario: String, CaseIterable { case fresh, xcodeReady, keysInvalid, xcodeFailed, noGames, oldMac }
+    enum Scenario: String, CaseIterable { case fresh, xcodeReady, xcodeFailed, noGames, oldMac }
     @Published private(set) var state: OnboardingState
     private(set) var resumeSnapshot: OnboardingState?
     let scenario: Scenario
@@ -12,7 +12,6 @@ import NXLauncher
     private let animated: Bool
     private var jobs: [String: Task<Void, Never>] = [:]
     private var retriedXcode = false
-    private var retriedKeys = false
 
     /// A stored snapshot is injected; persistence belongs to the real driver. `animated: false` is for state tests.
     /// The demo's invented disk figures live here only; a real driver measures the volume.
@@ -63,15 +62,6 @@ import NXLauncher
         case .games: state.games = .empty
         default: break
         }
-    }
-    func chooseKeys(_ url: URL) {
-        guard false else { return }   // switch2mac: no keys
-        if case .invalid = state.keys { retriedKeys = true }
-        validateKeys()
-    }
-    func confirmKeys() {
-        guard false, case .found = state.keys else { return }   // switch2mac: no keys
-        validateKeys()
     }
     func chooseGames(_ url: URL) {
         guard state.step == .games, state.exit == nil else { return }
@@ -182,14 +172,6 @@ import NXLauncher
                 d.state.xcode = .ready
                 d.advanceWhenReady()
             }
-        }
-    }
-    private func validateKeys() {
-        state.keys = .validating
-        run("keys", after: 1) { d in
-            if d.scenario == .keysInvalid && !d.retriedKeys {
-                d.state.keys = .invalid(d.t("onboarding.demo.keysFailure"))
-            } else { d.state.keys = .valid; d.advanceWhenReady() }
         }
     }
     private func advanceWhenReady() {

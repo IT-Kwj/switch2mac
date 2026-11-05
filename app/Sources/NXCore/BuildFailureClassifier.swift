@@ -17,8 +17,6 @@ package enum BuildFailureClassifier {
         ("shaders.regression", .shaderRegression, "a change to the translation chain broke them"),
         ("nsp.damaged", .damagedNSP, "files fail the NCA's hash check"),
         ("arm32.program", .a32Program, "is a 32-bit ARM program"),
-        ("keys.missing", .keys, "(?m)^\\[RED\\] no such file: "),
-        ("keys.old", .keysOld, "the keys are older than the game"),
         ("games.several", .severalGames, "more than one game in the folder"),
         ("games.noTitleID", .noTitleID, "no NSP with a readable title ID in "),
         ("games.noProfile", .noProfile, "packs only a game with a profile"),
@@ -28,23 +26,22 @@ package enum BuildFailureClassifier {
         ("volume.swap", .volumeFormat, "\\[Errno 45\\] Operation not supported: '[^']*\\.app'"),
     ]
 
-    /// What the launcher itself knows when the log says nothing it can use. The keys file and the game files are checked
+    /// What the launcher itself knows when the log says nothing it can use. The game files are checked
     /// first: a drive that is not connected makes every later message ("not a folder", a dangling link) a consequence.
     package struct Inputs {
-        package var keysPath = ""
         package var paths: [String] = []          // the picked game files and the game folder
         package var volumes = "/Volumes"
         package var isReadable: (String) -> Bool = { FileManager.default.isReadableFile(atPath: $0) }
 
-        package init(keysPath: String = "", paths: [String] = [], volumes: String = "/Volumes",
+        package init(paths: [String] = [], volumes: String = "/Volumes",
                      isReadable: @escaping (String) -> Bool = { FileManager.default.isReadableFile(atPath: $0) }) {
-            self.keysPath = keysPath; self.paths = paths; self.volumes = volumes; self.isReadable = isReadable
+            self.paths = paths; self.volumes = volumes; self.isReadable = isReadable
         }
     }
 
     /// `unknown` when no row matches: the caller then keeps showing the last line of the log.
     package static func classify(_ log: String, inputs: Inputs = Inputs()) -> BuildFailure {
-        for path in [inputs.keysPath] + inputs.paths where !path.isEmpty && VolumePath.onUnmounted(path, volumes: inputs.volumes) {
+        for path in inputs.paths where !path.isEmpty && VolumePath.onUnmounted(path, volumes: inputs.volumes) {
             let prefix = inputs.volumes.hasSuffix("/") ? inputs.volumes : inputs.volumes + "/"
             let name = path.dropFirst(prefix.count).split(separator: "/").first.map(String.init)
             return BuildFailure(kind: .driveMissing, gameName: nil, detail: name)
@@ -52,8 +49,6 @@ package enum BuildFailureClassifier {
         for row in table where log.range(of: row.pattern, options: .regularExpression) != nil {
             return BuildFailure(kind: row.kind, gameName: row.kind == .a32Program ? gameName(in: log) : nil, detail: detail(of: row.kind, in: log))
         }
-        // The keys file is gone or cannot be read: nx_extract stops with an exit code and no line of its own for it.
-        if !inputs.keysPath.isEmpty, !inputs.isReadable(inputs.keysPath) { return BuildFailure(kind: .keys, gameName: nil) }
         return BuildFailure(kind: .unknown, gameName: nil)
     }
 

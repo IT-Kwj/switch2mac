@@ -15,7 +15,6 @@ import NXModel
         var installed: [String] = []
         var opened: [URL] = []
         var onDetect: (DependencyStore) -> Void = { _ in }
-        var keyOutcome = KeyCheck.Outcome.fits
         var games: [LibraryGame] = []
         var xcodeWorks: Bool?   // nil: follows the probe
         var os = OperatingSystemVersion(majorVersion: 26, minorVersion: 6, patchVersion: 0)
@@ -59,7 +58,6 @@ import NXModel
             if let i = dependencies.deps.firstIndex(where: { $0.id == d.id }) { dependencies.deps[i].installing = true }
         }
         env.openURL = { fake.opened.append($0) }
-        env.keyCheck = { _, _ in fake.keyOutcome }
         env.scanGames = { _, _ in fake.games }
         env.fetchArtwork = { _ in }
         env.pollInterval = 0.01; env.advanceDelay = 0
@@ -127,9 +125,9 @@ import NXModel
         XCTAssertFalse(OnboardingLaunch.shouldShow(completed: true, setupComplete: false))
         XCTAssertFalse(OnboardingLaunch.shouldShow(completed: false, setupComplete: true), "complete: marked done, not shown")
         XCTAssertTrue(OnboardingLaunch.shouldShow(completed: false, setupComplete: false))
-        XCTAssertTrue(OnboardingLaunch.setupComplete(depsPresent: true, keysKnown: true, gamesKnown: true))
-        for missing in 0..<3 {
-            XCTAssertFalse(OnboardingLaunch.setupComplete(depsPresent: missing != 0, keysKnown: missing != 1, gamesKnown: missing != 2))
+        XCTAssertTrue(OnboardingLaunch.setupComplete(depsPresent: true, gamesKnown: true))
+        for missing in 0..<2 {
+            XCTAssertFalse(OnboardingLaunch.setupComplete(depsPresent: missing != 0, gamesKnown: missing != 1))
         }
     }
 
@@ -364,14 +362,12 @@ import NXModel
         game.inputs["base"] = [folder.appendingPathComponent("a.nsp").path]
         fake.games = [game]
         let (driver, model) = make(fake, deps: [], step: .games, platform: .mac)
-        model.updateSlot("keys") { $0.paths = ["/keys/prod.keys"] }
         driver.chooseGames(folder)
         await driver.settle()
         guard case let .found(list) = driver.state.games else { return XCTFail("\(driver.state.games)") }
         XCTAssertEqual(list.map(\.title), ["Sample"])
         XCTAssertEqual(model.gameDir, folder.path)
         XCTAssertEqual(driver.library.folder, folder.standardizedFileURL.path)
-        XCTAssertEqual(model.keysPath, "/keys/prod.keys", "scanning a folder keeps the confirmed keys")
 
         fake.games = []
         driver.chooseGames(folder)

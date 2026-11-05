@@ -21,9 +21,9 @@ extension BuildStore {
         if failure?.kind == .cloudFolder || failure?.kind == .volumeFormat { failure = nil; doneNote = "" }
     }
 
-    /// What the classifier may check besides the log: the keys file and where the game files are.
+    /// What the classifier may check besides the log: where the game files are.
     package func failureInputs() -> BuildFailureClassifier.Inputs {
-        BuildFailureClassifier.Inputs(keysPath: keysPath, paths: ([basePath, updatePath, gameDir] + dlcPaths).filter { !$0.isEmpty },
+        BuildFailureClassifier.Inputs(paths: ([basePath, updatePath, gameDir] + dlcPaths).filter { !$0.isEmpty },
                                       volumes: volumesRoot)
     }
 
@@ -79,8 +79,6 @@ extension BuildStore {
             }
         case .zbic:
             installRow("python")   // the venv install, which now names zbic
-        case .keys, .keysOld:
-            if let chooseKeys { chooseKeys() } else { pickFiles(kind: .keys) }   // the same picker as the keys row
         case .severalGames, .noTitleID, .diskFull:
             showFailureFolder()
         case .cloudFolder, .volumeFormat:

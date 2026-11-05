@@ -36,9 +36,6 @@ struct LibraryGame: Codable, Identifiable, Equatable {
     /// Signed and installed on a paired device (installedDevice is its UDID): Play starts it there.
     var onDevice: Bool { !installedDevice.isEmpty && FileManager.default.fileExists(atPath: iosAppPath + "/Info.plist") }
 
-    /// An iPhone or iPad game runs only the cheats that write data. Code writes are refused there (iOS does not allow changing
-    /// the game's code), so the Cheats sheet says so for a game that has an iOS build. The switches stay usable: the same game may have a Mac build.
-    var cheatsNeedIOSNote: Bool { hasIOSBuild || onDevice }
     var hasIOSBuild: Bool { hasIPA || hasIOSApp }
     var hasIPA: Bool { !ipaPath.isEmpty && FileManager.default.fileExists(atPath: ipaPath) }
     var hasIOSApp: Bool { !iosAppPath.isEmpty && FileManager.default.fileExists(atPath: iosAppPath + "/Info.plist") }
@@ -459,8 +456,6 @@ final class GameLibrary: ObservableObject {
             game.inputs["update"] = found.filter { familyOf($0, id + 0x800, id + 0x1000) }
                 .sorted { TitleID.updateVersion($0.lastPathComponent) > TitleID.updateVersion($1.lastPathComponent) }.prefix(1).map(\.path)
             game.inputs["dlc"] = found.filter { familyOf($0, id + 0x1000, id + 0x2000) }.map(\.path).sorted()
-            game.inputs["keys"] = [gameRoot.appendingPathComponent("prod.keys"), root.appendingPathComponent("keys/prod.keys"), root.appendingPathComponent("prod.keys"), gameRoot.appendingPathComponent("keys/prod.keys")]
-                .filter { FileManager.default.fileExists(atPath: $0.path) }.prefix(1).map(\.path)
             game.sourceFolder = gameRoot.path
             game.outputDirectory = url.deletingLastPathComponent().path
             if let ipa = found.first(where: { $0.pathExtension.lowercased() == "ipa" }) { game.ipaPath = ipa.path }
@@ -485,7 +480,7 @@ final class GameLibrary: ObservableObject {
                         else {
                             // Slots the library has empty and the scan fills: an update or DLC added since, or a game
                             // recorded before the scan climbed out of a "nsp本体" folder (nothing was found beside it then).
-                            for slot in ["update", "dlc", "keys"] where existing.inputs[slot, default: []].isEmpty {
+                            for slot in ["update", "dlc"] where existing.inputs[slot, default: []].isEmpty {
                                 existing.inputs[slot] = source.inputs[slot] ?? []
                             }
                             if existing.sourceFolder.isEmpty { existing.sourceFolder = source.sourceFolder }
