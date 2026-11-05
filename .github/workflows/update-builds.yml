@@ -1,6 +1,6 @@
 # Keeps every game's build current, and adds the Switch 2 games nxnative gains a profile for, without anyone having to run anything.
 #
-# Every 30 minutes a small Linux job asks GitHub whether any game's engine (switch2mac-engine, nxnative, pokopia-native) has a newer
+# Every 5 minutes (GitHub's shortest) a small Linux job asks GitHub whether any game's engine (switch2mac-engine, nxnative, pokopia-native) has a newer
 # commit for it, or whether nxnative has a Switch 2 profile switch2mac has no folder for yet (tools/engine/update.py --check --new-games).
 # Only when something is due, a Mac job fetches it, re-applies switch2mac's overlay and settings, compiles the game's runtime as a check,
 # and commits each game that passes to main. A game that does not fit or does not compile stays where it was (the job's log says why).
@@ -9,7 +9,7 @@ name: Update builds
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"   # the shortest interval GitHub allows; it may start a run some minutes late
   workflow_dispatch:
 
 permissions:

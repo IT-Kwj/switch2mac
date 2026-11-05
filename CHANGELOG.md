@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-05 (9)
+
+- Builds now check for updates every 5 minutes instead of every 30 (the shortest GitHub allows; GitHub sometimes starts a check a few minutes late).
+- Shader lists: Mario Kart World's nxnative build gains 388 rows (#10).
+
 ## 2026-11-05 (8): switch2mac app 0.2.0
 
 - **New Performance tab** in the app, between Builds and Settings. It shows your last three game runs: average, lowest and highest frame rate, 1% low, peak memory, and GPU and CPU use, read from the game's own log when it closes. Nothing leaves your Mac.
