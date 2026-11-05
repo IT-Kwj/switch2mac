@@ -94,7 +94,8 @@ extension LauncherView {
                             title: game.primary == .play ? loc.t("library.play")
                                 : (game.primary == .openOnDevice ? String(format: loc.t("dev.open"), devices.deviceName(game.installedDevice))
                                    : loc.t("library.newBuild")),
-                            symbol: game.primary == .play ? "play.fill" : (game.primary == .openOnDevice ? "iphone" : "hammer.fill"))
+                            symbol: game.primary == .play ? "play.fill" : (game.primary == .openOnDevice ? "iphone" : "hammer.fill"),
+                            fill: game.primary == .play ? LauncherPalette.building : LauncherPalette.cream)
                     }
                     .buttonStyle(.plain).disabled(launching || (m.running && !game.isReady))
                     .keyboardShortcut(.return, modifiers: [])

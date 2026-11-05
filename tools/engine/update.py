@@ -197,10 +197,6 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
     while j < len(lines) and lines[j].startswith('|'): j += 1
     lines.insert(j, f'| {name} | {upd} |')
     r.write_text('\n'.join(lines))
-    form = ROOT / '.github/ISSUE_TEMPLATE/how-it-ran.yml'   # the How it ran form lists it too
-    if form.exists():
-        ft = form.read_text(); k = '        - Another Switch 2 game'
-        if k in ft and f'        - {name}\n' not in ft: form.write_text(ft.replace(k, f'        - {json.dumps(name) if ":" in name else name}\n' + k, 1))
     return d
 
 
@@ -240,7 +236,7 @@ def main():
             try: prepare(g, sha, compile_host)
             except RuntimeError as x: say(f'  NOT added: {x}'); continue
             d = add_game(tid, name, version, sha)
-            git('-C', str(ROOT), 'add', '-A', str(d), 'README.md', '.github/ISSUE_TEMPLATE/how-it-ran.yml')
+            git('-C', str(ROOT), 'add', '-A', str(d), 'README.md')
             subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); switch2mac builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
                            env=dict(os.environ, TZ='UTC'), check=True)
             say(f'  added: {git("-C", str(ROOT), "log", "--oneline", "-1")}')

@@ -1023,6 +1023,7 @@
   "msg.workdirHint": "Tip: the output folder is also where the build cache lives (<output>/<ID>_build). To reuse an existing build, point it back at the same folder, since a new folder starts over. When the output folder is on an external drive, a first build is noticeably slower (worse on exFAT or a hard disk).",
   "nav.builds": "Builds",
   "nav.library": "Library",
+  "nav.performance": "Performance",
   "nav.settings": "Settings",
   "notify.doneTitle": "%@ is built",
   "notify.failedTitle": "%@ couldn’t be built",

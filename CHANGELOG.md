@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-05 (8): switch2mac app 0.2.0
+
+- **New Performance tab** in the app, between Builds and Settings. It shows your last three game runs: average, lowest and highest frame rate, 1% low, peak memory, and GPU and CPU use, read from the game's own log when it closes. Nothing leaves your Mac.
+- **Share** on a run fills in the How it ran form for you (game, build, your Mac's model, chip and memory, macOS, frame rate, memory) and lets you add a comment; you check it on GitHub and press Create.
+- The How it ran form's Game and Build questions are now text boxes, so the app can fill them in.
+
 ## 2026-11-05 (7)
 
 - **Tell others how a game ran, and it's added for you.** Fill in the How it ran form (now with Star Fox, the build version and untested builds): it is read automatically and becomes a row in the game's reports, once a maintainer has checked it. Reports now record their date and build version.

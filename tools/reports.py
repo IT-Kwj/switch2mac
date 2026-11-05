@@ -3,8 +3,8 @@
 
   tools/reports.py from-issue <number> [--apply]   read the issue (gh), check it, print what it gives as one JSON line; --apply adds the row
 
-A row needs a game this repository has and a Mac it can read: a chip (M1 ... M9, with Pro / Max / Ultra) and its memory in GB. The build is the one the
-form names, or, for "the one the app recommended" and "not sure", the one switch2mac picks for that chip and memory; its version is the one the form gives,
+A row needs a game this repository has and a Mac it can read: a chip (M1 ... M9, with Pro / Max / Ultra) and its memory in GB. The build is the engine the
+form names, or, when it names none, the one switch2mac picks for that chip and memory; its version is the one the form gives,
 else the commit the build pins today. Every field is plain text with tabs and line breaks removed, and capped: the form asks only about the Mac, and
 the pull request the workflow opens lets a maintainer read the row before it goes in. A form edited later replaces its own row (the source names the issue).
 The GitHub workflow .github/workflows/reports.yml runs it for every new or edited [How it ran] issue.
@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 _s = importlib.util.spec_from_file_location('s2m', ROOT / 'switch2mac.py'); S2M = importlib.util.module_from_spec(_s); _s.loader.exec_module(S2M)
-BUILD_LABELS = {"switch2mac's engine": 'switch2mac', "nxnative's engine": 'nxnative', 'pokopia-native': 'pokopia-native'}
+BUILD_LABELS = {'pokopia': 'pokopia-native', 'nxnative': 'nxnative', 'switch2mac': 'switch2mac'}   # words in the Build answer, the more particular first
 
 
 def plain(s, n):   # one line of plain text, at most n characters
@@ -44,8 +44,8 @@ def from_issue(issue):
     if not chip or not mem: return {'ok': False, 'problem': 'The Mac line needs its chip and memory, as About This Mac shows them (for example "MacBook Air, M3, 16 GB").'}
     chip_name = f'M{chip[1]}' + (f' {chip[2].capitalize()}' if chip[2] else '')
     model = plain(mac_text[:chip.start()].replace(',', ' '), 30) or 'Mac'
-    label = plain(f.get('Build'), 60).lower(); bid = BUILD_LABELS.get(label)
-    if label.startswith('an untested'): bid = 'untested'
+    label = plain(f.get('Build'), 60).lower()
+    bid = 'untested' if 'untested' in label else next((v for k, v in BUILD_LABELS.items() if k in label), None)
     if not bid: bid = S2M.recommend(g, {'generation': int(chip[1]), 'memory_gb': int(mem[1])})[0]
     pin = next((b['engine']['commit'] for b in S2M.builds(g) if b['id'] == bid), '')
     version = plain(f.get('Build version (optional)'), 40)

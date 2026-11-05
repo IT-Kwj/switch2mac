@@ -6,37 +6,20 @@ body:
     attributes:
       value: |
         **Thanks!** Your report goes into the game's reports table (`games/<game>/reports.tsv`) and helps switch2mac pick the right build for Macs like yours. Only the Mac's model, chip, memory and macOS are recorded, never anything about you. Don't attach game files, saves or the app.
-  - type: dropdown
+  - type: input
     id: game
     attributes:
       label: Game
-      options:
-        - Mario Kart World
-        - Donkey Kong Bananza
-        - Pokémon Pokopia
-        - Yoshi and the Mysterious Book
-        - Splatoon Raiders
-        - "Hyrule Warriors: Age of Imprisonment"
-        - Fire Emblem Fortune's Weave
-        - Mario Tennis Fever
-        - Star Fox
-        - Another Switch 2 game (say which in How it went)
+      description: As the switch2mac app names it.
+      placeholder: Mario Kart World
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: build
     attributes:
       label: Build
-      description: The app shows it on the game's Build card and in the Library. Not sure? Pick the last one.
-      options:
-        - The one the app recommended
-        - switch2mac's engine
-        - nxnative's engine
-        - pokopia-native
-        - An untested build
-        - Not sure
-    validations:
-      required: true
+      description: The engine, as the game's Build card shows it (switch2mac, nxnative or pokopia-native; say "untested" for an untested build). Not sure? Leave it empty.
+      placeholder: nxnative
   - type: input
     id: version
     attributes:

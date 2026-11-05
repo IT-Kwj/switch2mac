@@ -13,6 +13,7 @@ struct LauncherView: View {
     @ObservedObject private var repo: RepoStore   // the repository: the activity line, and the checks that follow a change of it
     @ObservedObject private var engine: EngineSyncStore   // the engine: the sync banner, and the checks that follow a sync
     @StateObject var library: GameLibrary
+    @StateObject private var runs = GameRunStore()   // the Performance page's runs (GameRuns.swift)
     @State private var page: LauncherPage = .library
     @State private var search = ""
     @State private var searching = false
@@ -141,6 +142,9 @@ struct LauncherView: View {
             EngineSyncBanner(engine: engine, m: m)
             if page == .library {
                 libraryPage
+            } else if page == .performance {
+                LauncherPageScroll { PerformancePage(runs: runs, library: library, artwork: artwork) }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 CardPages(settings: page == .settings, build: m, updates: updates, repo: repo, engine: engine, dependencies: stores.dependencies, devices: devices,
                           library: library, diagnostics: stores.diagnostics, onViewGame: { page = .library }, onOpenSettings: { page = .settings },
@@ -187,6 +191,7 @@ struct LauncherView: View {
                 if repo.isRepo && repo.isGit { repo.checkForUpdates(silent: true) } else if !repo.isRepo { _ = repo.clone() } else { repo.adoptAtLaunch() }
                 updates.checkForUpdate(silent: true)
                 BuildNotifier.shared.watch(m, library: library)   // BuildNotifications.swift
+                runs.watch(library)   // a game's run is read from its log when it closes (GameRuns.swift)
             }
         }
         .onReceive(BuildNotifier.shared.$route) { route in   // a clicked build notification

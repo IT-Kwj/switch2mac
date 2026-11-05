@@ -38,7 +38,9 @@ done < <(find "$RES/tools" "$RES/python" -type f -print0)
 
 # the icon: Assets.car (macOS 26 and later) and AppIcon.icns (13 to 25), and the two Info.plist keys that point at them
 if [ -d "$APP/Contents" ]; then
-    for f in AppIcon.icns; do   # switch2mac: the icon is an .icns (tools/make_app.sh), no asset catalog [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"; done
+    for f in AppIcon.icns; do   # switch2mac: the icon is an .icns (tools/make_app.sh), no asset catalog
+        [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"
+    done
     # the launcher's texts (#388): Contents/Resources/l10n, one JSON file per language, each a JSON object with an English text of its own
     for c in en; do   # switch2mac: English only for now
         v=$(clean "$PY" -I -c "import json, sys; d = json.load(open(sys.argv[1], encoding='utf-8')); assert isinstance(d, dict) and len(d) > 1 and '_language' in d" "$RES/l10n/$c.json" 2>&1) \
