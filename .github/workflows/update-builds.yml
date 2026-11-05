@@ -34,7 +34,7 @@ jobs:
   update:
     needs: check
     if: needs.check.outputs.changed == 'true'
-    runs-on: macos-latest
+    runs-on: xcode-27   # GitHub's Mac with Xcode 27 (a preview image): nxnative's newer code needs its SDK (MTL4FX), Xcode 26 does not build it
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
