@@ -12,7 +12,10 @@
     "commit": "6bbdbbe25511dda29b2dc9d5975b06798839dbe4"
    },
    "shader_list": "shader_list.tsv",
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch."
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch.",
+   "versions": [
+    "v131072"
+   ]
   },
   {
    "id": "kid-with-sword",
@@ -31,7 +34,10 @@
     "DM_FPS_HOLD=off",
     "DM_ALIAS_SIZE=0x200000000"
    ],
-   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; recommended for MacBook Air."
+   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; recommended for MacBook Air.",
+   "versions": [
+    "v131072"
+   ]
   }
  ],
  "choose": [
@@ -39,6 +45,11 @@
    "model": "MacBook Air",
    "build": "kid-with-sword",
    "why": "MacBook Air: cheemu21's port was made and tested on one (60 fps at 720p on an M5 Air)"
+  },
+  {
+   "memory_max": 16,
+   "build": "kid-with-sword",
+   "why": "16 GB or less: cheemu21's port was made on a 16 GB Mac and releases texture memory (about 7.5 GB in Kokiri Forest)"
   },
   {
    "build": "nxnative",

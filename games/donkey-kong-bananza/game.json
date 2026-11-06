@@ -2,10 +2,54 @@
  "title_id": "040074A01BF12000",
  "name": "Donkey Kong Bananza",
  "version": "update v458752",
- "engine": {
-  "kind": "nxnative",
-  "repo": "https://github.com/seedds/nxnative",
-  "commit": "04df08d429dc70f8665b0bfa4891057ea30d5d89"
- },
- "disk_gb": 40
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v458752"
+   ],
+   "shader_list": "shader_list.tsv",
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, kept up to date with nxnative's main branch.",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "04df08d429dc70f8665b0bfa4891057ea30d5d89"
+   }
+  },
+  {
+   "id": "horizon-nx2",
+   "name": "horizon-nx2 (MacBook Air)",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/joaoalvess/horizon-nx2",
+    "commit": "0d7cc654ed6dec38e4d0331e0fee57f3e564f908"
+   },
+   "versions": [
+    "v458752"
+   ],
+   "shader_list": "shader_list-horizon-nx2.tsv",
+   "watch": [
+    ""
+   ],
+   "about": "joaoalvess's nxnative port tuned for a fanless 16 GB MacBook Air M4 (MIT): the opening, the mining tunnel and the areas after it at 60 fps."
+  }
+ ],
+ "disk_gb": 40,
+ "choose": [
+  {
+   "model": "MacBook Air",
+   "build": "horizon-nx2",
+   "why": "MacBook Air: horizon-nx2 was tuned on a fanless 16 GB MacBook Air"
+  },
+  {
+   "memory_max": 16,
+   "build": "horizon-nx2",
+   "why": "16 GB or less: horizon-nx2 was tuned to fit a 16 GB Mac"
+  },
+  {
+   "build": "nxnative",
+   "why": "Other Macs: nxnative's own Donkey Kong Bananza build"
+  }
+ ]
 }

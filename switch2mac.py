@@ -48,16 +48,26 @@ def this_mac():   # what the build choice reads: the chip (its generation: 1 for
     return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'model': model, 'macos': macos()}
 
 
-def recommend(g, mac):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max, model), else the first build
+def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any)
+    return not ver or not b.get('versions') or ver in b['versions']
+
+
+def recommend(g, mac, ver=None):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max, model) whose build plays the dump's version, else the first build that does
+    bs = {b['id']: b for b in builds(g)}
+    if not ver and builds(g) and builds(g)[0].get('versions'): ver = builds(g)[0]['versions'][0]   # version unknown (no dump at hand): the game's main one, its first build's
     for r in g.get('choose', []):
-        if r.get('model') and r['model'].lower() != mac.get('model', '').lower(): continue   # the Mac's model name, as "About This Mac" gives it ("MacBook Air")
+        if r['build'] in bs and not fits(bs[r['build']], ver): continue
+        models = [r['model']] if isinstance(r.get('model'), str) else r.get('model', [])
+        if models and mac.get('model', '').lower() not in [m.lower() for m in models]: continue   # the Mac's model name, as "About This Mac" gives it ("MacBook Air")
         if mac['generation'] < r.get('chip_min', 0) or mac['generation'] > r.get('chip_max', 99): continue
         if mac['memory_gb'] < r.get('memory_min', 0) or mac['memory_gb'] > r.get('memory_max', 1 << 20): continue
         return r['build'], r.get('why', '')
     if not builds(g):   # no tested build: nxnative's guess is the most complete (its survey and memory check)
         u = [b['id'] for b in untested_builds(g)]
         return ('nxnative-untested' if 'nxnative-untested' in u else (u[0] if u else '')), 'No tested build of this game yet: every build here is untested'
-    return builds(g)[0]['id'], ''
+    ok = [b for b in builds(g) if fits(b, ver)]
+    if ver and not ok: return builds(g)[0]['id'], f'No build here knows your dump\'s version ({ver}); this one may not start'
+    return (ok or builds(g))[0]['id'], ''
 
 
 KINDS = {'switch2mac': "switch2mac's engine", 'nxnative': "nxnative's engine", 'pokopia-native': "pokopia-native's engine"}
@@ -91,9 +101,9 @@ def untested_builds(g):
 def profile_src(tid): return PROFILE or NX / f'dm/games/{tid}'
 
 
-def with_build(g, bid=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac)
+def with_build(g, bid=None, ver=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac and the dump's version)
     bs = builds(g) + untested_builds(g)
-    if not bid: bid = recommend(g, this_mac())[0]
+    if not bid: bid = recommend(g, this_mac(), ver)[0]
     b = next((b for b in bs if b['id'] == bid), None)
     if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
     return dict(g, engine=b['engine'], build=b, disk_gb=b.get('disk_gb', g.get('disk_gb')))   # a build may need more disk than the game's usual (Pokopia's full nxnative build)
@@ -312,6 +322,12 @@ def update_dirs(d):   # the newest update's exefs and romfs when it holds both (
     return (found[0] / 'exefs', found[0] / 'romfs') if found else None
 
 
+def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), "v0" with no update, None when it cannot tell
+    d = Path(d).expanduser().resolve(); u = update_dirs(d)
+    if not u: return 'v0'
+    return f'v{u[0].parent.name}' if u[0].parent.name.isdigit() else None
+
+
 def title_id(npdm):
     npdm = npdm.read_bytes()
     aci = struct.unpack_from('<I', npdm, 0x70)[0]   # ACI0 offset in the META header
@@ -528,8 +544,9 @@ def build(a):
     if bad: sys.exit(f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
     if tid not in GAMES: GAMES[tid] = unknown_game(tid)   # any Switch 2 game can be tried with the untested builds
     if True:
-        GAMES[tid] = with_build(GAMES[tid], a.engine); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
-        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        ver = dump_version(a.dump); GAMES[tid] = with_build(GAMES[tid], a.engine, ver); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
+        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        if not fits(chosen, ver): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
         free_space(w, GAMES[tid])
     if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
     use_engine(GAMES[tid])
@@ -600,13 +617,13 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
             problem=f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
         print(json.dumps(out, ensure_ascii=False)); return
     g = GAMES.get(tid) or unknown_game(tid)   # a game switch2mac has no folder for: offered with the untested builds only
-    mac = this_mac(); rec, why = recommend(g, mac)
+    mac = this_mac(); ver = dump_version(a.dump); rec, why = recommend(g, mac, ver)
     if not rec: out['problem'] = f'title {tid}: no engine is set up to try it'; print(json.dumps(out)); return
     eng = with_build(g, rec)['engine']
     out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
                disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md' if g.get('dir') else '', untested=not builds(g),
-               mac=mac, recommended=rec, why=why, reports=reports(g),
-               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', '')} for b in builds(g)],
+               mac=mac, recommended=rec, why=why, reports=reports(g), dump_version=ver,
+               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', ''), 'fits': fits(b, ver)} for b in builds(g)],
                experimental=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b['about']} for b in untested_builds(g)])
     print(json.dumps(out, ensure_ascii=False))
 
@@ -615,10 +632,12 @@ def builds_cmd(a):   # the builds a game has and which one this Mac gets, for pe
     tid = dump_title(a.dump) if Path(a.dump).expanduser().exists() else a.dump.upper()
     g = GAMES.get(tid) or next((g for g in GAMES.values() if g['dir'].name == a.dump), None) or (unknown_game(tid) if re.fullmatch(r'[0-9A-F]{16}', tid) else None)
     if not g: sys.exit(f'{a.dump}: not a Switch 2 game dump, a title ID or a games/ folder')
-    mac = this_mac(); rec, why = recommend(g, mac); rs = reports(g)
-    print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}')
+    ver = dump_version(a.dump) if Path(a.dump).expanduser().exists() else None
+    mac = this_mac(); rec, why = recommend(g, mac, ver); rs = reports(g)
+    print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}' + (f'; the dump is {ver}' if ver else ''))
     for b in builds(g):
-        print(f'\n  {"*" if b["id"] == rec else " "} {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})' + (f'  <- this Mac: {why}' if b['id'] == rec and why else ''))
+        print(f'\n  {"*" if b["id"] == rec else " "} {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})' + (f'  <- this Mac: {why}' if b['id'] == rec and why else '')
+              + (f'  [plays {", ".join(b["versions"])} only]' if b.get('versions') and not fits(b, ver) else ''))
         if b.get('about'): print(f'      {b["about"]}')
         for r in rs:
             if r['build'].split()[0] == b['id']:

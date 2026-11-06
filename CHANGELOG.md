@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-06 (6)
+
+- New builds from other Mac ports (all MIT, credited in NOTICE.md): **Mario Kart World** gets [mkw-neo](https://github.com/MenAtCafe/mkw-neo) (a race in about 4 GB) and [nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (the first build for update 1.8.0); **Donkey Kong Bananza** and **Pokémon Pokopia** get [horizon-nx2](https://github.com/joaoalvess/horizon-nx2), tuned on a fanless MacBook Air.
+- The recommended build now looks at your dump first, then your Mac: a build is only recommended for game versions it plays (Mario Kart World 1.8.0 gets the 1.8.0 build), then 16 GB or less and MacBook Airs get the lightest build, and other Macs keep the builds they had. Ocarina of Time's kid-with-sword-remake is now also recommended on Macs with 16 GB or less.
+
 ## 2026-11-06 (5)
 
 - The Legend of Zelda: Ocarina of Time: on a MacBook Air the app now recommends the kid-with-sword-remake build, which was made and tested on one; other Macs keep nxnative's build.
