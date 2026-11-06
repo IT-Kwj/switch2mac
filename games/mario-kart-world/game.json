@@ -51,7 +51,7 @@
    "about": "MenAtCafe's nxnative port tuned to fit 8 GB (MIT): a race holds about 4 GB, 40-58 fps on a MacBook Neo, every course played. The build for Macs with 16 GB or less and for fanless MacBook Airs."
   },
   {
-   "id": "mkw-1.8.0",
+   "id": "nxnative-mkw",
    "name": "nxnative-mkw (update 1.8.0)",
    "engine": {
     "kind": "nxnative",
@@ -61,7 +61,7 @@
    "versions": [
     "v917504"
    ],
-   "shader_list": "shader_list-mkw-1.8.0.tsv",
+   "shader_list": "shader_list-nxnative-mkw.tsv",
    "watch": [
     ""
    ],
@@ -70,7 +70,7 @@
  ],
  "choose": [
   {
-   "build": "mkw-1.8.0",
+   "build": "nxnative-mkw",
    "why": "Your dump has the 1.8.0 update: this is the build that plays it"
   },
   {
