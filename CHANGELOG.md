@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-06 (1): switch2mac app 0.3.2
+
+- **What's New:** a new game's line now says only when it was added and which engine builds it. The build page already marks untested builds.
+- New game: The Legend of Zelda: Ocarina of Time, built with nxnative.
+
 ## 2026-11-05 (12): switch2mac app 0.3.1
 
 - **A new icon:** the Mac-as-handheld, now lit from behind with a warm glow and standing on a lit floor.

@@ -20,7 +20,7 @@ struct WhatsNewPage: View {
             CardGroup("New games") {
                 ForEach(Array(newGames.enumerated()), id: \.element.id) { index, u in
                     if index > 0 { CardDivider() }
-                    CardRow(u.game, detail: "Added \(Self.day(u.date).lowercased()): built with \(u.engine). Untested by switch2mac so far: players' reports say how it runs.",
+                    CardRow(u.game, detail: "Added \(Self.day(u.date).lowercased()): built with \(u.engine).",
                             dot: LauncherPalette.ready) {
                         Button("Build", action: newBuild)
                     }
