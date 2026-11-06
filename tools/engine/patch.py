@@ -64,6 +64,15 @@ def main():
                "    if not any(r.get('env') == 'DM_OVERLAY' for r in d['settings']): d['settings'].insert(at, ov)\n")
         st.write_text(s.replace(w, row + w, 1)); print('  settings.py: Performance overlay row')
     settings_zh(nx)
+    hle_net_poll(nx)
+
+
+def hle_net_poll(nx):   # cap the offline poll/select idle wait at 100 ms: Mario Kart World otherwise stalls for ~14 s at "return to home" / before the course select (0 fps)
+    path = nx / 'dm/host/hle_net.c'; s = path.read_text()
+    old = "static int sk_idle(int64_t ms) { dm_guest_sleep_ns((ms < 0 ? 100 : ms) * 1000000); return 0; }"
+    new = "static int sk_idle(int64_t ms) { if (ms > 100) ms = 100; dm_guest_sleep_ns((ms < 0 ? 100 : ms) * 1000000); return 0; }"
+    if old in s:
+        path.write_text(s.replace(old, new, 1)); print('  hle_net.c: poll idle capped at 100 ms')
 
 
 def settings_zh(nx):   # switch2mac's Chinese labels/notes for the generic rows a game's key-2 panel shows (idempotent: the English lines are gone after the first run)

@@ -2,5 +2,6 @@ step: launcher and host (clones of the game files)
 step: shader libraries
 step: pipeline archive
 step: game files
+step: icon
 step: signing (ad-hoc)
 app: /Users/amid031799/Documents/GitHub/switch2mac/work/Mario Kart World.app
