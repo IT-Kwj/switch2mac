@@ -32,6 +32,7 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Mario Tennis Fever | update v327680 (1.1.1) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: **60 fps on an M4 Pro** in Free Play matches. A player's **M3 Pro (18 GB)** gets 30-45 fps in Adventure exploration, with black outdoor textures (open). | [games/mario-tennis-fever](games/mario-tennis-fever) |
 | Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
 | Kirby Air Riders | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000). | [games/kirby-air-riders](games/kirby-air-riders) |
+| The Legend of Zelda: Ocarina of Time | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/6121fd75312cb4d1af404a01921d437741fea91e/dm/games/0400486024DEC000). | [games/the-legend-of-zelda-ocarina-of-time](games/the-legend-of-zelda-ocarina-of-time) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -52,6 +53,7 @@ The files your dump tool wrote, for example:
 | Mario Tennis Fever | `base/` and `updates/327680/` |
 | Star Fox | `base/` and `updates/131072/` |
 | Kirby Air Riders | `base/` and `updates/458752/` |
+| The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 

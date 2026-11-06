@@ -1,0 +1,11 @@
+{
+ "title_id": "0400486024DEC000",
+ "name": "The Legend of Zelda: Ocarina of Time",
+ "version": "update v131072",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "6121fd75312cb4d1af404a01921d437741fea91e"
+ },
+ "disk_gb": 50
+}
