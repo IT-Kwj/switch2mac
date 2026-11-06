@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (2)
+
+- Shader lists: The Legend of Zelda: Ocarina of Time's build gains 10,067 rows (#18); Mario Kart World's nxnative build gains 2,246 rows (#16, #17).
+
 ## 2026-11-06 (1): switch2mac app 0.3.2
 
 - **What's New:** a new game's line now says only when it was added and which engine builds it. The build page already marks untested builds.
