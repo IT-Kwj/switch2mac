@@ -43,11 +43,14 @@ def unknown_game(tid):   # a Switch 2 game switch2mac has no folder for: it can 
 def this_mac():   # what the build choice reads: the chip (its generation: 1 for M1, ...) and memory
     def sysctl(k): return subprocess.run(['sysctl', '-n', k], capture_output=True, text=True).stdout.strip()
     chip = sysctl('machdep.cpu.brand_string'); m = re.search(r'\bM(\d+)\b', chip)
-    return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'macos': macos()}
+    try: model = json.loads(subprocess.run(['system_profiler', 'SPHardwareDataType', '-json'], capture_output=True, text=True, timeout=20).stdout)['SPHardwareDataType'][0].get('machine_name', '')
+    except Exception: model = ''   # "MacBook Air", "MacBook Pro", "Mac mini" ...: a "choose" rule's "model"
+    return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'model': model, 'macos': macos()}
 
 
-def recommend(g, mac):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max), else the first build
+def recommend(g, mac):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max, model), else the first build
     for r in g.get('choose', []):
+        if r.get('model') and r['model'].lower() != mac.get('model', '').lower(): continue   # the Mac's model name, as "About This Mac" gives it ("MacBook Air")
         if mac['generation'] < r.get('chip_min', 0) or mac['generation'] > r.get('chip_max', 99): continue
         if mac['memory_gb'] < r.get('memory_min', 0) or mac['memory_gb'] > r.get('memory_max', 1 << 20): continue
         return r['build'], r.get('why', '')

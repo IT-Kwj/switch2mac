@@ -31,13 +31,18 @@
     "DM_FPS_HOLD=off",
     "DM_ALIAS_SIZE=0x200000000"
    ],
-   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; not yet played by switch2mac."
+   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; recommended for MacBook Air."
   }
  ],
  "choose": [
   {
+   "model": "MacBook Air",
+   "build": "kid-with-sword",
+   "why": "MacBook Air: cheemu21's port was made and tested on one (60 fps at 720p on an M5 Air)"
+  },
+  {
    "build": "nxnative",
-   "why": "nxnative's own Ocarina of Time build is the one switch2mac has played on this game"
+   "why": "Other Macs: nxnative's own Ocarina of Time build"
   }
  ],
  "disk_gb": 50

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (5)
+
+- The Legend of Zelda: Ocarina of Time: on a MacBook Air the app now recommends the kid-with-sword-remake build, which was made and tested on one; other Macs keep nxnative's build.
+
 ## 2026-11-06 (4)
 
 - The Legend of Zelda: Ocarina of Time gets a second build: [kid-with-sword-remake](https://github.com/cheemu21/kid-with-sword-remake), cheemu21's nxnative port of the game (Ocarina fixes ahead of upstream, a 30 / 60 fps frame step, MetalFX upscaling). Pick it with **Build with…**; nxnative's build stays the default. Thanks to cheemu21.
