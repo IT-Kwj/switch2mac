@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-05 (12): switch2mac app 0.3.1
+
+- **A new icon:** the Mac-as-handheld, now lit from behind with a warm glow and standing on a lit floor.
+- **What's New opens straight away**, and News shows five more at a time (Show more) instead of everything at once.
+- **Performance:** a run's numbers line up in even columns.
+- Shader lists: Mario Kart World's nxnative build gains 8,503 rows (#13, #14, #15). Lists sent for a game's second build now reach that build.
+
 ## 2026-11-05 (11)
 
 - Shader lists: Mario Kart World's switch2mac build gains 1,049 rows (#11).

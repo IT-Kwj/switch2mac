@@ -229,6 +229,9 @@ final class WhatsNewStore: ObservableObject {
     @Published private(set) var engine: [WhatsNew.EngineChange] = []   // nxnative's own changes
     @Published private(set) var news: [WhatsNew.News] = []
     @Published private(set) var pinned: [String: WhatsNew.Pinned] = [:]
+    /// The games each of nxnative's changes names (WhatsNew.games), by commit: worked out once off the main thread when the changes or the
+    /// pinned games change. Matching every row's text against every game's name on each redraw made the page stall when it first opened
+    @Published private(set) var engineTags: [String: [String]] = [:]
     @Published private(set) var checked: Date?
     @Published private(set) var failed = false
     @Published private(set) var seen: Date
@@ -258,6 +261,15 @@ final class WhatsNewStore: ObservableObject {
         findStandings()
     }
 
+    private func findTags() {
+        let changes = engine, pinned = pinned
+        Task {
+            engineTags = await Task.detached(priority: .userInitiated) { () -> [String: [String]] in
+                Dictionary(changes.map { ($0.sha, WhatsNew.games(named: $0.body, pinned: pinned)) }, uniquingKeysWith: { a, _ in a })
+            }.value
+        }
+    }
+
     private func findStandings() {
         let games = games, pinned = pinned, updates = updates
         Task {
@@ -280,9 +292,11 @@ final class WhatsNewStore: ObservableObject {
     /// Reads the repository copy again, and asks GitHub when the last answer is older than ten minutes (or `force`).
     func refresh(repo: String, force: Bool = false) {
         let changelog = (try? String(contentsOfFile: repo + "/CHANGELOG.md", encoding: .utf8)) ?? ""
-        news = WhatsNew.news(changelog: changelog, limit: 30)
+        let n = WhatsNew.news(changelog: changelog, limit: 30)
+        if n != news { news = n }   // unchanged news would redraw the whole page each time the tab opens
         let pins = WhatsNew.pinned(repo: repo)
-        if pins != pinned { pinned = pins; findStandings() }
+        if pins != pinned { pinned = pins; findStandings(); findTags() }
+        else if engineTags.isEmpty && !engine.isEmpty { findTags() }   // the saved changes, on the first refresh after launch
         guard !fetching, force || checked.map({ Date().timeIntervalSince($0) > 600 }) ?? true else { return }
         fetching = true
         func request(_ repo: String, _ count: Int) -> URLRequest {
@@ -302,7 +316,7 @@ final class WhatsNewStore: ObservableObject {
             guard ok, let a else { return }
             updates = WhatsNew.updates(fromAPI: a.0)
             findStandings()
-            if let b, (b.1 as? HTTPURLResponse)?.statusCode == 200 { engine = WhatsNew.engineChanges(fromAPI: b.0) }
+            if let b, (b.1 as? HTTPURLResponse)?.statusCode == 200 { engine = WhatsNew.engineChanges(fromAPI: b.0); findTags() }
             checked = Date()
             let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
             try? FileManager.default.createDirectory(at: cache.deletingLastPathComponent(), withIntermediateDirectories: true)

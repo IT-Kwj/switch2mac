@@ -37,8 +37,8 @@ struct PerformancePage: View {
                         withAnimation(.easeInOut(duration: 0.2)) { open = open == run.id ? nil : run.id }
                     }
                     if open == run.id {
-                        RunCard(run: run, banner: nil, cores: cores, compact: true) { sharing = run }
-                            .padding(.horizontal, 14).padding(.bottom, 14)
+                        RunCard(run: run, banner: nil, cores: cores, compact: true) { sharing = run }   // in line with the row's banner (after its colour bar)
+                            .padding(.leading, 14 + 4 + 16).padding(.trailing, 14).padding(.top, 6).padding(.bottom, 16)
                     }
                 }
             }
@@ -65,7 +65,7 @@ struct RunCard: View {
 
     var body: some View {
         if compact {
-            HStack(alignment: .bottom) { numbers; Spacer(minLength: 12); shareButton }
+            HStack(alignment: .center, spacing: 16) { compactNumbers; Spacer(minLength: 12); shareButton }
         } else {
             full
         }
@@ -122,6 +122,38 @@ struct RunCard: View {
                 stat("Peak memory", run.peakMemoryMB.map { String(format: "%.1f", Double($0) / 1024) }, "GB")
                 stat("GPU", run.gpuMs.map { String(format: "%.1f", $0) }, "ms", help: "The graphics chip's typical time for one frame")
                 stat("CPU", cpu, "%", help: "How busy the processor was on average, out of all its cores")
+            }
+        }
+    }
+
+    /// A history row's numbers: the seven side by side in even columns, the average first in its colour; when the window is too narrow,
+    /// four and three in a grid whose columns line up.
+    private var compactNumbers: some View {
+        let cells: [(String, String?, String, String, Bool)] = [
+            ("Average", run.avgFPS.map { String(format: "%.0f", $0) }, "fps", "", true),
+            ("Min", run.minFPS.map { String(format: "%.0f", $0) }, "fps", "", false),
+            ("Max", run.maxFPS.map { String(format: "%.0f", $0) }, "fps", "", false),
+            ("1% low", run.lowFPS.map { String(format: "%.0f", $0) }, "fps", "The frame rate of the slowest 1% of frames, in a typical stretch of play", false),
+            ("Peak memory", run.peakMemoryMB.map { String(format: "%.1f", Double($0) / 1024) }, "GB", "", false),
+            ("GPU", run.gpuMs.map { String(format: "%.1f", $0) }, "ms", "The graphics chip's typical time for one frame", false),
+            ("CPU", cpu, "%", "How busy the processor was on average, out of all its cores", false)]
+        func cell(_ c: (String, String?, String, String, Bool)) -> some View {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(c.0).font(.manrope(12, .medium)).foregroundStyle(LauncherPalette.unbuilt)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(c.1 ?? "—").font(.manrope(19, c.4 ? .heavy : .bold)).monospacedDigit()
+                        .foregroundStyle(c.4 ? Self.color(run.avgFPS) : Color.primary)
+                    if c.1 != nil { Text(c.2).font(.manrope(12, .semibold)).foregroundStyle(.secondary) }
+                }
+            }
+            .fixedSize().help(c.3)
+        }
+        let width: CGFloat = 88   // each column: wide enough for "Peak memory" and "15.4 GB"
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 0) { ForEach(cells.indices, id: \.self) { cell(cells[$0]).frame(width: width, alignment: .leading) } }
+            Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 14) {
+                GridRow { ForEach(0..<4, id: \.self) { cell(cells[$0]).frame(width: width, alignment: .leading) } }
+                GridRow { ForEach(4..<7, id: \.self) { cell(cells[$0]).frame(width: width, alignment: .leading) } }
             }
         }
     }

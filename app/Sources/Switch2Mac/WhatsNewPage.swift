@@ -11,7 +11,7 @@ struct WhatsNewPage: View {
     @ObservedObject var library: GameLibrary
     let artwork: [UUID: NSImage]
     let newBuild: () -> Void
-    @State private var allNews = false   // News shows its newest points until Show all
+    @State private var newsShown = WhatsNewPage.newsStep   // News shows its newest points; Show more adds the next few
 
     var body: some View {
         CardPageHeading("What's New", note: "What changed in switch2mac, and new builds and games, checked every few minutes. Your games' updates show in the Library.")
@@ -47,16 +47,19 @@ struct WhatsNewPage: View {
             CardGroup("nxnative's latest changes", footnote: "nxnative is the engine most games here are built with, and it changes many times a day. A change reaches a game when that game's build next moves (Build updates above); changes for every game come along with it.") {
                 ForEach(Array(engineChanges.enumerated()), id: \.element.id) { index, c in
                     if index > 0 { CardDivider() }
-                    EngineChangeRow(change: c, games: WhatsNew.games(named: c.body, pinned: store.pinned), owned: owned)
+                    EngineChangeRow(change: c, games: store.engineTags[c.sha] ?? [], owned: owned)
                 }
             }
         }
     }
 
-    /// The changelog's points, newest first, each with its day; the newest five until Show all.
+    static let newsStep = 5
+
+    /// The changelog's points, newest first, each with its day: the newest five, then five more each time Show more is pressed
+    /// (all of them at once was a long scroll), and Show less back to five once more are shown.
     private var newsCard: some View {
         let points = store.news.flatMap { n in n.points.map { (heading: Self.heading(n), point: $0) } }
-        let shown = allNews ? points : Array(points.prefix(5))
+        let shown = Array(points.prefix(newsShown))
         return CardGroup("News") {
             ForEach(Array(shown.enumerated()), id: \.offset) { index, item in
                 if index > 0 { CardDivider() }
@@ -69,18 +72,29 @@ struct WhatsNewPage: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20).padding(.vertical, 12)
             }
-            if points.count > 5 {
+            if points.count > Self.newsStep {
                 CardDivider()
-                Button { withAnimation(.easeInOut(duration: 0.2)) { allNews.toggle() } } label: {
-                    HStack(spacing: 6) {
-                        Text(allNews ? "Show less" : "Show all \(points.count)").font(.manrope(13, .semibold))
-                        Image(systemName: "chevron.down").font(.system(size: 10, weight: .bold)).rotationEffect(.degrees(allNews ? 180 : 0))
+                HStack(spacing: 0) {
+                    if shown.count < points.count {
+                        newsButton("Show more", up: false) { newsShown += Self.newsStep }
                     }
-                    .foregroundStyle(.secondary).frame(maxWidth: .infinity).padding(.vertical, 11).contentShape(Rectangle())
+                    if shown.count > Self.newsStep {
+                        newsButton("Show less", up: true) { newsShown = Self.newsStep }
+                    }
                 }
-                .buttonStyle(.plain)
             }
         }
+    }
+
+    private func newsButton(_ title: String, up: Bool, _ action: @escaping () -> Void) -> some View {
+        Button { withAnimation(.easeInOut(duration: 0.2), action) } label: {
+            HStack(spacing: 6) {
+                Text(title).font(.manrope(13, .semibold))
+                Image(systemName: "chevron.down").font(.system(size: 10, weight: .bold)).rotationEffect(.degrees(up ? 180 : 0))
+            }
+            .foregroundStyle(.secondary).frame(maxWidth: .infinity).padding(.vertical, 11).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// nxnative's changes of the last three days, at most twenty.
