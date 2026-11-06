@@ -55,6 +55,8 @@ The files your dump tool wrote, for example:
 | Kirby Air Riders | `base/` and `updates/458752/` |
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 
+**A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; switch2mac's own engine (Mario Kart World's `switch2mac` build) needs a dump folder, so the app recommends another build for a `.nup`.
+
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 
 ## What you get

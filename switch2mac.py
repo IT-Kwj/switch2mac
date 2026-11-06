@@ -9,7 +9,8 @@
   ./switch2mac.py install                     move the finished app to /Applications (replacing the old one)
   ./switch2mac.py run [VAR=value ...]         run the build straight from ./work with a log in work/logs (for porting and debugging: docs/porting.md)
 
-The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
+The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs; or the dump is one .nup file (a NUP container: base, updates and DLC),
+which the nxnative-based builds open themselves (tools/nup.py reads its title ID and version first).
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
 Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: switch2mac-engine's dm/games/<title ID>).
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
@@ -48,7 +49,9 @@ def this_mac():   # what the build choice reads: the chip (its generation: 1 for
     return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'model': model, 'macos': macos()}
 
 
-def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any)
+def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any),
+    # and this dump's form: switch2mac's own engine reads a dump's folders, so a .nup goes to the engines whose builders open it (nxnative, pokopia-native)
+    if DUMP_NUP and b['engine']['kind'] == 'switch2mac': return False
     return not ver or not b.get('versions') or ver in b['versions']
 
 
@@ -322,7 +325,37 @@ def update_dirs(d):   # the newest update's exefs and romfs when it holds both (
     return (found[0] / 'exefs', found[0] / 'romfs') if found else None
 
 
+DUMP_NUP = None   # the .nup the dump path names (read_dump), or None for a dump folder
+
+
+def nup_file(d):   # the NUP container a dump path names: the .nup file itself, or the one .nup in a folder holding no exefs/ or base/; None for a dump folder
+    d = Path(d).expanduser().resolve()
+    sys.path.insert(0, str(ROOT / 'tools')); import nup
+    if d.is_file(): return d if nup.is_nup(d) else None
+    if d.is_dir() and not any((d / x).is_dir() for x in ('exefs', 'base')):
+        found = [p for p in sorted(d.glob('*.nup')) if nup.is_nup(p)]
+        if len(found) > 1: sys.exit(f'more than one .nup in {d}: {", ".join(p.name for p in found)}; keep one game per folder, or choose the .nup file itself')
+        if found: return found[0]
+    return None
+
+
+def nup_scan(p):   # (title ID, newest update version or 0) of a NUP: its table of contents and main.npdm, every file read checked against its SHA-256
+    sys.path.insert(0, str(ROOT / 'tools')); import nup
+    try:
+        with nup.Nup(p) as n:
+            app, _, vers, _ = nup.scan(n)
+            return f'{app:016X}', max(vers) if vers else 0
+    except nup.Error as x: sys.exit(f'{x}. Copy the .nup again, or extract it to a dump folder.')
+
+
+def read_dump(d):   # once per command: whether the dump is a .nup (DUMP_NUP), so the build choice and the checks know
+    global DUMP_NUP
+    DUMP_NUP = nup_file(d) if Path(d).expanduser().exists() else None
+    return DUMP_NUP
+
+
 def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), "v0" with no update, None when it cannot tell
+    if read_dump(d): return f'v{nup_scan(DUMP_NUP)[1]}'
     d = Path(d).expanduser().resolve(); u = update_dirs(d)
     if not u: return 'v0'
     return f'v{u[0].parent.name}' if u[0].parent.name.isdigit() else None
@@ -334,7 +367,8 @@ def title_id(npdm):
     return f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
 
 
-def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/)
+def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/); a .nup's from its own main.npdm
+    if read_dump(d): return nup_scan(DUMP_NUP)[0]
     d = Path(d).expanduser().resolve()
     for base in (d, d / 'base'):
         if (base / 'exefs/main.npdm').is_file(): return title_id(base / 'exefs/main.npdm')
@@ -546,9 +580,10 @@ def build(a):
     if True:
         ver = dump_version(a.dump); GAMES[tid] = with_build(GAMES[tid], a.engine, ver); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
         print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
-        if not fits(chosen, ver): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
+        if not fits(chosen, ver) and not (DUMP_NUP and chosen['engine']['kind'] == 'switch2mac'): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
         free_space(w, GAMES[tid])
     if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
+    if DUMP_NUP: sys.exit(f'{GAMES[tid]["build"]["name"]} builds from a dump folder (exefs/ and romfs/), not a .nup: choose another build of this game, or extract the .nup to a folder first')
     use_engine(GAMES[tid])
     global PROFILE
     untested = GAMES[tid]['build'].get('untested'); PROFILE = None
@@ -591,6 +626,7 @@ def refresh(a):
 
 
 def damaged_modules(d):   # code modules (NSO) of a dump whose segments reach past the end of the file: a copy cut short, as an FTP copy in text mode leaves them
+    if read_dump(d): return []   # a .nup: its size and table of contents were checked when it was read, and every file is checked against its SHA-256 as the build reads it
     d = Path(d).expanduser().resolve(); bad = []
     for exefs in [d / 'exefs', d / 'base/exefs'] + sorted(d.glob('updates/*/exefs')) + sorted(d.glob('updates/exefs')):
         if not exefs.is_dir(): continue
@@ -610,7 +646,7 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
     try:
         tid = dump_title(a.dump); out['title_id'] = tid
     except SystemExit as x:
-        out['problem'] = 'This isn\'t a game dump: ' + str(x); print(json.dumps(out)); return
+        out['problem'] = ('The .nup could not be read: ' if str(x).endswith('extract it to a dump folder.') else 'This isn\'t a game dump: ') + str(x); print(json.dumps(out)); return
     bad = damaged_modules(a.dump)
     if bad:
         g = GAMES.get(tid); out.update(name=g['name'] if g else '', damaged=bad,
@@ -622,7 +658,7 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
     eng = with_build(g, rec)['engine']
     out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
                disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md' if g.get('dir') else '', untested=not builds(g),
-               mac=mac, recommended=rec, why=why, reports=reports(g), dump_version=ver,
+               mac=mac, recommended=rec, why=why, reports=reports(g), dump_version=ver, dump_form='nup' if DUMP_NUP else 'folder',
                builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', ''), 'fits': fits(b, ver)} for b in builds(g)],
                experimental=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b['about']} for b in untested_builds(g)])
     print(json.dumps(out, ensure_ascii=False))

@@ -46,7 +46,7 @@ struct DumpCard: View {
         CardGroup("Your game", footnote: "The folder your dump tool wrote: exefs and romfs, or base and updates. No keys needed.") {
             CardRow(title, detail: detail, detail2: build.gameDir.isEmpty ? "" : RepoLayout.shortPath(build.gameDir), dot: dot, help: build.gameDir) {
                 if build.identifying { ProgressView().controlSize(.small) }
-                Button(build.gameDir.isEmpty ? "Choose dump folder…" : "Change…") {
+                Button(build.gameDir.isEmpty ? "Choose dump…" : "Change…") {
                     if let f = build.chooseFolder() { build.chooseDump(f) }
                 }
                 .disabled(build.running)
@@ -60,7 +60,7 @@ struct DumpCard: View {
     }
 
     private var title: String {
-        guard let i = build.dumpInfo else { return build.gameDir.isEmpty ? "No dump folder chosen" : "Reading the folder…" }
+        guard let i = build.dumpInfo else { return build.gameDir.isEmpty ? "No dump chosen (a folder or a .nup file)" : "Reading the folder…" }
         return i.ok ? i.name : "Not a game switch2mac builds"
     }
     private var detail: String {
