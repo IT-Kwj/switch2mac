@@ -40,6 +40,9 @@ final class WhatsNewTests: XCTestCase {
         XCTAssertEqual(news.count, 2)
         XCTAssertEqual(news[0].points, ["Builds now check every 5 minutes.", "Shader lists: **388** rows, for the nxnative build."])
         XCTAssertNotNil(news[1].date)
+        // the heading's day is the day shown, whatever the Mac's time zone (US Central showed "November 4" for 2026-11-05)
+        let parts = Calendar.current.dateComponents([.year, .month, .day], from: news[1].date!)
+        XCTAssertEqual([parts.year, parts.month, parts.day], [2026, 11, 5])
         XCTAssertTrue(WhatsNewPage.heading(news[1]).hasSuffix(" · switch2mac app 0.2.0"))
         XCTAssertFalse(WhatsNewPage.heading(news[0]).contains("(9)"))
     }
