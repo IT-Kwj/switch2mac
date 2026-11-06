@@ -24,3 +24,9 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
 ```bash
 ./switch2mac.py build "<your dump folder>"
 ```
+
+## Second build: kid-with-sword-remake
+
+[cheemu21/kid-with-sword-remake](https://github.com/cheemu21/kid-with-sword-remake) (MIT) is an nxnative fork made for this game, on iPhone and Mac: nxnative's Ocarina of Time branch with Ocarina pull requests merged ahead of upstream (foliage, the Hyrule Field crash, the freeze after the talk with Saria, terrain holes, faster GPU memory tables), fewer render-pass splits, a 30 / 60 fps frame step through the game's own frame-rate controller, MetalFX in place of the game's upscaler and a texture memory release. Its author reports a steady 60 fps at 720p on a MacBook Air M5 (16 GB) using about 9.5 GB; see [its notes](https://github.com/cheemu21/kid-with-sword-remake/blob/kid-with-sword-remake/docs/games/kid-with-sword-remake.md).
+
+switch2mac builds it as it builds nxnative (`--engine kid-with-sword`), with the same front end added, and bakes in the port's recommended Mac switches (`"switches"` in `game.json`: MetalFX upscaling, a fixed frame rate, its 8 GB alias region). Its shader list is [`shader_list-kid-with-sword.tsv`](shader_list-kid-with-sword.tsv). The port's fixed-resolution files (`scripts/oot_res_overlay.py`, 720p handheld / about 1080p docked) are not made by switch2mac yet, so it renders at the game's own dynamic resolution. switch2mac has not played this build yet: the app does not recommend it for any Mac.

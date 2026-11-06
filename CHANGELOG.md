@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (4)
+
+- The Legend of Zelda: Ocarina of Time gets a second build: [kid-with-sword-remake](https://github.com/cheemu21/kid-with-sword-remake), cheemu21's nxnative port of the game (Ocarina fixes ahead of upstream, a 30 / 60 fps frame step, MetalFX upscaling). Pick it with **Build with…**; nxnative's build stays the default. Thanks to cheemu21.
+
 ## 2026-11-06 (3)
 
 - Shader lists: The Legend of Zelda: Ocarina of Time's build gains 796 rows (#19, #21); Mario Kart World's nxnative build gains 246 rows (#20). A list recorded with an earlier nxnative commit is now taken when every shader it names is in the current build.

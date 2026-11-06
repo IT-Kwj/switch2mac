@@ -2,10 +2,43 @@
  "title_id": "0400486024DEC000",
  "name": "The Legend of Zelda: Ocarina of Time",
  "version": "update v131072",
- "engine": {
-  "kind": "nxnative",
-  "repo": "https://github.com/seedds/nxnative",
-  "commit": "6bbdbbe25511dda29b2dc9d5975b06798839dbe4"
- },
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "6bbdbbe25511dda29b2dc9d5975b06798839dbe4"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch."
+  },
+  {
+   "id": "kid-with-sword",
+   "name": "kid-with-sword-remake",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/cheemu21/kid-with-sword-remake",
+    "commit": "d1d672ac674875ccdc572fdf9b82952a1868f76b"
+   },
+   "shader_list": "shader_list-kid-with-sword.tsv",
+   "watch": [
+    ""
+   ],
+   "switches": [
+    "DM_UPSCALER=metalfx",
+    "DM_FPS_HOLD=off",
+    "DM_ALIAS_SIZE=0x200000000"
+   ],
+   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; not yet played by switch2mac."
+  }
+ ],
+ "choose": [
+  {
+   "build": "nxnative",
+   "why": "nxnative's own Ocarina of Time build is the one switch2mac has played on this game"
+  }
+ ],
  "disk_gb": 50
 }

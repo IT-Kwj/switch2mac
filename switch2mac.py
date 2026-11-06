@@ -349,8 +349,8 @@ def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine
 # Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
-def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested)
-    return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])
+def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested); a build's own "switches" in game.json follow (a port's recommended settings)
+    return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])] + g.get('build', {}).get('switches', []))
 
 
 def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
