@@ -947,7 +947,7 @@
   "library.collection": "Your collection",
   "library.error": "Couldn’t complete the action",
   "library.firstBuild": "Build your first game",
-  "library.folderHint": "The folder with all your Switch 2 dumps, one folder per game. We find your games there.",
+  "library.folderHint": "The folder with all your Switch 2 dumps: one folder or .nup file per game. We find your games there.",
   "library.folderTitle": "Your dumps folder",
   "library.folderUnset": "Not set",
   "library.gameCount": "%d games",
