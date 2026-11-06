@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (7): switch2mac app 0.3.3
+
+- **What's New:** the News dates now show the day each change was published, wherever you are (west of UTC they showed the day before).
+
 ## 2026-11-06 (6)
 
 - New builds from other Mac ports (all MIT, credited in NOTICE.md): **Mario Kart World** gets [mkw-neo](https://github.com/MenAtCafe/mkw-neo) (a race in about 4 GB) and [nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (the first build for update 1.8.0); **Donkey Kong Bananza** and **Pokémon Pokopia** get [horizon-nx2](https://github.com/joaoalvess/horizon-nx2), tuned on a fanless MacBook Air.
