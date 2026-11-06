@@ -22,7 +22,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "865cc35fad7034d17c2190f8ce349f61f5bcaba1"
+    "commit": "04df08d429dc70f8665b0bfa4891057ea30d5d89"
    },
    "shader_list": "shader_list-nxnative.tsv",
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: its own Switch 2 shader translator and shared terrain tiles (less memory). Suits M3 and newer."
