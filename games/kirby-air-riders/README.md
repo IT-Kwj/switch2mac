@@ -1,12 +1,12 @@
 # Kirby Air Riders
 
-Title ID `040077201BE50000`, update v458752. Added automatically when [nxnative](https://github.com/seedds/nxnative) added its profile: see [nxnative's notes on it](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000) for how far it plays and on which Mac.
+Title ID `040077201BE50000`, update v458752. Added automatically when [nxnative](https://github.com/seedds/nxnative) added its profile: see [nxnative's notes on it](https://github.com/seedds/nxnative/tree/04df08d429dc70f8665b0bfa4891057ea30d5d89/dm/games/040077201BE50000) for how far it plays and on which Mac.
 
 Built with nxnative's own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`): the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
 
 | What | |
 |---|---|
-| Profile and notes | [nxnative `dm/games/040077201BE50000`](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000) |
+| Profile and notes | [nxnative `dm/games/040077201BE50000`](https://github.com/seedds/nxnative/tree/04df08d429dc70f8665b0bfa4891057ea30d5d89/dm/games/040077201BE50000) |
 | Dump folder | `base/` and `updates/458752/` |
 
 ## Shared shader list
