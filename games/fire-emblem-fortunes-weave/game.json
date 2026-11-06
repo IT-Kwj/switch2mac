@@ -1,0 +1,11 @@
+{
+ "title_id": "04007EF01F8AE000",
+ "name": "Fire Emblem Fortune's Weave",
+ "version": "v131072",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "02c91cd4cc7abd86d7e2e28b81e98fa19d76b2ec"
+ },
+ "disk_gb": 60
+}

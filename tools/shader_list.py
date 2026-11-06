@@ -69,8 +69,8 @@ def rows(text):
     return [l for l in text.replace('\r', '').splitlines() if ROW.match(l)]
 
 
-def header(text):   # (title ID, engine) from the first header line, or None
-    for l in text.replace('\r', '').splitlines()[:5]:
+def header(text):   # (title ID, engine) from the first header line, or None. Any line: an issue's form text comes before its attached file's header
+    for l in text.replace('\r', '').splitlines():
         m = HEAD.match(l)
         if m: return m[1].upper(), m[2]
     return None

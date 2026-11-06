@@ -1,7 +1,7 @@
 import Foundation
 import NXCore
 
-// LNPANDY/NX2Apple#449: a build for the iPhone or iPad asks before the long steps when the shell folder holds frameworks of
+// : a build for the iPhone or iPad asks before the long steps when the shell folder holds frameworks of
 // another shader chain than the engine this build uses. Stop leaves every file as it is. Continue deletes the stale frameworks
 // (and their entries in the shell's library) and starts the build again. Without stale frameworks nothing is asked. A framework
 // whose chain cannot be read is not decided here, build_shell.sh's own check at the last step stays for it.

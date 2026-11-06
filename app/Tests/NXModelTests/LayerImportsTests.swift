@@ -1,6 +1,6 @@
 import XCTest
 
-/// LNPANDY/NX2Apple#387: the layers are kept apart by what each target imports. `NXCore` and `NXModel` never import SwiftUI or AppKit,
+/// : the layers are kept apart by what each target imports. `NXCore` and `NXModel` never import SwiftUI or AppKit,
 /// and a target never imports one above it. `Package.swift` lets any target link a system framework, so the compiler alone does not
 /// stop a `Color` or an `NSImage` from slipping in. This reads the sources and fails the moment a wrong import is added, with the
 /// file and the line.
@@ -35,14 +35,14 @@ final class LayerImportsTests: XCTestCase {
     }
 
     func testNXCoreImportsNoUIFramework() throws {
-        try assertNoImports(in: "NXCore", of: ["SwiftUI", "AppKit", "Cocoa", "UIKit", "NXModel", "NXLauncher", "NX2Apple"])
+        try assertNoImports(in: "NXCore", of: ["SwiftUI", "AppKit", "Cocoa", "UIKit", "NXModel", "NXLauncher", "switch2mac"])
     }
 
     func testNXModelImportsNoUIFramework() throws {
-        try assertNoImports(in: "NXModel", of: ["SwiftUI", "AppKit", "Cocoa", "UIKit", "NXLauncher", "NX2Apple"])
+        try assertNoImports(in: "NXModel", of: ["SwiftUI", "AppKit", "Cocoa", "UIKit", "NXLauncher", "switch2mac"])
     }
 
     func testNXLauncherImportsNoAppTarget() throws {
-        try assertNoImports(in: "NXLauncher", of: ["NX2Apple"])
+        try assertNoImports(in: "NXLauncher", of: ["switch2mac"])
     }
 }

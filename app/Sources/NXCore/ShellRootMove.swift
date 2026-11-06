@@ -1,8 +1,8 @@
 import Foundation
 
-// LNPANDY/NX2Apple#427, part 2: the player moves the shell cache (frameworks, shell.json, the banner cache, the shell project and
+// part 2: the player moves the shell cache (frameworks, shell.json, the banner cache, the shell project and
 // its derived data) to another folder, for example an external drive, and back to the default place. The cache goes into a folder
-// `NX2Apple-shell` inside the folder the player picked, so the launcher never owns, fills or removes a folder the player chose as a
+// `switch2mac-shell` inside the folder the player picked, so the launcher never owns, fills or removes a folder the player chose as a
 // whole. The rules of the migration hold here too: a plain folder (no link), a readable shell.json, a free destination.
 //
 // On the same volume the move is a rename. On another volume the files are copied into a hidden folder beside the destination,

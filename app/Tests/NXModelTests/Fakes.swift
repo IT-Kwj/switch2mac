@@ -64,7 +64,7 @@ final class FakeReleaseSource: ReleaseSource, @unchecked Sendable {
     }
 
     /// The JSON GitHub gives for a release with the asset this app installs.
-    static func release(tag: String, digest: String? = nil, notes: String = "", asset: String = "NX2Apple-macOS-arm64.zip") -> Data {
+    static func release(tag: String, digest: String? = nil, notes: String = "", asset: String = "switch2mac-macOS-arm64.zip") -> Data {
         var a: [String: Any] = ["name": asset, "browser_download_url": "https://example.invalid/\(asset)"]
         if let digest { a["digest"] = digest }
         return try! JSONSerialization.data(withJSONObject: ["tag_name": tag, "body": notes, "assets": [a]])

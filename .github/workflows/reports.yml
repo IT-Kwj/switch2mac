@@ -1,0 +1,68 @@
+# Players' How it ran forms become rows of each game's reports table, through a pull request a maintainer merges.
+#
+# For every new or edited issue whose title starts with "[How it ran]", tools/reports.py reads the form (by the issue's number only: nothing from the
+# issue reaches a shell command) and checks it names a game this repository has and a Mac it can read (chip and memory). A good report becomes a
+# commit on its own branch (report/issue-<number>) and a pull request that closes the issue when merged; the issue gets a thank-you with the link.
+# A report it cannot read gets a comment saying what is missing, and stays open (editing the form runs this again).
+name: Reports
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: reports-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  report:
+    if: startsWith(github.event.issue.title, '[How it ran]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the form
+        id: read
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 tools/reports.py from-issue "$NUMBER" --apply > result.json
+          cat result.json
+          echo "ok=$(python3 -c 'import json; print(str(json.load(open("result.json"))["ok"]).lower())')" >> "$GITHUB_OUTPUT"
+      - name: A pull request with the row
+        if: steps.read.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          GAME=$(python3 -c 'import json; print(json.load(open("result.json"))["game"])')
+          ROW=$(python3 -c 'import json; r=json.load(open("result.json"))["row"]; print(f"{r[0]}, {r[1]}, {r[2]} GB: {r[4]}, {r[5] or \"?\"} fps")')
+          BRANCH="report/issue-$NUMBER"
+          rm result.json
+          git switch -c "$BRANCH"
+          git add games
+          git commit -q -m "Report: $GAME on $ROW (#$NUMBER)"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            git push -q origin "$BRANCH:$BRANCH-$(date +%s)"   # an edited form: a new branch, never a force-push
+            BRANCH="$BRANCH-$(date +%s)"
+          else
+            git push -q origin "$BRANCH"
+          fi
+          PR=$(gh pr create --head "$BRANCH" --base main --title "Report: $GAME on $ROW" --body "From the How it ran form in #$NUMBER. Read the row, then merge to add it to the game's reports table.
+
+          Closes #$NUMBER")
+          gh issue comment "$NUMBER" --body "Thanks! Your report is ready to go into $GAME's reports table: $PR"
+      - name: Say what is missing
+        if: steps.read.outputs.ok != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$NUMBER" --body "Thanks for the report! $(python3 -c 'import json; print(json.load(open("result.json"))["problem"])') Edit the form above and it is read again."

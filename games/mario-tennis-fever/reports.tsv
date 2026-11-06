@@ -1,0 +1,4 @@
+# How Mario Tennis Fever ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
+MacBook Pro	M4 Pro			nxnative	60		Title, practice, menus, Adventure's opening, Free Play singles with rallies	nxnative profile page
+MacBook Pro	M3 Pro	18		nxnative	30-45		Adventure exploration 30-45 fps with black outdoor textures (open); Free Play singles a stable 60	seedds/nxnative#1246

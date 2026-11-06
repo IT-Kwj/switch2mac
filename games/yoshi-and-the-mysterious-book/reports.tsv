@@ -1,0 +1,3 @@
+# How Yoshi and the Mysterious Book ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
+Mac	M6	16	27	nxnative 9507c221	60	5.6	First habitat, a save and a reload: frame p50 16.7 ms, p95 17.1 ms; later chapters not measured	nxnative profile page (9507c221)

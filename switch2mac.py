@@ -31,8 +31,13 @@ SKIP = {'.listing', '.DS_Store'}   # a dump tool's FTP listings and Finder's fil
 def say(msg): print(f'\n== {msg}', flush=True)
 
 
-def builds(g):   # a game's builds (game.json "builds"); a game with one "engine" has one build, named after its engine
-    return g.get('builds') or [{'id': g['engine']['kind'], 'name': f'{g["engine"]["kind"]}\'s engine', 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}]
+def builds(g):   # a game's tested builds (game.json "builds"); a game with one "engine" has one build, named after its engine; a game not in games/ has none
+    if 'builds' in g: return g['builds']
+    return [{'id': g['engine']['kind'], 'name': f'{g["engine"]["kind"]}\'s engine', 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if 'engine' in g else []
+
+
+def unknown_game(tid):   # a Switch 2 game switch2mac has no folder for: it can still be tried with the untested builds
+    return {'title_id': tid, 'name': f'Switch 2 game {tid}', 'version': '', 'builds': [], 'dir': None}
 
 
 def this_mac():   # what the build choice reads: the chip (its generation: 1 for M1, ...) and memory
@@ -46,19 +51,54 @@ def recommend(g, mac):   # (build id, why): the first game.json "choose" rule th
         if mac['generation'] < r.get('chip_min', 0) or mac['generation'] > r.get('chip_max', 99): continue
         if mac['memory_gb'] < r.get('memory_min', 0) or mac['memory_gb'] > r.get('memory_max', 1 << 20): continue
         return r['build'], r.get('why', '')
+    if not builds(g):   # no tested build: nxnative's guess is the most complete (its survey and memory check)
+        u = [b['id'] for b in untested_builds(g)]
+        return ('nxnative-untested' if 'nxnative-untested' in u else (u[0] if u else '')), 'No tested build of this game yet: every build here is untested'
     return builds(g)[0]['id'], ''
 
 
+KINDS = {'switch2mac': "switch2mac's engine", 'nxnative': "nxnative's engine", 'pokopia-native': "pokopia-native's engine"}
+RISK = ' Nobody has built the game this way yet: it may stop partway, or build and not start. Try it at your own risk; Stop ends it at any time.'
+ABOUT = {
+    'switch2mac': "Untested: switch2mac's engine with a profile guessed from this game's own files." + RISK,
+    'nxnative': "Untested: nxnative's builder guesses a profile from this game's own files (it may boot the game for a few seconds to size its memory)." + RISK,
+    'pokopia-native': "Untested: pokopia-native's engine (nxnative with xFractals' Switch 2 changes) with a profile guessed from this game's own files." + RISK,
+}
+PROFILE = None   # an untested build on switch2mac's engine: the profile guessed from the game's files (<work>/guessed/<title ID>); None: the engine's own
+
+
+def engine_pins():   # each engine's pin that an untested build uses: the ones the updater keeps current (Mario Kart World's two, Pokopia's pokopia-native)
+    pins = {}
+    for g in GAMES.values():
+        for b in builds(g): pins.setdefault(b['engine']['kind'], b['engine'])
+    for tid, kind in (('0400C3F00006E000', 'switch2mac'), ('0400C3F00006E000', 'nxnative'), ('0400A3A01EE4C000', 'pokopia-native')):
+        for b in builds(GAMES.get(tid, {})):
+            if b['engine']['kind'] == kind: pins[kind] = b['engine']
+    return pins
+
+
+def untested_builds(g):
+    """Every engine the game has no tested build on, as an untested build: each guesses a profile from the game's own files (never another engine's
+    profile). They will often fail; someone may take one further in a port of their own, which then becomes a tested build here."""
+    have = {b['engine']['kind'] for b in builds(g)}; pins = engine_pins()
+    return [{'id': f'{k}-untested', 'name': f'{KINDS[k]} (untested)', 'engine': pins[k], 'untested': True, 'about': ABOUT[k]}
+            for k in KINDS if k not in have and k in pins]
+
+
+def profile_src(tid): return PROFILE or NX / f'dm/games/{tid}'
+
+
 def with_build(g, bid=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac)
-    bs = builds(g)
+    bs = builds(g) + untested_builds(g)
     if not bid: bid = recommend(g, this_mac())[0]
     b = next((b for b in bs if b['id'] == bid), None)
     if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
-    return dict(g, engine=b['engine'], build=b)
+    return dict(g, engine=b['engine'], build=b, disk_gb=b.get('disk_gb', g.get('disk_gb')))   # a build may need more disk than the game's usual (Pokopia's full nxnative build)
 
 
 def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
-    f = g['dir'] / 'reports.tsv'; keys = ('mac', 'chip', 'memory_gb', 'macos', 'build', 'fps', 'peak_gb', 'notes', 'source')
+    if not g.get('dir'): return []
+    f = g['dir'] / 'reports.tsv'; keys = ('mac', 'chip', 'memory_gb', 'macos', 'build', 'fps', 'peak_gb', 'notes', 'source', 'date')
     return [dict(zip(keys, l.split('\t'))) for l in (f.read_text().splitlines() if f.exists() else []) if l.strip() and not l.startswith('#')]
 
 
@@ -66,7 +106,11 @@ def built_game(w):   # the game a finished build in w is, as the build it was ma
     tf = w / 'title.txt'
     if not tf.exists(): sys.exit('no finished build in ' + str(w) + ': run build first')
     tid = tf.read_text().strip(); bf = w / 'build.txt'
+    if tid not in GAMES: GAMES[tid] = unknown_game(tid)
     GAMES[tid] = with_build(GAMES[tid], bf.read_text().strip() if bf.exists() else builds(GAMES[tid])[0]['id'])
+    global PROFILE
+    guessed = w / 'guessed' / tid
+    PROFILE = guessed if GAMES[tid]['build'].get('untested') and (guessed / 'game.tsv').is_file() else None
     return tid
 
 
@@ -218,6 +262,53 @@ def dump_dirs(d):
     sys.exit(f'no exefs/main and romfs/ in {d} (or in {d}/base)')
 
 
+EMPTY_TABLES = {   # a guessed profile's shader tables before the shader split fills them (as nxnative's builder writes them for its provisional profiles)
+    'shader_map.tsv': '# kind: evidence  provisional profile: filled by the shader split\npackage\tindex\tstage\tdm_ctl_sha16\tsource\n',
+    'shader_facts.tsv': '# Answer table for translation queries. Provisional profile: filled by the shader split\n',
+    'shader_pairs.tsv': '# kind: evidence  vertex / pixel shader pairs within BNSH variations\n',
+    'shader_map.tsv.conflicts.tsv': '# kind: evidence  control-section key conflict rulings: empty\ndm_ctl_sha16\tchosen_pc\tclass\tcandidates\trecords\n',
+    'bf_want.tsv': '# generated\n',
+    'pso_manifest.tsv': '# Prewarm seed list. Provisional profile: empty\n'}
+
+
+def guess_profile(w, tid, exefs, romfs, version, name):
+    """A provisional profile for switch2mac's engine, guessed from the game's own files by the engine's dm/games/profile_guess.py (the keys and layout
+    nxnative's builder writes for a game it has no profile for, without its memory check). In <work>/guessed/<title ID>; an existing one is kept, so it can be edited by hand."""
+    out = w / 'guessed' / tid
+    if (out / 'game.tsv').is_file(): print(f'  reusing the guessed profile {out / "game.tsv"} (delete it to guess again)'); return out
+    sys.path.insert(0, str(NX / 'dm/games')); import profile_guess as pg
+    F = pg.facts_of(exefs, romfs); G, R = pg.guess(F), F['romfs']
+    groups, seen = [], {'main', 'other'}
+    for d, _ in R['dirs'].most_common(24):
+        g = re.sub(r'[^a-z0-9]', '', d.lower())[:16] or 'g'
+        while g in seen: g += 'x'
+        seen.add(g); groups.append(f'/{d}/={g}')
+    store = sorted(x for x, n in R['extb'].items() if x and R['exts'][x] and (n / R['exts'][x] >= 1 << 20 or 2 * R['extc'][x] >= R['exts'][x]))
+    mods = G['modules'][0].split(); T = '\t'
+    def key(k, default=None):
+        v, why = G[k] if k in G else (default, '')
+        return [] if v is None else ([f'# {why}'] if why else []) + [f'{k}{T}{v}']
+    ipa = (''.join(re.findall(r'[A-Za-z0-9]+', name))[:48] or tid) + '.ipa'
+    L = ['# Provisional game profile (guessed by switch2mac.py with dm/games/profile_guess.py for an untested build, not checked by hand)', f'# {name}, SDK {F["sdk"] or "?"}', '',
+         f'title_id{T}{tid}', f'program_id{T}{(F["program"] or int(tid, 16)):016X}', '',
+         f'name{T}{name}', f'ipa{T}{ipa}', f'app_category{T}public.app-category.games', *key('pad_layout'), *key('op_mode'), '',
+         T.join(['build', version, version] + [f'{m}={F["mods"][m]["bid"]}' for m in mods if m in F['mods']]), f'package{T}{version}', f'shader_versions{T}{version}', '',
+         *key('modules'), f'romfs_marker{T}{R["biggest"][1]}', f'zip_store{T}{":".join(store + [".metallib"])}', '',
+         *key('mem_reserve'), *key('mem_alias'), *key('mem_stack'), *key('app_pool'), *key('sys_resource'), '',
+         *key('shader_groups', " ".join(groups) or "/=romfs"), f'shader_note{T}{name} shaders']
+    out.mkdir(parents=True, exist_ok=True); (out / 'game.tsv').write_text('\n'.join(L) + '\n', encoding='utf-8')
+    for n, text in EMPTY_TABLES.items(): (out / n).write_text(text)
+    print(f'  guessed a provisional profile: {out / "game.tsv"}')
+    return out
+
+
+def update_dirs(d):   # the newest update's exefs and romfs when it holds both (updates/exefs + updates/romfs, or updates/<version>/...): an update RomFS is the whole patched tree
+    d = Path(d).expanduser().resolve(); found = []
+    for u in [d / 'updates'] + sorted((p for p in (d / 'updates').glob('*') if p.name.isdigit()), key=lambda p: int(p.name), reverse=True):
+        if (u / 'exefs/main').is_file() and (u / 'romfs').is_dir(): found.append(u)
+    return (found[0] / 'exefs', found[0] / 'romfs') if found else None
+
+
 def title_id(npdm):
     npdm = npdm.read_bytes()
     aci = struct.unpack_from('<I', npdm, 0x70)[0]   # ACI0 offset in the META header
@@ -258,25 +349,32 @@ def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine
 # Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
-def app_switches(g): return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-{g["engine"]["commit"][:12]}'
+def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested)
+    return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])
 
 
 def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
     g = GAMES[tid]; eng = g['engine']; d = engine_dir(g); dump = Path(a.dump).expanduser().resolve()
     if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
-    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}; UNTESTED in switch2mac')
+    print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}')
     e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
     w.mkdir(parents=True, exist_ok=True); app = w / f'{g["name"]}.app'
-    if eng['kind'] == 'nxnative':
-        P.plan(2); P.stage('engine', f'nxnative {eng["commit"][:12]} with switch2mac\'s overlay and settings')
-        run([py(), ROOT / 'tools/engine/patch.py', d], env=e)
-        seed = w / f'{tid}-engine-seed.tsv'   # the engine's own seed list at its pinned commit, then the game's shared list after it
-        seed.write_text(subprocess.run(['git', '-C', d, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
-        ship_list(tid, d / f'dm/games/{tid}/pso_manifest.tsv', seed)
+    untested = g['build'].get('untested')
+    if untested: print(f'  UNTESTED: {g["name"]} on {KINDS[eng["kind"]]}, with a profile it guesses from the game\'s files. It may stop partway or not start.')
+    if eng['kind'] == 'nxnative' or (untested and eng['kind'] == 'pokopia-native'):
+        nx = d
+        P.plan(2); P.stage('engine', f'{eng["kind"]} {eng["commit"][:12]} with switch2mac\'s overlay and settings')
+        if eng['kind'] == 'pokopia-native':   # its nxnative tree, patched with xFractals' Switch 2 changes: nxnative's own builder, which guesses a profile for any game
+            run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=e, cwd=d); nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx))
+        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e)
+        if not untested:
+            seed = w / f'{tid}-engine-seed.tsv'   # the engine's own seed list at its pinned commit, then the game's shared list after it
+            seed.write_text(subprocess.run(['git', '-C', nx, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
+            ship_list(tid, nx / f'dm/games/{tid}/pso_manifest.tsv', seed)
         sw = w / 'app_switches.txt'; sw.write_text(app_switches(g) + '\n')
         P.end()
-        run([py(), d / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
-             '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + eng.get('args', []), env=e, cwd=d, shift=P.k if P.json else None)
+        run([py(), nx / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
+             '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + eng.get('args', []), env=e, cwd=nx, shift=P.k if P.json else None)
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
         P.stage('engine', f'pokopia-native {eng["commit"][:12]} with switch2mac\'s overlay and settings')
@@ -298,7 +396,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         P.stage('app')
         if app.exists(): shutil.rmtree(app)
         shutil.move(str(w / tid / 'out' / f'{g["name"]}.app'), app)
-    else: sys.exit(f'{g["dir"]}/game.json: engine kind {eng["kind"]!r} is not one switch2mac builds with')
+    else: sys.exit(f'{g["name"]}: engine kind {eng["kind"]!r} is not one switch2mac builds with')
     (w / 'title.txt').write_text(tid + '\n'); (w / 'build.txt').write_text(g['build']['id'] + '\n')
     P.end(summary=str(app))
     print(f'\nbuilt: {app}\n./switch2mac.py install moves it to /Applications.')
@@ -307,13 +405,13 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
 def check_version(tid, bid):
     if tid not in GAMES: sys.exit(f'title {tid} is not supported yet (this repository has: {", ".join(g["name"] + " " + t for t, g in GAMES.items())}).\n'
                                   'Adding a game: docs/porting.md')
-    rows = [l.split('\t') for l in (NX / f'dm/games/{tid}/game.tsv').read_text().splitlines() if l.startswith('build\t')]
+    rows = [l.split('\t') for l in (profile_src(tid) / 'game.tsv').read_text().splitlines() if l.startswith('build\t')]
     known = {c.split('=', 1)[1]: r[2] for r in rows for c in r[3:] if c.startswith('main=')}
     if bid in known:
         print(f'  {GAMES[tid]["name"]} {known[bid]} (main {bid}): tested')
         return
     sys.exit(f'main build ID {bid} is not a version this profile knows ({", ".join(known.values())}).\n'
-             f'This version is UNTESTED: its build line (game.tsv) and module list must be added first (see {GAMES[tid]["dir"].relative_to(ROOT)}/README.md, "Other versions").')
+             f'This version is UNTESTED: its build line (game.tsv) and module list must be added first (see {GAMES[tid]["dir"].relative_to(ROOT) if GAMES[tid].get("dir") else "docs/porting.md"}/README.md, "Other versions").')
 
 
 def stage(romfs, out):   # a symlink tree of the RomFS without the dump tool's dot-files, so they never end up in the image
@@ -335,8 +433,8 @@ def paths(a):
 def profile(w, tid):   # a fresh copy of the repo's profile in work/profile: the shader split rewrites its tables, the repo stays as it is
     prof = w / 'profile' / tid
     if prof.exists(): shutil.rmtree(prof)
-    shutil.copytree(NX / f'dm/games/{tid}', prof)
-    ship_list(tid, prof / 'pso_manifest.tsv')
+    shutil.copytree(profile_src(tid), prof)
+    if not PROFILE: ship_list(tid, prof / 'pso_manifest.tsv')   # an untested build has no shared list (keys differ between engines)
     return prof
 
 
@@ -350,7 +448,7 @@ def runtime_shaders(tid, w):
     one's control section and code are (file + offset, as positions only: no game data), and its key, sha256(control + code), checks what is read. They go to work/runtime
     as <key>.ctl / <key>.code, the way the app saves shaders it meets (refresh), so the first launch already has them."""
     import zstandard
-    table = GAMES[tid]['dir'] / 'runtime_shaders.tsv'
+    table = GAMES[tid]['dir'] / 'runtime_shaders.tsv' if GAMES[tid].get('dir') else ROOT / 'games/none'
     out = w / 'runtime'; out.mkdir(exist_ok=True)
     if not table.exists(): return None
     rows = [l.rstrip('\n').split('\t') for l in table.open() if l.strip() and not l.startswith('#')]
@@ -401,11 +499,17 @@ def host_and_app(a, tid, w, lib, e):
     if not (font / 'nintendo_ext.ttf').exists():
         font.mkdir(parents=True, exist_ok=True); run([py(), NX / 'dm/tools/make_ext_font.py', font / 'nintendo_ext.ttf'], env=e)
     P.stage('app')
-    run([py(), g['dir'] / 'launcher.py', NX, w / 'build/patched', w / 'build/launcher.json'], env=e)
+    if PROFILE:   # an untested build: the generic settings, its own switches, the marker from the borrowed profile
+        run([py(), ROOT / 'tools/engine/launcher_generic.py', NX, w / 'build/patched', w / 'build/launcher.json', tid], env=e)
+        envf = w / 'build/env_untested.txt'; envf.write_text(f'S2M_ENGINE=switch2mac-untested\n')
+        marker = next((l.split()[1] for l in (prof / 'game.tsv').read_text().splitlines() if l.startswith('romfs_marker')), '')
+    else:
+        run([py(), g['dir'] / 'launcher.py', NX, w / 'build/patched', w / 'build/launcher.json'], env=e)
+        envf, marker = g['dir'] / 'env.txt', g['marker']
     app = w / f'{g["name"]}.app'
     run([py(), NX / 'dm/mac/pack_app.py', app, '--host', NX / 'dm/host/dmhost', '--patched', w / 'build/patched', '--romfs', w / 'extract/RomFS.img',
-         '--msl', lib, '--tables', prof, '--font', font, '--env-file', g['dir'] / 'env.txt', '--settings', w / 'build/launcher.json', '--launcher-window', 'off',
-         '--title-id', tid, '--name', g['name'], '--version', g['version'], '--lang', 'en-US', '--marker', g['marker']], env=e)
+         '--msl', lib, '--tables', prof, '--font', font, '--env-file', envf, '--settings', w / 'build/launcher.json', '--launcher-window', 'off',
+         '--title-id', tid, '--name', g['name'], '--version', g['version'] or 'untested', '--lang', 'en-US'] + (['--marker', marker] if marker else []), env=e)
     (w / 'title.txt').write_text(tid); (w / 'build.txt').write_text(g['build']['id'] + '\n')
     P.end(summary=str(app))
     print(f'\ndone: {app}\nnext: ./switch2mac.py install')
@@ -417,14 +521,24 @@ def build(a):
     P.json = getattr(a, 'progress', None) == 'json'; P.plan(7); P.history(w / 'stage_times.json')
     P.order = ['the dump', 'game files', 'code', 'shader split', 'Metal shaders', 'host', 'app']
     P.stage('the dump'); tid = dump_title(a.dump)
-    if tid in GAMES:
-        GAMES[tid] = with_build(GAMES[tid], a.engine); b = GAMES[tid]['build']
-        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {b["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+    bad = damaged_modules(a.dump)   # before anything is fetched or copied: a damaged dump stops here with what to do (the app's identify says the same)
+    if bad: sys.exit(f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
+    if tid not in GAMES: GAMES[tid] = unknown_game(tid)   # any Switch 2 game can be tried with the untested builds
+    if True:
+        GAMES[tid] = with_build(GAMES[tid], a.engine); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
+        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
         free_space(w, GAMES[tid])
-    if not own_engine(GAMES.get(tid, {'engine': {'kind': 'switch2mac'}})): return engine_build(a, tid, w, e)
-    if tid in GAMES: use_engine(GAMES[tid])
-    else: sys.exit(f'title {tid} is not supported yet (this repository has: {", ".join(g["name"] + " " + t for t, g in GAMES.items())}).\nAdding a game: docs/porting.md')
-    exefs, romfs = dump_dirs(a.dump)
+    if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
+    use_engine(GAMES[tid])
+    global PROFILE
+    untested = GAMES[tid]['build'].get('untested'); PROFILE = None
+    upd = update_dirs(a.dump) if untested else None   # an untested build takes the update when the dump has one
+    exefs, romfs = upd or dump_dirs(a.dump)
+    if untested:
+        print(f'  UNTESTED: {GAMES[tid]["name"]} on switch2mac\'s engine, with a profile guessed from the game\'s files. It may stop partway or not start.')
+        ver = f'v{exefs.parent.name}' if upd and exefs.parent.name.isdigit() else 'v0'
+        PROFILE = guess_profile(w, tid, exefs, romfs, ver, GAMES[tid]['name'])
+        e.update(DM_GAMES_DIR=str(PROFILE.parent), DM_GAMES_FIRST='1')   # every tool reads the guessed profile
     tid, bid = title_and_build(exefs); check_version(tid, bid)
     for d in (ex / 'ExeFS', b, sh): d.mkdir(parents=True, exist_ok=True)
     P.stage('game files', 'code modules and the RomFS image (a few minutes; reused when unchanged)')
@@ -433,7 +547,7 @@ def build(a):
     stage(romfs, w / 'input/romfs')
     run([py(), NX / 'dm/tools/romfs_image.py', '--reuse', w / 'input/romfs', ex / 'RomFS.img'], env=e)
     P.stage('code', 'the game modules rewritten for the Mac')
-    mods = subprocess.run([py(), NX / 'dm/games/game.py', tid, 'modules'], capture_output=True, text=True, check=True).stdout.split()
+    mods = subprocess.run([py(), NX / 'dm/games/game.py', tid, 'modules'], capture_output=True, text=True, check=True, env=e).stdout.split()
     for m in mods: run([py(), NX / 'dm/tools/patch_nso.py', ex / 'ExeFS' / m, b / 'patched', m], env=e)
     lib = shaders(a, tid, w, sh, cache, e)
     host_and_app(a, tid, w, lib, e)
@@ -482,20 +596,22 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
         g = GAMES.get(tid); out.update(name=g['name'] if g else '', damaged=bad,
             problem=f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
         print(json.dumps(out, ensure_ascii=False)); return
-    g = GAMES.get(tid)
-    if not g: out['problem'] = f'title {tid} is not a game switch2mac builds (yet)'; print(json.dumps(out)); return
-    mac = this_mac(); rec, why = recommend(g, mac); eng = with_build(g, rec)['engine']
+    g = GAMES.get(tid) or unknown_game(tid)   # a game switch2mac has no folder for: offered with the untested builds only
+    mac = this_mac(); rec, why = recommend(g, mac)
+    if not rec: out['problem'] = f'title {tid}: no engine is set up to try it'; print(json.dumps(out)); return
+    eng = with_build(g, rec)['engine']
     out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
-               disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md', untested='switch2mac' != eng.get('kind'),
+               disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md' if g.get('dir') else '', untested=not builds(g),
                mac=mac, recommended=rec, why=why, reports=reports(g),
-               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', '')} for b in builds(g)])
+               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', '')} for b in builds(g)],
+               experimental=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b['about']} for b in untested_builds(g)])
     print(json.dumps(out, ensure_ascii=False))
 
 
 def builds_cmd(a):   # the builds a game has and which one this Mac gets, for people (identify gives the same to the app)
     tid = dump_title(a.dump) if Path(a.dump).expanduser().exists() else a.dump.upper()
-    g = GAMES.get(tid) or next((g for g in GAMES.values() if g['dir'].name == a.dump), None)
-    if not g: sys.exit(f'{a.dump}: not a game switch2mac builds')
+    g = GAMES.get(tid) or next((g for g in GAMES.values() if g['dir'].name == a.dump), None) or (unknown_game(tid) if re.fullmatch(r'[0-9A-F]{16}', tid) else None)
+    if not g: sys.exit(f'{a.dump}: not a Switch 2 game dump, a title ID or a games/ folder')
     mac = this_mac(); rec, why = recommend(g, mac); rs = reports(g)
     print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}')
     for b in builds(g):
@@ -503,21 +619,28 @@ def builds_cmd(a):   # the builds a game has and which one this Mac gets, for pe
         if b.get('about'): print(f'      {b["about"]}')
         for r in rs:
             if r['build'].split()[0] == b['id']:
-                print(f'      {r["mac"]} {r["chip"]}, {r["memory_gb"]} GB: {r["fps"] or "?"} fps' + (f', {r["peak_gb"]} GB peak' if r['peak_gb'] else '') + f' ({r["notes"]}; {r["source"]})')
-    if len(builds(g)) > 1: print(f'\n./switch2mac.py build <dump> builds {rec}; --engine <id> builds another.')
+                print(f'      {r["mac"]} {r["chip"]}' + (f', {r["memory_gb"]} GB' if r['memory_gb'] else '') + (f': {r["fps"]} fps' if r['fps'] else '') + (f', {r["peak_gb"]} GB peak' if r['peak_gb'] else '') + f' ({r["notes"]}; {r["source"]})')
+    for b in untested_builds(g):
+        print(f'\n  ! {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})\n      {b["about"]}')
+    if len(builds(g)) + len(untested_builds(g)) > 1: print(f'\n./switch2mac.py build <dump> builds {rec}; --engine <id> builds another.')
 
 
 def switched_build(g):
-    """The game's data folder notes which build is installed (s2m_build.txt). When it changes (Mario Kart World from switch2mac's engine to nxnative's, or back), the
-    old build's record of the pipelines it built (pso_user.tsv) and its shader list contribution are put aside with the old build's name: the two engines name their
-    shaders differently, so the new build would offer the old one's rows as its own. Saves are the game's own and stay as they are."""
+    """The game's data folder notes which build is installed (s2m_build.txt). Each build keeps its own record of the pipelines it built
+    (pso_user.tsv), its pipeline archive (pso_archive/) and its shader list contribution: the engines name shaders differently, and one
+    build cannot read the other's archive. When the build changes, the old build's are put aside under its name and the new build's,
+    if it was installed before, come back, so switching back and forth never loses what a build learned. Saves are the game's own and stay."""
     data = Path.home() / f'Library/Application Support/nxnative/{g["title_id"]}'; note = data / 's2m_build.txt'; new = g['build']['id']
     old = note.read_text().strip() if note.exists() else (builds(g)[0]['id'] if (data / 'pso_user.tsv').exists() else '')
+    def aside(f, b):   # pso_user.tsv → pso_user.<build>.tsv, pso_archive → pso_archive.<build>
+        return data / (f'{f.removesuffix(".tsv").removesuffix(".txt")}.{b}{Path(f).suffix}' if Path(f).suffix in ('.tsv', '.txt', '.done') else f'{f}.{b}')
     if old and old != new:
-        for f in ('pso_user.tsv', 'shader-list-contribution.txt', '.shader-list-contribution.txt.done'):
-            p = data / f
-            if p.exists(): p.rename(data / f'{f.removesuffix(".tsv").removesuffix(".txt")}.{old}{p.suffix}')
-        print(f'  {g["name"]} was on the {old} build: its pipeline record and shader list contribution are kept aside as *.{old}.* (saves stay)')
+        for f in ('pso_user.tsv', 'pso_archive', 'shader-list-contribution.txt', '.shader-list-contribution.txt.done'):
+            p, keep = data / f, aside(f, old)
+            if p.exists() and not keep.exists(): p.rename(keep)
+            back = aside(f, new)
+            if back.exists() and not p.exists(): back.rename(p)
+        print(f'  {g["name"]} was on the {old} build: its pipeline record and archive are kept aside for it, and the {new} build\'s own come back (saves stay)')
     if data.is_dir(): note.write_text(new + '\n')
 
 
@@ -543,7 +666,7 @@ def run_game(a):
     e = dict(os.environ, DM_ROOT=str(w), DM_ROMFS=str(w / 'extract/RomFS.img'), DM_SAVE=str(r / 'save'), DM_TEMP=str(r / 'temp'), DM_NVN_SHDUMP=str(r / 'shdump'),
              DM_MSL_DIR=str(w / 'cache/metal_shader_cache'), DM_FONT_DIR=str(w / 'build/font'), DM_NVN_SHMAP=str(w / 'profile' / tid / 'shader_map.tsv'),
              DM_GAMES_DIR=str(w / 'profile'), DM_GAMES_FIRST='1', DM_LANG='en-US', DM_WINDOW='1', DM_AUDIO='1', DM_CTL=str(r / 'ctl.txt'))
-    envf = g['dir'] / 'env.txt'
+    envf = g['dir'] / 'env.txt' if g.get('dir') else Path('/nonexistent')
     for l in (envf.read_text().splitlines() if envf.exists() else []):
         if '=' in l and not l.startswith('#'): k, v = l.split('=', 1); e.setdefault(k.strip(), v.strip())
     for kv in a.vars:
@@ -575,7 +698,17 @@ def main():
     a = ap.parse_args()
     if a.cmd not in ('setup', 'identify', 'builds') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
         os.execv(py(), [str(py()), __file__] + sys.argv[1:])
-    {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
+    try:
+        {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
+    except (KeyboardInterrupt, SystemExit): raise
+    except Exception as x:   # the details go to the log, the last line says what to do
+        import traceback; traceback.print_exc()
+        if 'cut short or damaged' in str(x):   # a code file of the dump (nso.Error): the dump's problem, not switch2mac's
+            P.end(False, 'the dump is damaged')
+            sys.exit(f'The dump is damaged: {x}. Copy it off your Switch 2 again (over FTP, in binary mode).')
+        P.end(False, 'switch2mac stopped on a problem of its own')
+        sys.exit('switch2mac stopped on a problem of its own (a bug, not your dump). Copy the diagnostics in Settings and open an issue: '
+                 'https://github.com/azmasm/switch2mac/issues')
 
 
 if __name__ == '__main__':

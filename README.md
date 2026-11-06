@@ -1,46 +1,57 @@
 # switch2mac
 
-Native Mac builds of Nintendo Switch 2 games on Apple silicon, made from **your own dump** on your own Mac.
+**Play your Nintendo Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose the dump folder, press Build, play.
 
-It is not an emulator: the game's own ARM64 code runs directly on the Mac, rewritten so its system calls land in a native runtime, and every shader is translated to Metal ahead of time. switch2mac is built on [nxnative](https://github.com/seedds/nxnative): Mario Kart World runs on switch2mac's own fork of it (NVN2 graphics on Metal, Switch 2 mesh and task shaders, movies, many shader translator fixes, and the performance work that took it from 20 to about 58 fps); other games are built with the engine their own port was made with, and switch2mac gives every app the same front end.
+It is not an emulator. The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
+
+## The switch2mac app
+
+A Mac app that builds your games for you: choose a dump folder, press **Build**, and the game lands in Applications. It keeps a **Library** of your games with their eShop banners (downloaded onto your Mac when it runs; none are stored here), shows **Your Mac** (chip, memory, macOS) and the build of each game that suits it, with how that build ran on other players' Macs.
+
+1. **Download** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to your Applications folder.
+2. **Open it.** The first time, macOS says it cannot verify the app (it is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
+3. **Follow the setup.** It checks your Mac and tells you what to install: **Xcode** (free, App Store) with its **Metal Toolchain**, and the **.NET 10 SDK** ([dot.net](https://dot.net)). Python and the other build tools are inside the app.
+4. **Build a game.** On the **Builds** page, choose your game's dump folder. The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
+5. **Play** from the app's **Library** or from Applications. The very first start waits 1-3 minutes with no window while macOS checks the new app: wait, don't open it twice. In the game, **1** shows the performance overlay and **2** the settings.
+
+The app keeps itself and its game list up to date: new games and fixes arrive when you open it.
+
+> **You need:** a Mac with Apple silicon and **macOS 26 or later**, and a dump of a game you own. switch2mac needs no keys and decrypts nothing. This repository holds no game content, and what the build makes must not be shared. See [LEGAL.md](LEGAL.md).
+
+## Games
 
 | Game | Version | Built with | Status | Page |
 |---|---|---|---|---|
 | Mario Kart World | 1.0.0 | switch2mac's engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine)) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
-| Donkey Kong Bananza | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level's opening areas (busy scenes dip to 30 for a few seconds). Not yet tested in switch2mac | [games/donkey-kong-bananza](games/donkey-kong-bananza) |
-| Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". Not yet tested in switch2mac | [games/pokemon-pokopia](games/pokemon-pokopia) |
+| Donkey Kong Bananza | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level's opening areas (busy scenes dip to 30 for a few seconds). | [games/donkey-kong-bananza](games/donkey-kong-bananza) |
+| Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals (default), or [nxnative](https://github.com/seedds/nxnative)'s (2.0.1 only, hours of shader building) | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". | [games/pokemon-pokopia](games/pokemon-pokopia) |
+| Yoshi and the Mysterious Book | update v131072 (1.0.2) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on a 16 GB M6** through the first habitat, a save and a reload. About 133,000 shaders: a full build can take many hours. | [games/yoshi-and-the-mysterious-book](games/yoshi-and-the-mysterious-book) |
+| Splatoon Raiders | update v65536 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays at **60 fps on an M4 Pro** through the first level. A player's **16 GB M2 Air** swapped and slowed to about 1 fps after 5 minutes (open). | [games/splatoon-raiders](games/splatoon-raiders) |
+| Hyrule Warriors: Age of Imprisonment | update v196608 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays into the first field on a **16 GB M6** (frame median 16.6 ms, frequent long frames); battles not reached. A **Mac Studio M5 Max** froze the display (open). About 102,000 shaders. | [games/hyrule-warriors-age-of-imprisonment](games/hyrule-warriors-age-of-imprisonment) |
+| Fire Emblem Fortune's Weave | v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays through the first battle map at **60 fps** (120 offered; 30 as shipped). | [games/fire-emblem-fortunes-weave](games/fire-emblem-fortunes-weave) |
+| Mario Tennis Fever | update v327680 (1.1.1) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: **60 fps on an M4 Pro** in Free Play matches. A player's **M3 Pro (18 GB)** gets 30-45 fps in Adventure exploration, with black outdoor textures (open). | [games/mario-tennis-fever](games/mario-tennis-fever) |
+| Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
-> This repository holds no game content. You need a dump of a game you own; what the build makes from it must not be shared. See [LEGAL.md](LEGAL.md).
+> **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
 
-> **Mario Kart World on a 16 GB Mac:** the game currently uses about 13-16 GB of memory, and up to about 20 GB in long free-roam sessions. On a Mac with 16 GB it may not run smoothly (stutters, slowdowns, or macOS asking you to quit other apps). Work to bring its memory down is under way. Macs with 24 GB or more have run it fine so far (tested on 64 GB, reported on 24 GB).
+### Your dump folder
 
-## Quick start (no experience needed)
+The files your dump tool wrote, for example:
 
-> **1. Install the free tools (once).**
-> - **Xcode** from the App Store. Open it once, then go to Xcode → Settings → Components and install **Metal Toolchain**.
-> - **.NET 10 SDK** from [dot.net](https://dot.net) (the macOS Arm64 installer).
-> - **Python** from [python.org](https://www.python.org/downloads) (only if step 3 says it is missing).
->
-> **2. Get switch2mac.** Click the green **Code** button at the top of this page → **Download ZIP**, double-click the ZIP, and move the `switch2mac-main` folder somewhere roomy (Documents is fine). The game needs 20-50 GB free while it builds (see your game's page).
->
-> **3. Double-click `Build a Game.command`** in that folder. The first time, macOS may say it is from an unidentified developer: right-click it → **Open** → **Open**. A Terminal window checks your Mac, then asks for your game: **drag your dump folder into the window** and press Return. Leave it running (20 minutes to over an hour the first time).
->
-> **4. Play.** Open the game from **Applications**. The very first start waits 1-3 minutes with no window while macOS checks the app: wait, don't open it twice. In the game, **1** shows the performance overlay and **2** the settings.
->
-> **Your dump folder** must be the files your dump tool wrote (no keys needed), for example:
->
-> | Game | The folder you drag in holds |
-> |---|---|
-> | Mario Kart World 1.0.0 | `exefs/` and `romfs/` (or `base/exefs` and `base/romfs`) |
-> | Donkey Kong Bananza | `base/` and `updates/458752/` (and `dlc/`, if you have it) |
-> | Pokémon Pokopia | `base/exefs` and `updates/<version>/` |
->
-> Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged.
->
-> **Updating later:** download the ZIP again (or `git pull` if you used git), double-click `Build a Game.command` again. Your saves are kept. **Stuck?** See [Problems](#problems).
+| Game | The folder you choose holds |
+|---|---|
+| Mario Kart World 1.0.0 | `exefs/` and `romfs/` (or `base/exefs` and `base/romfs`) |
+| Donkey Kong Bananza | `base/` and `updates/458752/` (and `dlc/`, if you have it) |
+| Pokémon Pokopia | `base/exefs` and `updates/<version>/` |
+| Yoshi and the Mysterious Book | `base/` and `updates/131072/` |
+| Splatoon Raiders | `base/` and `updates/65536/` |
+| Hyrule Warriors: Age of Imprisonment | `base/` and `updates/196608/` |
+| Fire Emblem Fortune's Weave | `exefs/` and `romfs/` |
+| Mario Tennis Fever | `base/` and `updates/327680/` |
+| Star Fox | `base/` and `updates/131072/` |
 
-Everything below is more detail, for when you want it.
+Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 
 ## What you get
 
@@ -52,24 +63,9 @@ Everything below is more detail, for when you want it.
 - Controllers (Xbox, PlayStation, Switch Pro and others macOS recognises) and the keyboard.
 - Saves in `~/Library/Application Support/nxnative/<title ID>/save`, the log in `~/Library/Logs/nxnative/<title ID>.log`.
 
-## The switch2mac app (preview)
+## Without the app: Terminal
 
-A Mac app that does the same with buttons: choose your dump folder, press Build, and the game lands in Applications, with a library of your built games (their eShop banners are downloaded onto your Mac at run time; none are in this repository). It reads your Mac's chip and memory and picks the build of each game that suits it: Mario Kart World has two, and the app says which one it recommends and why, with how each ran on players' Macs. Python and the build tools are inside it; you need Xcode (with its Metal toolchain) and the .NET 10 SDK, and the app tells you what is missing. Its design comes from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT).
-
-**Download:** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to Applications. It is not signed with a paid Apple Developer ID, so the first time macOS says it cannot verify it: click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. After that it opens normally, and it updates itself when a new version is out. (To build it yourself instead: `app/tools/make_app.sh`.)
-
-## What you need
-
-- A Mac with Apple silicon and **macOS 26 or later** (the runtime draws with Metal 4, new in macOS 26). The app is built for the macOS version of the Mac that builds it (tested: M1 Max, 64 GB, macOS 26.6; reported working: M4 Pro, 24 GB, macOS 26.5).
-- **Xcode** with the Metal toolchain (Xcode → Settings → Components), and its command line tools.
-- **.NET 10 SDK** ([dot.net](https://dot.net)): the shader translator runs on it.
-- **Python 3.12 or newer** (python.org or Homebrew).
-- **git** (comes with Xcode's command line tools): Donkey Kong Bananza and Pokémon Pokopia fetch their engine once.
-- Free disk space and your dump: each game's page says how much and how the dump folder must look. Dump tools write the files already extracted: switch2mac needs no keys and decrypts nothing.
-
-## Build it in Terminal
-
-`Build a Game.command` runs these same three steps for you. In Terminal they are the same for every game; `build` reads which game the dump is.
+The app runs the same script as these commands; they are the same for every game, and `build` reads which game the dump is. You also need **Python 3.12 or newer** and **git** (which comes with Xcode's command line tools).
 
 ```bash
 git clone https://github.com/azmasm/switch2mac.git
@@ -92,13 +88,14 @@ cd switch2mac
 ```
 
 - `setup` checks macOS, Xcode, Metal, .NET, Python and git, and stops with the exact fix for anything missing; then it makes a Python environment in `.venv` (it finds a new enough Python by itself: macOS's own is too old).
-- `build` writes only into `./work`. Mario Kart World is built step by step here ([its page](games/mario-kart-world/README.md#build)). Donkey Kong Bananza and Pokémon Pokopia: their engine is fetched once into `./engines` at the version the game's `game.json` names, switch2mac's front end (overlay and key-2 settings) is added to it, and the engine's own builder makes the app.
+- `build` writes only into `./work`. Mario Kart World is built step by step here ([its page](games/mario-kart-world/README.md#build)). The other games: their engine is fetched once into `./engines` at the version the game's `game.json` names, switch2mac's front end (overlay and key-2 settings) is added to it, and the engine's own builder makes the app.
 - `build` first checks there is enough free disk space for that game.
 - `install` moves the app to `/Applications`, replacing an older one.
+- `./switch2mac.py builds <game>` shows a game's builds, the one your Mac gets and why, and how each ran on players' Macs; `build --engine <id>` builds another one.
 
 ### The first start waits
 
-After every install macOS scans the new app (tens of GB) before it lets it run: **1-3 minutes with no window and no Dock icon**. Wait; do not open it a second time. Later starts are immediate. The app is signed ad hoc (not notarized), so the very first time macOS may ask: right-click the app → Open.
+After every install macOS scans the new app (tens of GB) before it lets it run: **1-3 minutes with no window and no Dock icon**. Wait; do not open it a second time. Later starts are immediate.
 
 ## Controls
 
@@ -108,10 +105,10 @@ Controllers map by position (right button = A, bottom = B, top = X, left = Y; Ni
 
 | What you see | What to do |
 |---|---|
-| "cannot be opened because it is from an unidentified developer" (for `Build a Game.command` or the game) | Right-click it → **Open** → **Open**. Only needed the first time. |
-| A **MISSING** line during the checks | Install what its **fix** line says, then double-click `Build a Game.command` again. |
+| "Apple could not verify switch2mac" (or a game) | **System Settings → Privacy & Security** → scroll down → **Open Anyway**. Only needed the first time. |
+| The app's setup says something is missing | Install what it names (Xcode, its Metal Toolchain, .NET 10), then open the app again. |
 | "not enough free disk space" | Free up the space it names (empty the Trash too), then try again. |
-| "cut short or damaged", or the build stops while reading the game's files | The dump was damaged while copying. Copy it off the console again in **binary** mode, and check the folder is the right one (Quick start table). |
+| "cut short or damaged", or the build stops while reading the game's files | The dump was damaged while copying. Copy it off the console again in **binary** mode, and check the folder is the right one ([Your dump folder](#your-dump-folder)). |
 | "title ... is not supported yet" or "not a version this profile knows" | That folder is another game, or another version than the one listed above. |
 | The game doesn't open after installing | The first start waits 1-3 minutes with no window. Wait; don't open it twice. |
 | It stutters in a new place | It is building something for the first time; it is smooth after. When you close the game it may offer to **Send** what it built, so others don't stutter there (see Contributing). |
@@ -120,17 +117,18 @@ Still stuck? Open an issue on this page with a screenshot and the game's log: in
 
 ## How it works
 
-The runtime loads the game's modules into memory, rewrites their system calls and SDK functions into calls to native code (file system, audio, input, threads, time), and implements NVN2, the Switch 2 graphics API, on Metal. Switch 2 shaders (NVIDIA Ampere code) are translated by a modified Ryujinx shader translator into Metal Shading Language and compiled into Metal libraries: in switch2mac's engine they are first lowered to Maxwell code by `nx2_lower`, and Switch 2 mesh and task shaders become Metal object and mesh shaders. The story of getting Mario Kart World from a black screen to 58 fps: [docs/mario-kart-world.md](docs/mario-kart-world.md).
+The runtime loads the game's modules into memory, rewrites their system calls and SDK functions into calls to native code (file system, audio, input, threads, time), and implements NVN2, the Switch 2 graphics API, on Metal. Switch 2 shaders (NVIDIA Ampere code) are translated into Metal Shading Language ahead of time and compiled into Metal libraries.
+
+Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A daily check moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
 
 ## Repository layout
 
 | Path | What |
 |---|---|
-| `Build a Game.command` | double-click: setup, build and install in one go (Quick start) |
-| `switch2mac.py` | setup, build, run, refresh, install |
+| `switch2mac.py` | what the app runs: setup, identify, build, install (and run, refresh, builds for developers) |
 | `games/<game>/` | one folder per game: `game.json` (title ID, name, version; the engine and its commit for a game built with another engine, or several builds and which Mac gets which, as for Mario Kart World), its page (`README.md`: dump, build, settings, known issues) and, for Mario Kart World, the app's settings (`launcher.py`, `env.txt`) and the run-time shader list (`runtime_shaders.tsv`) |
 | `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game and build, for the engine its app is built with (a second build's: `shader_list-<build>.tsv`) |
-| `app/` | the switch2mac app (SwiftPM; `app/tools/make_app.sh` makes `app/build/switch2mac.app`), adapted from NX2Apple |
+| `app/` | the switch2mac app (SwiftPM; `app/tools/make_app.sh` makes `app/build/switch2mac.app`, `--bundle-tools` the download with Python and tools inside), adapted from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT) |
 | `tools/shader_list.py` | the shared shader lists: stats, merge, collect the lists players send, ship each build's list |
 | `tools/engine/` | switch2mac's front end for the games built with another engine: the overlay and settings panel (`s2m_ui.m`), the script that adds it to that engine (`patch.py`) and the one that moves those games to their build's newest commit (`update.py`) |
 | `tools/porting/` | helpers for bringing up a game: run-time shader finder, NSO disassembly helper, pass tracer, performance summary |
@@ -143,6 +141,8 @@ Made by the build, never committed: `work/` (the build), `engines/` (each game's
 Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 work and the game's profile, is its own repository: [switch2mac-engine](https://github.com/azmasm/switch2mac-engine). Engine bugs and fixes (graphics, crashes, speed) go there; everything else here. Not sure? Open it here, and it is moved if it belongs there.
 
 ## Contributing
+
+**Tell us how a game ran on your Mac.** Each game's reports table, and the build switch2mac picks for each Mac, come from players' reports. Use the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form: the game, your Mac (model, chip, memory), macOS, the frame rate and how far you played. Nothing about you is recorded. The form is read automatically: a maintainer checks the row it makes and adds it to the game's reports.
 
 **No code needed: send your shaders and pipelines.** Every game has its own shared shader list, `games/<game>/shader_list.tsv`: the shaders and Metal pipelines players have met, which each build prepares before the first frame so new places don't stutter. A list belongs to one game and to the engine its app is built with (its first line says which), so rows never mix between games. It holds identifiers only: no game data.
 

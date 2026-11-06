@@ -11,9 +11,9 @@ final class UninstallTests: XCTestCase {
         home = FileManager.default.temporaryDirectory.appendingPathComponent("uninstall-" + UUID().uuidString)
         games = home.appendingPathComponent("Games")
         guard let home, let games else { throw XCTSkip("temporary folder unavailable") }
-        for dir in [games, home.appendingPathComponent("Library/Application Support/NS Port Builder"),
-                    home.appendingPathComponent("Library/Application Support/NX2Apple/engine/aaaaaaa"),
-                    home.appendingPathComponent("NX2Apple")] {
+        for dir in [games, home.appendingPathComponent("Library/Application Support/switch2mac/repo"),
+                    home.appendingPathComponent("Library/Application Support/switch2mac/engine/aaaaaaa"),
+                    home.appendingPathComponent("switch2mac")] {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         try Data("k".utf8).write(to: home.appendingPathComponent("prod.keys"))
@@ -34,15 +34,16 @@ final class UninstallTests: XCTestCase {
     private func originFixture(checkout: URL) throws {
         let git = "/usr/bin/git"
         _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "init", "-b", "main"], env: SystemGitCheckout.environment())
-        _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "remote", "add", "origin", "https://github.com/LNPANDY/NX2Apple.git"], env: SystemGitCheckout.environment())
+        _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "remote", "add", "origin", "https://github.com/azmasm/switch2mac.git"], env: SystemGitCheckout.environment())
     }
 
     func testThePlanTakesStateAndItsOwnCheckoutAndLeavesGamesAndKeys() throws {
-        let checkout = home.appendingPathComponent("NX2Apple").path
+        let checkout = home.appendingPathComponent("switch2mac").path
         try originFixture(checkout: URL(fileURLWithPath: checkout))
         let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [checkout])
-        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/NS Port Builder"), true)
-        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/NX2Apple"), true)
+        // switch2mac: its state folder, which holds the checkout it clones itself (RepoStore.clone)
+        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/switch2mac"), true)
+        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/switch2mac"), true)
         XCTAssertEqual(plan.checkouts, [checkout])
 
         let result = Uninstall.run(plan, movingAppToTrash: false)
@@ -50,11 +51,12 @@ final class UninstallTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: games.appendingPathComponent("save.dat").path), "the games folder stays")
         XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("prod.keys").path), "the keys stay")
         XCTAssertFalse(FileManager.default.fileExists(atPath: checkout), "the launcher's own checkout goes")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: home.path + "/Library/Application Support/switch2mac/repo"), "and the clone in its state folder")
     }
 
     /// #427: the shared app's folder lives beside the engine trees now. Its frameworks cost a full rebuild, so it stays.
     func testTheSharedAppsFolderStaysWhenTheEngineTreesGo() throws {
-        let support = home.appendingPathComponent("Library/Application Support/NX2Apple")
+        let support = home.appendingPathComponent("Library/Application Support/switch2mac")
         let shell = support.appendingPathComponent("shell")
         try FileManager.default.createDirectory(at: shell, withIntermediateDirectories: true)
         try Data("{}".utf8).write(to: shell.appendingPathComponent("shell.json"))
@@ -69,26 +71,26 @@ final class UninstallTests: XCTestCase {
 
     /// A checkout the player picked from somewhere else is not removed: we cannot know what else it holds.
     func testACheckoutFromAnotherFolderIsNotTouched() throws {
-        let picked = home.appendingPathComponent("Elsewhere/NX2Apple")
+        let picked = home.appendingPathComponent("Elsewhere/switch2mac")
         try FileManager.default.createDirectory(at: picked, withIntermediateDirectories: true)
         try originFixture(checkout: picked)
         let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [picked.path])
-        XCTAssertTrue(plan.checkouts.isEmpty, "not the launcher's own ~/NX2Apple clone")
+        XCTAssertTrue(plan.checkouts.isEmpty, "not the launcher's own ~/switch2mac clone")
         XCTAssertTrue(FileManager.default.fileExists(atPath: picked.path))
     }
 
     func testARepoWithoutOurOriginIsNotTouched() throws {
-        let checkout = home.appendingPathComponent("NX2Apple").path
+        let checkout = home.appendingPathComponent("switch2mac").path
         let git = "/usr/bin/git"
         _ = SystemProcessRunner().runQuiet([git, "-C", checkout, "remote", "add", "origin", "https://github.com/someone/else.git"], env: SystemGitCheckout.environment())
         let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [checkout])
         XCTAssertTrue(plan.checkouts.isEmpty, "a fork with another origin is the player's own work")
     }
 
-    /// A games folder or build output folder inside ~/NX2Apple keeps the whole checkout: removing it
+    /// A games folder or build output folder inside ~/the original launcher keeps the whole checkout: removing it
     /// would take the player's games or builds along.
     func testACheckoutHoldingTheGamesOrTheBuildsStays() throws {
-        let checkout = home.appendingPathComponent("NX2Apple")
+        let checkout = home.appendingPathComponent("switch2mac")
         try originFixture(checkout: checkout)
         let inner = checkout.appendingPathComponent("Games")
         try FileManager.default.createDirectory(at: inner, withIntermediateDirectories: true)
@@ -102,7 +104,7 @@ final class UninstallTests: XCTestCase {
                                           outputFolder: checkout.appendingPathComponent("builds").path,
                                           checkouts: [checkout.path])
         XCTAssertTrue(outputInside.checkouts.isEmpty, "the build output lives in the checkout")
-        let sibling = Uninstall.plan(home: home.path, gamesFolder: home.appendingPathComponent("NX2AppleGames").path,
+        let sibling = Uninstall.plan(home: home.path, gamesFolder: home.appendingPathComponent("switch2macGames").path,
                                      checkouts: [checkout.path])
         XCTAssertEqual(sibling.checkouts, [checkout.path], "a folder that only shares the name prefix does not count")
 

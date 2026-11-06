@@ -1,7 +1,7 @@
 import Foundation
 import NXCore
 
-// One game's own IPA with its game data inside (LNPANDY/NX2Apple#540). The build script makes it whole, so after the script there is
+// One game's own IPA with its game data inside. The build script makes it whole, so after the script there is
 // no archive step, no shared app and nothing to send: the IPA is step 1 of the export card, and step 2 installs it with another tool.
 
 extension BuildStore {

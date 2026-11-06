@@ -1,0 +1,11 @@
+{
+ "title_id": "0400D4201C6EA000",
+ "name": "Mario Tennis Fever",
+ "version": "update v327680 (1.1.1)",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "b6dbb8510a2defbc7c3bdaf8ebe94f1282ea6a4b"
+ },
+ "disk_gb": 30
+}

@@ -56,7 +56,7 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     DispatchQueue.main.async { MainActor.assumeIsolated(body) }
 }
 
-/// The build (LNPANDY/NX2Apple#387, step 7, the last store): the inputs (the four rows, the output folder), the target, the stages
+/// The build: the inputs (the four rows, the output folder), the target, the stages
 /// and whether a build runs, the script's JSON events, the run itself with its archive step and its hand-off to the device, the
 /// failure the card shows and "Build anyway". It follows `AppUpdateStore` (`frontend/ARCHITECTURE.md`, "Stores").
 ///
@@ -76,11 +76,12 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     @Published package var gameDir = ""
     @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Switch2Mac.swift)
     @Published package var identifying = false
+    /// The build picked for each game this time (the Build card's menu); a game chosen again starts on its recommended build (BuildStore+Switch2Mac.swift).
+    @Published package var buildChoices: [String: String] = [:]
     @Published package var slots: [Slot] = [
         Slot(id: "base", kind: .base, title: "data.base", optional: false),
         Slot(id: "update", kind: .update, title: "data.update", optional: true),
         Slot(id: "dlc", kind: .dlc, title: "data.dlc", optional: true),
-        Slot(id: "keys", kind: .keys, title: "data.keys", optional: false),
     ]
     /// The game folder the rows came from (BuildStore+GameFolder.swift), nil for packages.
     @Published package var gameFolder: GameFolder.Contents?
@@ -157,7 +158,6 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     package var home = NSHomeDirectory()
 
     // ---- The app's side: AppKit and the wiring, as closures ----
-    package var chooseKeys: (() -> Void)?          // tests stand in for the file picker
     /// The open panel: the paths the player picked, none when they cancelled.
     package var choosePaths: (FilePick) -> [String] = { _ in [] }
     /// The folder panel of "Save to": the folder's path, nil when they cancelled.
@@ -226,7 +226,6 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     package func shortPath(_ path: String) -> String { RepoLayout.shortPath(path) }
 
     package var basePath: String { slot("base").paths.first ?? "" }
-    package var keysPath: String { slot("keys").paths.first ?? "" }
     package var updatePath: String { slot("update").paths.first ?? "" }
     package var dlcPaths: [String] { slot("dlc").paths }
 

@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-/// The launcher's self-update (LNPANDY/NX2Apple#387): the release check, the staged update, the update sheet, the uninstall
+/// The launcher's self-update: the release check, the staged update, the update sheet, the uninstall
 /// plan and the version the check compares. It is the reference store: `frontend/ARCHITECTURE.md` ("Stores") describes the
 /// pattern, and later stores follow it.
 ///
@@ -19,7 +19,7 @@ import NXCore
 @MainActor package final class AppUpdateStore: ObservableObject {
     /// Bump together with each release tag: the update check compares it with the latest release.
     /// `build-mac-app.yml`, `sync-upstream.yml`, `tools/try-local` and `RELEASING.md` read this line. Keep it in this form.
-    nonisolated package static let appVersion = "0.1.0"
+    nonisolated package static let appVersion = "0.3.1"
 
     /// The version this store compares releases with: `appVersion`, unless a test passes another.
     nonisolated package let version: String
@@ -217,7 +217,7 @@ import NXCore
             return false
         }
         self.staged = nil
-        // A rename era (nxnative, NS Port Builder, NX2Apple) installs under the release's own bundle name. The Dock entry
+        // A rename era (nxnative, NS Port Builder, the original launcher) installs under the release's own bundle name. The Dock entry
         // pointing at the old path goes stale once, so the log says where the new copy landed instead of leaving the player
         // to find it.
         if placed != current {

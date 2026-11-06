@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-/// The text of the build log (LNPANDY/NX2Apple#387). It is a store of its own, so a line from the build script invalidates
+/// The text of the build log. It is a store of its own, so a line from the build script invalidates
 /// the views that show the log and nothing else: `BuildStore` holds it in a `let` and does not publish it, and no view above
 /// the log observes it. The failure classifier reads `text` once, when a build stops.
 ///

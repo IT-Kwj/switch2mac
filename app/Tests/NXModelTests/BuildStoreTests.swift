@@ -80,11 +80,13 @@ import XCTest
 
     // MARK: The conditions to start
 
-    func testABuildMayStartOnlyWithARepositoryTheBaseGameTheKeysAndTheToolsAndNoRunningBuild() throws {
+    /// switch2mac: a build needs one dump folder that `switch2mac.py identify` named (no NSP files, no prod.keys).
+    func testABuildMayStartOnlyWithARepositoryAnIdentifiedDumpAndTheToolsAndNoRunningBuild() throws {
         let store = makeStore()
-        XCTAssertFalse(store.canBuild, "no files yet")
-        store.updateSlot("base") { $0.paths = [try! file("Game [0100000000001000].nsp")] }
-        store.updateSlot("keys") { $0.paths = [try! file("prod.keys")] }
+        XCTAssertFalse(store.canBuild, "no dump yet")
+        store.dumpInfo = DumpInfo(json: #"{"ok": false, "problem": "not a dump"}"#)
+        XCTAssertFalse(store.canBuild, "a folder switch2mac.py did not recognise")
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0400C3F00006E000", "name": "Game"}"#)
         XCTAssertTrue(store.canBuild)
         repo.isRepo = false
         XCTAssertFalse(store.canBuild, "the repository is not usable")
@@ -95,7 +97,8 @@ import XCTest
     }
 
     /// #416: the export choice is not an install, so the stop for a missing device and team does not apply to it.
-    func testTheExportChoiceNeedsNoDeviceAndNoTeam() {
+    func testTheExportChoiceNeedsNoDeviceAndNoTeam() throws {
+        throw XCTSkip("the original launcher's iPhone export: switch2mac builds Mac apps only and startBuild goes straight to switch2mac.py (the iPhone code is kept for later)")
         let store = makeStore()
         store.target = "ios"
         devices.exportIPA = true
@@ -107,7 +110,8 @@ import XCTest
         XCTAssertFalse(store.exportsShell, "a Mac app is never an IPA")
     }
 
-    func testAnIPhoneBuildWithoutADeviceStopsBeforeTheLongSteps() {
+    func testAnIPhoneBuildWithoutADeviceStopsBeforeTheLongSteps() throws {
+        throw XCTSkip("the original launcher's iPhone build: switch2mac builds Mac apps only and startBuild goes straight to switch2mac.py (the iPhone code is kept for later)")
         let store = makeStore()
         store.target = "ios"
         store.startBuild()
@@ -120,13 +124,16 @@ import XCTest
         XCTAssertFalse(store.installsDirectly, "a Mac app is not installed on a device")
     }
 
-    func testABuildWithoutARepositoryEndsWithTheMessageAndRunsNothing() {
+    /// switch2mac: the build runs the checkout's switch2mac.py, so a checkout without it ends with the message.
+    func testABuildWithoutTheScriptEndsWithTheMessageAndRunsNothing() {
         let store = makeStore()
         store.target = "mac-app"
-        repo.isRepo = false; repo.path = ""
+        repo.path = temporary.path   // a folder with no switch2mac.py
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0400C3F00006E000", "name": "Game"}"#)
         store.startBuild()
         XCTAssertFalse(store.running)
-        XCTAssertEqual(store.doneNote, store.t("msg.repoInvalidEmpty"))
+        XCTAssertTrue(store.doneNote.hasPrefix("Invalid repository path: "), store.doneNote)
+        XCTAssertTrue(store.doneNote.contains(temporary.lastPathComponent), store.doneNote)
         XCTAssertTrue(store.log.text.contains("✗"), "the log says it too")
     }
 
@@ -221,7 +228,8 @@ import XCTest
         XCTAssertEqual(store.doneNote, "Build failed: something else")
     }
 
-    func testBuildAnywayAsksFirstAndArmsTheFlagForOneBuildOnly() {
+    func testBuildAnywayAsksFirstAndArmsTheFlagForOneBuildOnly() throws {
+        throw XCTSkip("the original launcher's NSP script took the override flags: switch2mac.py passes --allow-other-metal itself and its build takes no override, so startBuild never consumes the armed flag")
         let store = makeStore()
         store.target = "mac-app"
         repo.isRepo = false   // the build that follows ends at once, which is all this test needs
@@ -260,15 +268,11 @@ import XCTest
         deps.busy = ["dotnet"]
         XCTAssertTrue(store.fixBusy(.translator))
         XCTAssertFalse(store.fixBusy(.zbic))
-        XCTAssertFalse(store.fixBusy(.keys), "a fix that is no install is never busy")
+        XCTAssertFalse(store.fixBusy(.cloudFolder), "a fix that is no install is never busy")
     }
 
-    func testTheKeysFixUsesTheKeysPickerAndTheCloudFixTheFolderPanel() {
+    func testTheCloudFixUsesTheFolderPanel() {   // switch2mac: no keys fix
         let store = makeStore()
-        var keysAsked = 0
-        store.chooseKeys = { keysAsked += 1 }
-        store.fixBuildFailure(.keys)
-        XCTAssertEqual(keysAsked, 1)
         store.failure = BuildFailure(kind: .cloudFolder, gameName: nil, detail: "/iCloud/x")
         store.doneNote = "stopped"
         store.chooseFolder = { nil }
@@ -347,7 +351,7 @@ import XCTest
     private func moveStore() throws -> (BuildStore, cache: String) {
         let store = makeStore()
         store.home = temporary.path + "/home"
-        let cache = store.home + "/Library/Application Support/NX2Apple/shell"
+        let cache = store.home + "/Library/Application Support/switch2mac/shell"
         try FileManager.default.createDirectory(atPath: cache + "/frameworks/DmGame0100AAAA.framework", withIntermediateDirectories: true)
         try Data("shader".utf8).write(to: URL(fileURLWithPath: cache + "/frameworks/DmGame0100AAAA.framework/game.manifest.json"))
         let json: [String: Any] = ["bundleID": "org.nxnative.shell.TEAM", "team": "TEAM", "games": [["titleID": "0100AAAA", "name": "A", "framework": cache + "/frameworks/DmGame0100AAAA.framework"]]]
@@ -364,7 +368,7 @@ import XCTest
         try FileManager.default.createDirectory(atPath: picked, withIntermediateDirectories: true)
         store.prepareShellMove(into: picked)
         guard case .confirm(let plan) = store.shellMove else { return XCTFail("the confirmation shows") }
-        XCTAssertEqual(plan.destination, picked + "/NX2Apple-shell")
+        XCTAssertEqual(plan.destination, picked + "/switch2mac-shell")
         store.running = true
         XCTAssertNil(store.confirmShellMove(), "refused while a build runs")
         XCTAssertEqual(store.shellMove, .confirm(plan), "the confirmation stays, with its note")
@@ -384,7 +388,7 @@ import XCTest
         XCTAssertTrue(store.running, "builds, installs and exports are off while the cache moves")
         XCTAssertFalse(store.canBuild)
         await task.value
-        let moved = picked + "/NX2Apple-shell"
+        let moved = picked + "/switch2mac-shell"
         XCTAssertEqual(store.shellMove, .moved(moved))
         XCTAssertFalse(store.running)
         XCTAssertEqual(defaults.string(forKey: "shellRoot"), moved)

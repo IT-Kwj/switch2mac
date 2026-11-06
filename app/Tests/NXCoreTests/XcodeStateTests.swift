@@ -30,13 +30,12 @@ final class XcodeStateTests: XCTestCase {
                                              xcodeApp: nil, iosSDK: true), .ready)
     }
 
-    func testTheTwoXcodeStringsHaveBothLanguages() {
+    /// switch2mac is English only (l10n/en.json).
+    func testTheTwoXcodeStringsHaveTheirEnglishText() {
         for key in ["dep.xcode.notSelected", "dep.xcode.fix"] {
             let row = L10n.table[key]
             XCTAssertNotNil(row, key)
-            XCTAssertFalse(row?.0.isEmpty ?? true, key)
-            XCTAssertFalse(row?.1.isEmpty ?? true, key)
-            XCTAssertNotEqual(row?.0, row?.1, "\(key) has the English text twice")
+            XCTAssertFalse(row?.en.isEmpty ?? true, key)
         }
     }
 }

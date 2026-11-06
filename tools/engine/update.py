@@ -11,6 +11,11 @@
        old rows a build does not have are skipped quietly, and contributions recorded with the old engine are refused by tools/shader_list.py from then on);
        the game's README and NOTICE.md name the new commit. One commit on dev per game; the old version's download in engines/ is deleted. Nothing is pushed.
 
+  tools/engine/update.py --new-games        also add the Switch 2 games nxnative has a profile for and switch2mac has no folder for yet (with --apply: a folder each,
+                                            made from nxnative's profile: game.json, a page that links its notes, an empty shader list and reports table, a README row)
+  --check   only say whether anything is due (for the GitHub workflow: writes changed=true/false to $GITHUB_OUTPUT)
+  --ci      on GitHub: commit on the branch checked out (main) instead of requiring dev
+
 A game's build is: for switch2mac-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
 of that repository. The newest such commit on the default branch is the one taken. Uses gh (signed in) or GitHub's public API.
 """
@@ -123,10 +128,84 @@ def bump(g, sha):   # the repository's files name the new commit
     n.write_text('\n'.join(t))
 
 
+NX_REPO = 'https://github.com/seedds/nxnative'
+
+
+def slug(name): return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+
+
+def new_games():   # [(title ID, name, version, newest commit of its profile)]: nxnative's Switch 2 profiles switch2mac has no folder for
+    have = {g['title_id'] for g in games()} | {json.loads(p.read_text())['title_id'] for p in (ROOT / 'games').glob('*/game.json')}
+    out = []
+    for item in api('repos/seedds/nxnative/contents/dm/games?ref=main'):
+        tid = item['name']
+        if item['type'] != 'dir' or not re.fullmatch(r'04[0-9A-F]{14}', tid) or tid in have: continue
+        import base64
+        tsv = base64.b64decode(api(f'repos/seedds/nxnative/contents/dm/games/{tid}/game.tsv?ref=main')['content']).decode('utf-8', 'replace')
+        name = next((l.split('\t', 1)[1].strip() for l in tsv.splitlines() if l.startswith('name\t')), tid)
+        build = next((l.split('\t') for l in tsv.splitlines() if l.startswith('build\t')), ['build', 'v0'])
+        c = api(f'repos/seedds/nxnative/commits?per_page=1&path=dm/games/{tid}')[0]
+        out.append((tid, name, build[1], c['sha'], c['commit']['message'].split('\n')[0]))
+    return out
+
+
+def add_game(tid, name, version, sha):
+    """A game nxnative has a profile for, as a folder like Donkey Kong Bananza's: game.json, a page pointing at nxnative's notes (nothing is
+    copied from them), an empty shared shader list and reports table, and its rows in the README's two tables."""
+    d = ROOT / 'games' / slug(name); d.mkdir(parents=True, exist_ok=True)
+    ver = f'update {version}' if version not in ('v0', '') else 'base game'
+    upd = f'`base/` and `updates/{version[1:]}/`' if version[1:].isdigit() and version != 'v0' else '`base/` (exefs and romfs)'
+    (d / 'game.json').write_text(json.dumps({'title_id': tid, 'name': name, 'version': ver, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha}, 'disk_gb': 50}, indent=1, ensure_ascii=False) + '\n')
+    (d / 'shader_list.tsv').write_text(f'# switch2mac shared shader list\tgame={tid}\tengine=nxnative-{sha[:12]}\n# {name}, built with nxnative at {sha[:12]}. Added to nxnative\'s own seed list '
+                                       '(its profile\'s pso_manifest.tsv) at build time; shipped in the app as pso_manifest.tsv.\n# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / '
+                                       'R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.\n')
+    (d / 'reports.tsv').write_text(f"# How {name} ran on players' Macs, by build. Only reports that name the Mac are kept.\n"
+                                   '# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)\n')
+    notes = f'{NX_REPO}/tree/{sha}/dm/games/{tid}'
+    (d / 'README.md').write_text(f"""# {name}
+
+Title ID `{tid}`, {ver}. Added automatically when [nxnative]({NX_REPO}) added its profile: see [nxnative's notes on it]({notes}) for how far it plays and on which Mac.
+
+Built with nxnative's own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`): the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
+
+| What | |
+|---|---|
+| Profile and notes | [nxnative `dm/games/{tid}`]({notes}) |
+| Dump folder | {upd} |
+
+## Shared shader list
+
+[`shader_list.tsv`](shader_list.tsv): this game's own list of shaders and pipelines players have met, for this engine version only. It starts empty: when you close the game, the app offers to send what it built.
+
+## How it runs on players' Macs
+
+[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form.
+
+## Build
+
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
+
+```bash
+./switch2mac.py build "<your dump folder>"
+```
+""")
+    r = ROOT / 'README.md'; t = r.read_text()
+    row = f"| {name} | {ver} | [nxnative]({NX_REPO})'s builder | Added from nxnative's profile: see [its notes]({notes}). | [games/{slug(name)}](games/{slug(name)}) |\n"
+    t = t.replace('| Your game? |', row + '| Your game? |', 1)
+    lines = t.split('\n'); i = next(k for k, l in enumerate(lines) if l.startswith('| Game | The folder you choose holds |'))
+    j = i + 2
+    while j < len(lines) and lines[j].startswith('|'): j += 1
+    lines.insert(j, f'| {name} | {upd} |')
+    r.write_text('\n'.join(lines))
+    return d
+
+
 def main():
-    apply_, compile_host = '--apply' in sys.argv, '--compile' in sys.argv
-    if apply_ and git('-C', str(ROOT), 'branch', '--show-current') != 'dev': sys.exit('--apply works on the dev branch only (git switch dev)')
-    if apply_ and git('-C', str(ROOT), 'status', '--porcelain', '--untracked-files=no'): sys.exit('--apply needs a clean dev branch: commit or put away the changes first')
+    apply_, compile_host, ci, check = '--apply' in sys.argv, '--compile' in sys.argv, '--ci' in sys.argv, '--check' in sys.argv
+    if apply_ and not ci and git('-C', str(ROOT), 'branch', '--show-current') != 'dev': sys.exit('--apply works on the dev branch only (git switch dev)')
+    if apply_ and git('-C', str(ROOT), 'status', '--porcelain', '--untracked-files=no'): sys.exit('--apply needs a clean branch: commit or put away the changes first')
+    if check: apply_ = False
+    sign = '' if ci else '\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n'   # a commit made on GitHub is the workflow's own
     changed = 0
     for g in games():
         e = g['engine']
@@ -144,10 +223,26 @@ def main():
         old = ENGINES / f'{e["kind"]}-{e["commit"][:12]}'   # the replaced version's download (hundreds of MB): no game pins it any more
         if old.is_dir() and not any(x['engine']['commit'][:12] == e['commit'][:12] for x in games() if x['engine']['kind'] == e['kind']): shutil.rmtree(old)
         git('-C', str(ROOT), 'add', '-A', 'games', 'NOTICE.md')
-        msg = f'{g["name"]}: {e["kind"]} {sha[:12]} ({subj})\n\nThe build moved from {e["commit"][:12]}; switch2mac\'s overlay, key-2 settings and shared shader list re-applied (tools/engine/update.py).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n'
+        msg = f'{g["name"]}: {e["kind"]} {sha[:12]} ({subj})\n\nThe build moved from {e["commit"][:12]}; switch2mac\'s overlay, key-2 settings and shared shader list re-applied (tools/engine/update.py).\n{sign}'
         subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', msg], env=dict(os.environ, TZ='UTC'), check=True)
-        say(f'  updated on dev: {git("-C", str(ROOT), "log", "--oneline", "-1")}')
-    if not changed: say('all builds up to date')
+        say(f'  updated: {git("-C", str(ROOT), "log", "--oneline", "-1")}')
+    if '--new-games' in sys.argv:
+        try: found = new_games()
+        except Exception as x: say(f'new games: could not check nxnative ({x})'); found = []
+        for tid, name, version, sha, subj in found:
+            changed += 1; say(f'new game in nxnative: {name} ({tid}, {version}) at {sha[:12]} ({subj})')
+            if not apply_: continue
+            g = {'name': name, 'title_id': tid, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha}}
+            try: prepare(g, sha, compile_host)
+            except RuntimeError as x: say(f'  NOT added: {x}'); continue
+            d = add_game(tid, name, version, sha)
+            git('-C', str(ROOT), 'add', '-A', str(d), 'README.md')
+            subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); switch2mac builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
+                           env=dict(os.environ, TZ='UTC'), check=True)
+            say(f'  added: {git("-C", str(ROOT), "log", "--oneline", "-1")}')
+    if not changed: say('all builds up to date, no new games')
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f: f.write(f'changed={"true" if changed else "false"}\n')
 
 
 if __name__ == '__main__':

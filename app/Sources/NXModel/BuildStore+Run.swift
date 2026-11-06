@@ -2,12 +2,12 @@ import Foundation
 import Combine
 import NXCore
 
-// The build run: the script's arguments and environment, the process, and what happens when it ends (LNPANDY/NX2Apple#387).
+// The build run: the script's arguments and environment, the process, and what happens when it ends.
 
 extension BuildStore {
     package func startBuild() {
         guard !running else { return }
-        return startSwitch2MacBuild()   // switch2mac: BuildStore+Switch2Mac.swift (NX2Apple's NSP path below is kept until it is removed)
+        return startSwitch2MacBuild()   // switch2mac: BuildStore+Switch2Mac.swift (the original launcher's NSP path below is kept until it is removed)
         // The shared app needs a device this Mac knows. Found out here, before an hour of building, not after it.
         if target != BuildTarget.mac, !shellDeviceChecked, !exportsShell {
             guard installsDirectly else { doneNote = t("shell.needsDevice"); done = false; return }
@@ -98,7 +98,7 @@ extension BuildStore {
             return
         }
         // The shared app's own folder is decided before the long steps too: one on a read-only volume (a saved
-        // /NX2Apple-shell, a DMG chosen as Save to) failed at the last step after the whole build (#492).
+        // /switch2mac-shell, a DMG chosen as Save to) failed at the last step after the whole build (#492).
         if target != BuildTarget.mac, !exportsOneGame, let why = shellRootProblem() { fail(why); return }
         var inputDir = folder?.scriptInput ?? baseDir   // a NUP goes to the script as the file
         // A file named .NSP or .Xci is staged too, under a lowercase extension: the script's glob misses it (#554).
@@ -142,8 +142,7 @@ extension BuildStore {
             }
         }
         let engine = EngineLayout.root(repo.path)   // the checkout's engine/ (#214)
-        // A game folder's files are not encrypted: the script ignores -k for it, and the launcher does not ask for the keys.
-        var args = [engine + "/" + RepoLayout.buildScript, inputDir] + (folder != nil ? [] : ["-k", keysPath]) + ["--progress", "json"]
+        var args = [engine + "/" + RepoLayout.buildScript, inputDir, "--progress", "json"]   // switch2mac: no keys
         // A compatibility switch the player turned on: written to a small env file the pipeline
         // copies into the app bundle (main.m sets one variable per line at boot). Only for an iPhone or iPad build;
         // a Mac app runs on this Mac's GPU, which always has BC support.
@@ -219,7 +218,7 @@ extension BuildStore {
                         self.finishOneGameIPA()
                     } else if self.target == BuildTarget.mac {
                         // The .app is self-contained (its RomFS is inside), and the marker file
-                        // beside it (.nx2apple-library, a dot file the Finder hides) tells the
+                        // beside it (.switch2mac-library, a dot file the Finder hides) tells the
                         // game's launcher that this folder is a library: its saves and log live
                         // here, and they follow the folder if it moves. No image copy — the .app
                         // already carries one, and a second multi-GB file was pure duplication.
@@ -230,7 +229,7 @@ extension BuildStore {
                         if made {
                             try? Data().write(to: URL(fileURLWithPath:
                                 (self.macAppPath as NSString).deletingLastPathComponent +
-                                "/.nx2apple-library"))
+                                "/.switch2mac-library"))
                         }
                         self.running = false
                         self.cleanupStaging()

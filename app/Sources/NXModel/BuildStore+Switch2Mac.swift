@@ -19,6 +19,11 @@ package struct DumpInfo: Equatable {
     /// A game's builds (game.json "builds": Mario Kart World has switch2mac's engine and nxnative's), the one game.json "choose" picks for this Mac and why,
     /// and how the game ran on players' Macs (games/<game>/reports.tsv). A game with one build lists that one.
     package var builds: [BuildOption]
+    /// Untested builds: engine pairs nobody has tried (switch2mac's engine with another engine's profile for the game). Offered with a warning.
+    package var experimental: [BuildOption]
+    /// Every build the player can pick: the tested ones, then the untested ones.
+    package var allBuilds: [BuildOption] { builds + experimental }
+    package func isUntested(_ id: String) -> Bool { experimental.contains { $0.id == id } }
     package var recommended: String
     package var why: String
     package var reports: [MacReport]
@@ -33,6 +38,9 @@ package struct DumpInfo: Equatable {
         engine = o["engine"] as? String ?? ""; untested = o["untested"] as? Bool ?? false
         diskGB = (o["disk_gb"] as? NSNumber)?.intValue; problem = o["problem"] as? String ?? ""
         builds = (o["builds"] as? [[String: Any]] ?? []).map { b in
+            BuildOption(id: b["id"] as? String ?? "", name: b["name"] as? String ?? "", engine: b["engine"] as? String ?? "", commit: b["commit"] as? String ?? "", about: b["about"] as? String ?? "")
+        }
+        experimental = (o["experimental"] as? [[String: Any]] ?? []).map { b in
             BuildOption(id: b["id"] as? String ?? "", name: b["name"] as? String ?? "", engine: b["engine"] as? String ?? "", commit: b["commit"] as? String ?? "", about: b["about"] as? String ?? "")
         }
         recommended = o["recommended"] as? String ?? ""; why = o["why"] as? String ?? ""
@@ -54,7 +62,7 @@ extension BuildStore {
         NSHomeDirectory() + "/Library/Application Support/switch2mac/builds/" + titleID
     }
     /// Where finished games go: /Applications, with the player's other apps (a rebuild replaces the copy there; its save stays, beside it in
-    /// Application Support). Never the dump's folder: NX2Apple's output folder (outDir) follows the input, which for a dump would put the game inside it.
+    /// Application Support). Never the dump's folder: the original launcher's output folder (outDir) follows the input, which for a dump would put the game inside it.
     package var switch2macLibraryDir: String { Self.outputFolder }
     /// Settings → Output: where finished games go, /Applications unless the player chose another folder.
     nonisolated package static let s2mOutputKey = "s2m.outputFolder"
@@ -62,13 +70,10 @@ extension BuildStore {
 
     /// The build of a game with several the player picked (Builds page), else the one chosen for this Mac. Kept per game.
     package func buildChoice(_ info: DumpInfo) -> String {
-        let saved = UserDefaults.standard.string(forKey: "s2m.build." + info.titleID)
-        return saved.flatMap { id in info.builds.contains { $0.id == id } ? id : nil } ?? info.recommended
+        buildChoices[info.titleID].flatMap { id in info.allBuilds.contains { $0.id == id } ? id : nil } ?? info.recommended
     }
     package func chooseBuild(_ id: String, for info: DumpInfo) {
-        objectWillChange.send()
-        if id == info.recommended { UserDefaults.standard.removeObject(forKey: "s2m.build." + info.titleID) }   // back to the recommendation, which follows the repository's
-        else { UserDefaults.standard.set(id, forKey: "s2m.build." + info.titleID) }
+        buildChoices[info.titleID] = id == info.recommended ? nil : id
     }
 
     private var buildPython: String { deps.pythonPath.isEmpty ? Toolchain.findPython().path : deps.pythonPath }
@@ -97,6 +102,13 @@ extension BuildStore {
                     i.problem = r.started ? (r.err.split(separator: "\n").last.map(String.init) ?? "switch2mac.py did not answer") : "switch2mac.py could not be started"
                     return i
                 }()
+                // A game chosen again starts on its recommended build, unless Manage → Build with … asked for another just now (a one-time note it leaves)
+                if let tid = self.dumpInfo?.titleID, !tid.isEmpty {
+                    let key = "s2m.pendingBuild." + tid
+                    self.buildChoices[tid] = UserDefaults.standard.string(forKey: key)
+                    UserDefaults.standard.removeObject(forKey: key)
+                    UserDefaults.standard.removeObject(forKey: "s2m.build." + tid)   // an earlier version kept the last pick for good: never used now
+                }
             }
         }
     }
@@ -108,7 +120,7 @@ extension BuildStore {
         stopping = false
         running = true; done = false; doneNote = ""; stages = []; log.clear(); failure = nil; confirmingOverride = nil; macAppPath = ""
         let py = buildPython, work = switch2macWorkDir(info.titleID), lib = switch2macLibraryDir
-        let args = [switch2macScript, "--work", work, "build", info.folder, "--progress", "json"] + (info.builds.count > 1 ? ["--engine", buildChoice(info)] : [])
+        let args = [switch2macScript, "--work", work, "build", info.folder, "--progress", "json"] + (info.allBuilds.count > 1 ? ["--engine", buildChoice(info)] : [])
         say(String(format: t("msg.running"), py) + " " + args.joined(separator: " "))
         lastBuildCommand = [py] + args
         let env = buildEnvironment

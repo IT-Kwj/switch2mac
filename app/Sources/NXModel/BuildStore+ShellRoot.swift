@@ -3,7 +3,7 @@ import NXCore
 
 // Where the shared app's folder lives (#492). The Settings row shows it before a game or output folder is chosen, so a
 // look only previews the root; a build saves it. An empty parent, "/" or a relative one would have put it at
-// /NX2Apple-shell, the root of the read-only system volume, where the write failed after the whole build; a saved value
+// /switch2mac-shell, the root of the read-only system volume, where the write failed after the whole build; a saved value
 // like that is repaired. A build also checks the folder before its long steps, not at the end.
 //
 // Move cache folder (#427): the player moves the folder to another place, or back to the default one. The move runs on the
@@ -50,7 +50,7 @@ extension BuildStore {
         prepareShellMove(to: ShellRootMove.destination(inside: folder))
     }
 
-    /// The confirmation for the way back to `~/Library/Application Support/NX2Apple/shell`.
+    /// The confirmation for the way back to `~/Library/Application Support/switch2mac/shell`.
     package func prepareShellMoveToDefault() {
         prepareShellMove(to: ShellRootMigration.defaultRoot(home: home))
     }

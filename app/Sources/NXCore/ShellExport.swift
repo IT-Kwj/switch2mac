@@ -1,13 +1,13 @@
 import Foundation
 
-// The shared app as an unsigned IPA (LNPANDY/NX2Apple#416): no device and no signing team. The same project as the install
+// The shared app as an unsigned IPA: no device and no signing team. The same project as the install
 // (build_shell.sh --prepare-xcode), built by xcodebuild with signing off, the executable signed ad-hoc to carry its entitlements
 // (as build_ipa.sh does for the one-game IPA), then zipped as Payload/<app>.app. A sideloading tool signs the result. The game data
 // stays out: the player copies romfs.img into the app's Documents/games/<title ID>/ after installing it.
 
 extension ShellInstall {
     /// The IPA's file name.
-    package static let ipaName = "NX2Apple.ipa"
+    package static let ipaName = "switch2mac.ipa"
 
     /// Everything the export writes lives in this folder of the shell root, apart from the project.
     package static func exportFolder(root: String) -> String { root + "/export" }
@@ -208,7 +208,7 @@ extension ShellInstaller {
         }
     }
 
-    /// The game data into the shared app that is installed already and signed by another tool (LNPANDY/NX2Apple#416). The app is found
+    /// The game data into the shared app that is installed already and signed by another tool. The app is found
     /// on the device by its bundle ID prefix (a sideloading tool may add a team ID): none is `.appNotFound`, several come back in
     /// `apps` for the player to choose from (`bundleID` then names the one). The copy is the install's own data step (listing, diff,
     /// free space, the wired-or-Wi-Fi question, the copy). A copy that fails comes back as `.refused` with devicectl's words in `detail`.

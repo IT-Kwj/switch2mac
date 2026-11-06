@@ -57,13 +57,13 @@ package struct ShellLibrary: Codable, Equatable {
     }
 
     /// The folder a shell root may live in: an absolute path that is not the root of a volume. `""` (no game or output
-    /// folder chosen yet) and `/` both gave `/NX2Apple-shell` on the read-only system volume (#492); `home` stands in.
+    /// folder chosen yet) and `/` both gave `/switch2mac-shell` on the read-only system volume (#492); `home` stands in.
     package static func parentFolder(_ parent: String, home: String = NSHomeDirectory()) -> String {
         let path = (parent as NSString).expandingTildeInPath
         return path.hasPrefix("/") && path != "/" ? path : home
     }
 
-    /// Whether a saved root can be used as it is: an absolute path below a volume root. `/NX2Apple-shell` came from an
+    /// Whether a saved root can be used as it is: an absolute path below a volume root. `/switch2mac-shell` came from an
     /// empty parent and is repaired instead of used (#492).
     package static func rootIsUsable(_ root: String) -> Bool {
         root.hasPrefix("/") && (root as NSString).pathComponents.filter { $0 != "/" }.count >= 2
@@ -77,8 +77,8 @@ package struct ShellLibrary: Codable, Equatable {
         return ShellRootMigration.defaultRoot(home: home)
     }
 
-    /// The shell root: the saved one (`shellRoot` in `defaults`), else `~/Library/Application Support/NX2Apple/shell`, which is then
-    /// saved. A root that an older version made inside the output folder (`<folder>/NX2Apple-shell`) moves there once, when that is
+    /// The shell root: the saved one (`shellRoot` in `defaults`), else `~/Library/Application Support/switch2mac/shell`, which is then
+    /// saved. A root that an older version made inside the output folder (`<folder>/switch2mac-shell`) moves there once, when that is
     /// safe (`ShellRootMigration`), and otherwise stays where it is. `parent` is where an older version would have made it. A saved
     /// root at a volume root is repaired (#492).
     package static func resolveRoot(defaults: UserDefaults = .standard, parent: String, home: String = NSHomeDirectory()) -> String {

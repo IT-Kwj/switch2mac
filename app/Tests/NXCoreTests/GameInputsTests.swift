@@ -27,7 +27,6 @@ final class GameInputsTests: XCTestCase {
         XCTAssertEqual(Set(GameInputs.allowedFileTypes(for: .base)), ["nsp", "xci", "nsz", "xcz", "nup"], "a NUP holds a whole game (#445)")
         XCTAssertEqual(Set(GameInputs.allowedFileTypes(for: .update)), ["nsp", "xci", "nsz", "xcz"])
         XCTAssertEqual(Set(GameInputs.allowedFileTypes(for: .dlc)), ["nsp", "nsz"])
-        XCTAssertEqual(GameInputs.allowedFileTypes(for: .keys), ["keys"])
     }
 
     func testADroppedMixedSetIsSortedByTitleID() throws {
@@ -36,14 +35,13 @@ final class GameInputsTests: XCTestCase {
         let old = try file("Game [0100000000010800][v65536].nsp")
         let new = try file("Game [0100000000010800][v131072].nsz")
         let dlc1 = try file("Game DLC [0100000000011001].nsp"), dlc2 = try file("Game DLC [0100000000011002].xci")
-        let keys = try file("prod.keys")
+        let keys = try file("prod.keys")   // switch2mac: a keys file is never taken
         let unfinished = try file("Game [0100000000010000].xci", size: 0)
         let unnamed = try file("game.nsp"), text = try file("readme.txt")
         let found = GameInputs.classify([dlc2, text, old, repack, unfinished, base, keys, new, unnamed, dlc1])
-        XCTAssertEqual(found, GameInputs.Found(base: base, update: new, dlc: [dlc1, dlc2], keys: keys),
-                       "the largest base, the newest update, every add-on sorted, the keys")
+        XCTAssertEqual(found, GameInputs.Found(base: base, update: new, dlc: [dlc1, dlc2]),
+                       "the largest base, the newest update, every add-on sorted, no keys")
         XCTAssertEqual(GameInputs.classify([text, unnamed]), GameInputs.Found())
-        XCTAssertFalse(GameInputs.Found(keys: keys).anyGame)
     }
 
     /// The names from issue #237: the title ID bare at the start of the name, the version as a `_vN` token.
@@ -97,6 +95,5 @@ final class GameInputsTests: XCTestCase {
         XCTAssertEqual(check(.dlc, "0100AAAA00001001_v1.nsp"), .otherGame)
         XCTAssertNil(check(.update, "0100AAAA00000800_v1.nsp", nil), "no base chosen yet")
         XCTAssertNil(check(.dlc, "game.nsp"), "no title ID in the name: the build script reads it from the package")
-        XCTAssertNil(check(.keys, "prod.keys"))
     }
 }

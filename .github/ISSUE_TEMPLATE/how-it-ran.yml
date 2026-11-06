@@ -1,0 +1,62 @@
+name: How a game ran on my Mac
+description: Tell others how a game runs on your Mac. Each game's build choice and its reports table come from these.
+title: "[How it ran] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thanks!** Your report goes into the game's reports table (`games/<game>/reports.tsv`) and helps switch2mac pick the right build for Macs like yours. Only the Mac's model, chip, memory and macOS are recorded, never anything about you. Don't attach game files, saves or the app.
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: As the switch2mac app names it.
+      placeholder: Mario Kart World
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build
+      description: The engine, as the game's Build card shows it (switch2mac, nxnative or pokopia-native; say "untested" for an untested build). Not sure? Leave it empty.
+      placeholder: nxnative
+  - type: input
+    id: version
+    attributes:
+      label: Build version (optional)
+      description: In the game, press 1 twice for the overlay's detailed view; its Engine line shows it.
+      placeholder: "nxnative 84dea698"
+  - type: input
+    id: mac
+    attributes:
+      label: Mac
+      description: The model, chip and memory, as in Apple menu → About This Mac.
+      placeholder: MacBook Air, M3, 16 GB
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "26.6"
+    validations:
+      required: true
+  - type: input
+    id: fps
+    attributes:
+      label: Frame rate
+      description: What the overlay (key 1) shows most of the time. Ranges are fine.
+      placeholder: "55-60 fps in races"
+  - type: input
+    id: memory
+    attributes:
+      label: Memory used (optional)
+      description: The overlay's detailed view (press 1 twice) shows it.
+      placeholder: "12 GB"
+  - type: textarea
+    id: notes
+    attributes:
+      label: How it went
+      description: How far you played, how long, and anything wrong (stutters, crashes, graphics). Screenshots are welcome.
+    validations:
+      required: true

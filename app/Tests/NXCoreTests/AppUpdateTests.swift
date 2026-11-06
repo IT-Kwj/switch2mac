@@ -18,7 +18,7 @@ final class AppUpdateTests: XCTestCase {
 
     /// A launcher bundle as the release workflow assembles it.
     @discardableResult
-    private func makeApp(_ name: String = "NX2Apple", in dir: URL? = nil, id: String? = nil, version: String = "0.4.8",
+    private func makeApp(_ name: String = "switch2mac", in dir: URL? = nil, id: String? = nil, version: String = "0.4.8",
                          executable: Bool = true, marker: String = "new", minOS: String? = nil) throws -> URL {
         let app = (dir ?? temporary).appendingPathComponent(name + ".app")
         let macOS = app.appendingPathComponent("Contents/MacOS")
@@ -140,12 +140,12 @@ final class AppUpdateTests: XCTestCase {
     func testStagingVerifiesDigestAndBundle() throws {
         let source = temporary.appendingPathComponent("source", isDirectory: true)
         let archive = try zip(try makeApp(in: source))
-        let release = AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/NX2Apple-macOS-arm64.zip", digest: try digest(archive))
+        let release = AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/switch2mac-macOS-arm64.zip", digest: try digest(archive))
         let root = temporary.appendingPathComponent("stage-ok", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let staged = try AppUpdate.stage(zip: archive, release: release, in: root, expectedID: bundleID, requireDigest: true).get()
         XCTAssertEqual(staged.release, release)
-        XCTAssertEqual(staged.app.lastPathComponent, "NX2Apple.app")
+        XCTAssertEqual(staged.app.lastPathComponent, "switch2mac.app")
         XCTAssertEqual(try marker(staged.app), "new")
     }
 
@@ -182,9 +182,9 @@ final class AppUpdateTests: XCTestCase {
         XCTAssertEqual(AppUpdate.installability(release, appVersion: "0.4.7"), .developer)
         // a bundle under .build or DerivedData
         XCTAssertEqual(AppUpdate.installability(try makeApp(in: release, version: "0.4.7"), appVersion: "0.4.7"), .developer)
-        let derived = temporary.appendingPathComponent("DerivedData/NX2Apple/Build/Products/Release", isDirectory: true)
+        let derived = temporary.appendingPathComponent("DerivedData/switch2mac/Build/Products/Release", isDirectory: true)
         XCTAssertEqual(AppUpdate.installability(try makeApp(in: derived, version: "0.4.7"), appVersion: "0.4.7"), .developer)
-        // frontend/NX2Apple.app, assembled beside the Package.swift it was built from
+        // frontend/the original launcher.app, assembled beside the Package.swift it was built from
         let frontend = temporary.appendingPathComponent("frontend", isDirectory: true)
         try Data().write(to: frontend.appendingPathComponent("Package.swift"))
         XCTAssertEqual(AppUpdate.installability(try makeApp(in: frontend, version: "0.4.7"), appVersion: "0.4.7"), .developer)
@@ -204,11 +204,15 @@ final class AppUpdateTests: XCTestCase {
     func testReleaseParsingTakesTheDigest() {
         let json: [String: Any] = ["tag_name": "v0.4.8", "assets": [
             ["name": "nxnative-macOS-arm64.zip", "browser_download_url": "https://example.invalid/old.zip", "digest": "sha256:aa"],
-            ["name": "NX2Apple-macOS-arm64.zip", "browser_download_url": "https://example.invalid/new.zip", "digest": "sha256:bb"],
+            ["name": "switch2mac-macOS-arm64.zip", "browser_download_url": "https://example.invalid/new.zip", "digest": "sha256:bb"],
         ]]
         XCTAssertEqual(AppUpdate.release(fromJSON: json), AppUpdate.Release(tag: "v0.4.8", url: "https://example.invalid/new.zip", digest: "sha256:bb"))
-        let legacy: [String: Any] = ["tag_name": "v0.4.8", "assets": [["name": "NS-Port-Builder-macOS-arm64.zip", "browser_download_url": "https://example.invalid/legacy.zip"]]]
-        XCTAssertEqual(AppUpdate.release(fromJSON: legacy)?.digest, nil)
+        let noDigest: [String: Any] = ["tag_name": "v0.4.8", "assets": [["name": "switch2mac-macOS-arm64.zip", "browser_download_url": "https://example.invalid/plain.zip"]]]
+        XCTAssertEqual(AppUpdate.release(fromJSON: noDigest)?.url, "https://example.invalid/plain.zip")
+        XCTAssertEqual(AppUpdate.release(fromJSON: noDigest)?.digest, nil)
+        // another app's download is not this app's
+        let other: [String: Any] = ["tag_name": "v0.4.8", "assets": [["name": "other-launcher-macOS-arm64.zip", "browser_download_url": "https://example.invalid/other.zip"]]]
+        XCTAssertNil(AppUpdate.release(fromJSON: other))
         XCTAssertNil(AppUpdate.release(fromJSON: ["tag_name": "v0.4.8", "assets": []]))
     }
 
@@ -225,7 +229,7 @@ final class AppUpdateTests: XCTestCase {
     }
 
     func testInstallUsesTheStagedNameWhenItDiffers() throws {
-        // The rename era: nxnative → NS Port Builder → NX2Apple. In-place replacement kept the old
+        // The rename era: nxnative → NS Port Builder → the original launcher. In-place replacement kept the old
         // folder's name for ever, and an updated app still called itself the old name.
         let dir = temporary.appendingPathComponent("Applications")
         let current = try makeApp("Current", in: dir, marker: "old")
@@ -248,12 +252,12 @@ final class AppUpdateTests: XCTestCase {
 
     func testTheInstallTargetFollowsTheStagedNameOnlyWhenItDiffers() {
         let dir = URL(fileURLWithPath: "/Applications")
-        XCTAssertEqual(AppUpdate.installTarget(for: dir.appendingPathComponent("NX2Apple.app"),
-                                               current: dir.appendingPathComponent("NX2Apple.app")),
-                       dir.appendingPathComponent("NX2Apple.app"))
-        XCTAssertEqual(AppUpdate.installTarget(for: dir.appendingPathComponent("NX2Apple.app"),
+        XCTAssertEqual(AppUpdate.installTarget(for: dir.appendingPathComponent("switch2mac.app"),
+                                               current: dir.appendingPathComponent("switch2mac.app")),
+                       dir.appendingPathComponent("switch2mac.app"))
+        XCTAssertEqual(AppUpdate.installTarget(for: dir.appendingPathComponent("switch2mac.app"),
                                                current: dir.appendingPathComponent("NS Port Builder.app")),
-                       dir.appendingPathComponent("NX2Apple.app"), "a rename installs under the release's own name")
+                       dir.appendingPathComponent("switch2mac.app"), "a rename installs under the release's own name")
     }
 
     func testInstallRefusedWhileBuildRuns() throws {
@@ -269,9 +273,9 @@ final class AppUpdateTests: XCTestCase {
         for key in ["app.staging", "app.ready", "app.restartNow", "app.waitForBuild", "app.stageNetFail", "app.noDigest",
                     "app.digestMismatch", "app.unpackFail", "app.notOurApp", "app.devBuild", "app.readOnly", "app.auto",
                     "app.autoNote", "app.autoDev", "app.autoReadOnly", "library.appReady", "app.relaunchFail"] {
-            XCTAssertNotNil(L10n.table[key], key)
+            XCTAssertFalse(L10n.table[key]?.en.isEmpty ?? true, key)
         }
-        XCTAssertTrue(L10n.selfCheck().isEmpty)
+        XCTAssertTrue(L10n.table.values.allSatisfy { !$0.en.isEmpty }, "switch2mac is English only: every key needs its English text")
     }
 }
 
@@ -308,7 +312,7 @@ final class RelaunchTests: XCTestCase {
 
     func testTheNewCopyOpensOnlyAfterTheOldProcessHasExited() throws {
         let log = dir.appendingPathComponent("opened.txt")
-        let app = dir.appendingPathComponent("My Games & \"Apps\"/NX2Apple.app")
+        let app = dir.appendingPathComponent("My Games & \"Apps\"/switch2mac.app")
         let old = Process()
         old.executableURL = URL(fileURLWithPath: "/bin/sleep")
         old.arguments = ["1.5"]
@@ -322,7 +326,7 @@ final class RelaunchTests: XCTestCase {
 
     func testItOpensAnywayWhenTheOldProcessDoesNotExit() throws {
         let log = dir.appendingPathComponent("opened.txt")
-        let app = dir.appendingPathComponent("NX2Apple.app")
+        let app = dir.appendingPathComponent("switch2mac.app")
         let old = Process()
         old.executableURL = URL(fileURLWithPath: "/bin/sleep")
         old.arguments = ["30"]
@@ -357,8 +361,7 @@ final class UpdateCheckTests: XCTestCase {
     /// is why the check has to say so rather than report "up to date".
     func testTheAssetNamesCoverEveryInstallThatCanStillUpdate() {
         let names = AppUpdate.assetNames
-        XCTAssertTrue(names.contains("NX2Apple-macOS-arm64.zip"), "the current name")
-        XCTAssertTrue(names.contains("nxnative-macOS-arm64.zip"), "installs from before the rename to NX2Apple")
-        XCTAssertTrue(names.contains("NS-Port-Builder-macOS-arm64.zip"), "installs from before the rename to nxnative")
+        // switch2mac: one name since its first release (0.1.0), and none of the original launcher's, so it never installs the original launcher over itself
+        XCTAssertEqual(names, ["switch2mac-macOS-arm64.zip"])
     }
 }

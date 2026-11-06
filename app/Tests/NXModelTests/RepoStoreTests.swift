@@ -3,7 +3,7 @@ import XCTest
 @testable import NXCore
 
 /// `RepoStore` without SwiftUI: a fake `GitCheckout` answers for git, the checkouts are folders in a temporary directory and the
-/// defaults are a suite of their own. The model's wiring is tested in NX2AppleTests (RepoAutoUpdateTests, RepoToolsTests run the
+/// defaults are a suite of their own. The model's wiring is tested in Switch2MacTests (RepoAutoUpdateTests, RepoToolsTests run the
 /// real git against local repositories).
 @MainActor final class RepoStoreTests: XCTestCase {
     private var temporary: URL!
@@ -28,15 +28,18 @@ import XCTest
         defaults.removePersistentDomain(forName: suite)
     }
 
-    /// A folder the launcher takes for a checkout: the extractor's project, and a .git when `isGit`.
+    /// A folder the launcher takes for a checkout: switch2mac.py beside games/ (RepoLayout.isRepo), and a .git when `isGit`.
     @discardableResult
     private func makeCheckout(_ name: String = "clone", isGit: Bool = true) throws -> String {
         let dir = temporary.appendingPathComponent(name)
-        let marker = dir.appendingPathComponent(EngineLayout.marker)
-        try FileManager.default.createDirectory(at: marker.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try "x".write(to: marker, atomically: true, encoding: .utf8)
+        try Self.makeSwitch2MacTree(dir)
         if isGit { try FileManager.default.createDirectory(at: dir.appendingPathComponent(".git"), withIntermediateDirectories: true) }
         return dir.path
+    }
+
+    static func makeSwitch2MacTree(_ dir: URL) throws {
+        try FileManager.default.createDirectory(at: dir.appendingPathComponent("games"), withIntermediateDirectories: true)
+        try "x".write(to: dir.appendingPathComponent(RepoLayout.buildScript), atomically: true, encoding: .utf8)
     }
 
     private func makeStore(path: String? = nil, autoUpdate: Bool? = nil) -> RepoStore {
@@ -78,8 +81,8 @@ import XCTest
     }
 
     func testTheHomeIsShownAsATilde() {
-        XCTAssertEqual(makeStore().shortPath(temporary.path + "/NX2Apple"), "~/NX2Apple")
-        XCTAssertEqual(makeStore().shortPath("/elsewhere/NX2Apple"), "/elsewhere/NX2Apple")
+        XCTAssertEqual(makeStore().shortPath(temporary.path + "/switch2mac"), "~/switch2mac")
+        XCTAssertEqual(makeStore().shortPath("/elsewhere/switch2mac"), "/elsewhere/switch2mac")
     }
 
     // ---- Check ----
@@ -263,20 +266,19 @@ import XCTest
 
     // ---- Clone ----
 
+    /// switch2mac clones into its own state folder, under the home (RepoStore.clone).
+    static let cloneDest = "Library/Application Support/switch2mac/repo"
+
     func testACloneIsSelectedAndTheEngineIsToldItMoved() async throws {
-        git.cloneMakes = { dest in
-            let marker = URL(fileURLWithPath: dest).appendingPathComponent(EngineLayout.marker)
-            try? FileManager.default.createDirectory(at: marker.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try? "x".write(to: marker, atomically: true, encoding: .utf8)
-        }
+        git.cloneMakes = { dest in try? Self.makeSwitch2MacTree(URL(fileURLWithPath: dest)) }
         let store = makeStore()
-        let dest = temporary.path + "/NX2Apple"
+        let dest = temporary.path + "/" + Self.cloneDest
         let task = store.clone()
         XCTAssertEqual(store.status, t("repo.downloading"))
         XCTAssertEqual(log.first, "git clone --depth 1 \(RepoStore.url) \(dest)\n")
         await task.value
         XCTAssertEqual(store.path, dest)
-        XCTAssertEqual(store.status, String(format: t("repo.downloadDone"), "~/NX2Apple"))
+        XCTAssertEqual(store.status, String(format: t("repo.downloadDone"), "~/" + Self.cloneDest))
         XCTAssertEqual(moved, 1)
         XCTAssertFalse(store.busy)
     }
@@ -288,26 +290,26 @@ import XCTest
         await store.clone().value
         XCTAssertEqual(store.status, t("repo.downloadFail"))
         XCTAssertEqual(store.path, "")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: temporary.path + "/NX2Apple"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: temporary.path + "/" + Self.cloneDest))
         XCTAssertEqual(moved, 0)
     }
 
     func testAFolderThatIsNotARepositoryIsNotCloned() async throws {
-        try FileManager.default.createDirectory(atPath: temporary.path + "/NX2Apple", withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(atPath: temporary.path + "/" + Self.cloneDest, withIntermediateDirectories: true)
         let store = makeStore()
         await store.clone().value
-        XCTAssertEqual(store.status, String(format: t("repo.destBusy"), "~/NX2Apple"))
+        XCTAssertEqual(store.status, String(format: t("repo.destBusy"), "~/" + Self.cloneDest))
         XCTAssertTrue(git.calls.isEmpty)
     }
 
     func testAnExistingCheckoutIsSelectedAndChecked() async throws {
-        try makeCheckout("NX2Apple")
+        try makeCheckout(Self.cloneDest)
         git.behindCount = 1
         let store = makeStore(autoUpdate: false)
         await store.clone().value
-        XCTAssertEqual(store.path, temporary.path + "/NX2Apple")
+        XCTAssertEqual(store.path, temporary.path + "/" + Self.cloneDest)
         XCTAssertEqual(store.behind, 1)
-        XCTAssertEqual(git.calls, ["behind " + temporary.path + "/NX2Apple"])
+        XCTAssertEqual(git.calls, ["behind " + temporary.path + "/" + Self.cloneDest])
     }
 
     // ---- Conditions ----

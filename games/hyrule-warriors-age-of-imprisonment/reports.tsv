@@ -1,0 +1,4 @@
+# How Hyrule Warriors: Age of Imprisonment ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
+Mac	M6	16		nxnative	60		The first field from boot: frame p50 16.6 ms, p95 18 ms, long frames every few frames; battles not reached	nxnative profile page
+Mac Studio	M5 Max	64	27.2	nxnative			System-wide display freezes and GPU timeouts during play (open)	seedds/nxnative#1223

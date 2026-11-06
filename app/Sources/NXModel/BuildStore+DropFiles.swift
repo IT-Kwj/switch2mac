@@ -1,7 +1,7 @@
 import Foundation
 import NXCore
 
-// Game files dropped on the Builds page (issue #68): NSP, NSZ and XCI files, a folder, prod.keys, in any
+// Game files dropped on the Builds page (issue #68): NSP, NSZ and XCI files or a folder, in any
 // mix. They are sorted into the slots by the same classification as Choose game folder
 // (GameInputs.classify), so a drop and a picked folder never disagree about what is the update.
 
@@ -40,10 +40,9 @@ extension BuildStore {
             switch s.id {
             case "base":
                 if let base = found.base { s.paths = [base]; s.problem = "" }
-                else if !found.anyGame && found.keys == nil && s.paths.isEmpty { s.problem = "data.noNsp" }
+                else if !found.anyGame && s.paths.isEmpty { s.problem = "data.noNsp" }
             case "update": if let update = found.update { s.paths = [update]; s.problem = "" }
             case "dlc": if !found.dlc.isEmpty { s.paths = Array(Set(s.paths + found.dlc)).sorted(); s.problem = "" }
-            case "keys": if let keys = found.keys { s.paths = [keys]; s.problem = "" }
             default: break
             }
             return s
