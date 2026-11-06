@@ -3,6 +3,7 @@
 ## 2026-11-06 (7): switch2mac app 0.3.3
 
 - **What's New:** the News dates now show the day each change was published, wherever you are (west of UTC they showed the day before).
+- **Shader lists:** after **Send**, only the file to drag in is left in the folder (an emptied file beside it was being sent instead), and every list sent is now checked and added within minutes, with a thank-you on the issue: everyone's next build prepares those shaders. Files attached in a comment count too.
 
 ## 2026-11-06 (6)
 

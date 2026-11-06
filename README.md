@@ -152,7 +152,8 @@ Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 w
 
 You don't need to do anything while you play. The app keeps what it built that the list lacks in `~/Library/Application Support/nxnative/<title ID>/shader-list-contribution.txt`, and each time 100 new rows have built up it asks when you close the game:
 
-- **Send** opens the **Shader list** form on GitHub and shows the file in Finder: drag it into the form and press **Create**. The game never uploads anything by itself.
+- **Send** opens the **Shader list** form on GitHub and shows the one file to send in Finder (`shader-list-<title ID>-<date>.txt`): drag it into the form and press **Create**. The game never uploads anything by itself.
+- Within a minute or two the list is checked and added to the game's shared list, and the issue is closed with a thank-you: everyone's next build of the game prepares those shaders. If something is wrong (no file came through, another game), a comment on the issue says so, and dragging the file into a comment tries again.
 - **Remind me later** asks again after 100 more; **Stop reminding** never asks again.
 
 ### Is sending safe?
@@ -165,7 +166,7 @@ Yes. The file is **a list of shader IDs, not shaders**: like sending library boo
 - The list only takes lines of that exact form: anything else in a file is thrown away.
 - The game never uploads anything by itself: you see the file, you choose to send it, and it appears publicly on this repository under your GitHub account.
 
-Maintainers collect the forms with `./tools/shader_list.py collect` (it checks every file belongs to that game and engine and refuses anything else), then `--apply --close`, and commit; later builds carry the new rows. `./tools/shader_list.py stats` shows each list. This works the way [MacNativeGames](https://github.com/ly05010419/MacNativeGames) shares Tears of the Kingdom's shader list, by ly05010419.
+Each form is read by a GitHub workflow (`.github/workflows/shader-lists.yml`, running `./tools/shader_list.py collect --issue <n> --apply`): it checks the file belongs to that game, and every shader it names to that build's shader map, refuses anything else, and commits the new rows to `main`; later builds carry them. Maintainers can run `collect` by hand too (`--apply --close`). `./tools/shader_list.py stats` shows each list. This works the way [MacNativeGames](https://github.com/ly05010419/MacNativeGames) shares Tears of the Kingdom's shader list, by ly05010419.
 
 Other improvements are welcome too: speed-ups, fixes, testing on other Macs, game updates and new games. Open an issue with the log and screenshots, or a pull request. Give speed-ups an off switch and check that the picture is unchanged. Never attach game files, shader dumps, Metal libraries, saves or built apps.
 

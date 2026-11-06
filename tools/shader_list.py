@@ -7,12 +7,14 @@ S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline ke
 How rows arrive (the way MacNativeGames does it for Tears of the Kingdom): the app compares what it built (pso_user.tsv beside its save folder) with the list it
 shipped, and keeps the rest in shader-list-contribution.txt in ~/Library/Application Support/nxnative/<title ID>/. Each time 100 new rows have built up, it asks
 when the game closes: Send opens the "Shader list" issue form on GitHub and shows the file in Finder to drag in; nothing is sent by the app itself.
+Each new form is read by .github/workflows/shader-lists.yml (collect --issue <n> --apply --json), which commits the rows to main and closes the issue.
 
   tools/shader_list.py stats                                every game's list: rows by kind, its engine
   tools/shader_list.py new <game>                           your own app's rows the list lacks → shader-list-<title ID>.txt (to send, or to merge)
   tools/shader_list.py merge <game> <file> [...] [--drop-unknown]   add contributed rows to a game's list (checked as collect checks them)
-  tools/shader_list.py collect [--apply] [--close] [--drop-unknown]  the open "shader list" issues on GitHub (gh): read each file, check it, report;
-                                                            --apply adds the rows to the lists, --close then thanks and closes each issue it took
+  tools/shader_list.py collect [--issue <n>] [--apply] [--close] [--drop-unknown] [--json]  the open "shader list" issues on GitHub (gh), or one: read each
+                                                            file (attached to the issue or to a comment), check it, report; --apply adds the rows to the lists,
+                                                            --close then thanks and closes each issue it took; --json ends with one JSON line for the workflow
   tools/shader_list.py ship <game> <out pso_manifest.tsv> [--base <engine's own list>]   the list a build ships (switch2mac.py build runs it)
 
 --build <id> picks one of a game's builds (Mario Kart World: switch2mac, nxnative) for new, merge and ship; new takes the installed one by default (s2m_build.txt
@@ -78,11 +80,24 @@ def header(text):   # (title ID, engine) from the first header line, or None. An
 
 def known_keys(g):   # the game's shader keys, or None when its table is not at hand (its rows are then checked by form only)
     m = g['engine_dir'] / f'dm/games/{g["title_id"]}/shader_map.tsv'   # switch2mac's and nxnative's engines carry the game's shader map
-    if not m.exists(): return None
-    keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', m.read_text(), re.M))
+    text = m.read_text() if m.exists() else remote_map(g)   # no engine fetched here (GitHub's runner): the map from the engine's repository at its pinned commit
+    if text is None: return None
+    keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', text, re.M))
     rt = g['dir'] / 'runtime_shaders.tsv'
     if rt.exists(): keys |= set(re.findall(r'^([0-9a-f]{16})\t', rt.read_text(), re.M))
     return keys
+
+
+_MAPS = {}
+def remote_map(g):   # dm/games/<title ID>/shader_map.tsv of the build's engine repository at its pinned commit (GitHub raw), or None
+    e = g['engine']; m = re.search(r'github\.com/([\w.-]+/[\w.-]+?)(?:\.git)?$', e.get('repo', ''))
+    if not m: return None
+    url = f'https://raw.githubusercontent.com/{m[1]}/{e["commit"]}/dm/games/{g["title_id"]}/shader_map.tsv'
+    if url not in _MAPS:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'switch2mac'}), timeout=60) as r: _MAPS[url] = r.read(64 << 20).decode('utf-8', 'replace')
+        except Exception: _MAPS[url] = None
+    return _MAPS[url]
 
 
 def check(g, text, drop_unknown):   # (rows to add, problems): problems refuse the file
@@ -131,15 +146,18 @@ def repo():
     return m[1]
 
 
-def fetch(url):   # an issue attachment: text only, 2 MB at most
-    with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'switch2mac'}), timeout=30) as r:
-        return r.read(2 << 20).decode('utf-8', 'replace')
+def fetch(url):   # an issue attachment: text only, 32 MB at most (#20's list was 2.7 MB: a 2 MB cap cut it mid-row)
+    cap = 32 << 20
+    with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'switch2mac'}), timeout=60) as r:
+        data = r.read(cap + 1)
+    if len(data) > cap: data = data[:data.rfind(b'\n', 0, cap) + 1]   # cut at the cap: never keep a half-read last row
+    return data.decode('utf-8', 'replace')
 
 
 def main():
     argv = sys.argv[1:]; opt = lambda k: argv[argv.index(k) + 1] if k in argv[:-1] else None
     base, build = opt('--base'), opt('--build')
-    a = [x for i, x in enumerate(argv) if not x.startswith('--') and not (i and argv[i - 1] in ('--base', '--build'))]; flags = {x for x in argv if x.startswith('--')}
+    a = [x for i, x in enumerate(argv) if not x.startswith('--') and not (i and argv[i - 1] in ('--base', '--build', '--issue'))]; flags = {x for x in argv if x.startswith('--')}
     drop = '--drop-unknown' in flags
     if not a: sys.exit(__doc__)
     if a[0] == 'stats':
@@ -163,25 +181,31 @@ def main():
         print(f'{g["list"].relative_to(ROOT)}: {n} rows added')
     elif a[0] == 'collect':
         gs = games(); byname = {g[0]['name'].lower(): g[0] for g in gs.values()}
-        issues = json.loads(gh('issue', 'list', '--repo', repo(), '--label', LABEL, '--state', 'open', '--limit', '200', '--json', 'number,title,body,url'))
+        one = opt('--issue'); res = []
+        if one: issues = [json.loads(gh('issue', 'view', one, '--repo', repo(), '--json', 'number,title,body,url,comments'))]
+        else: issues = json.loads(gh('issue', 'list', '--repo', repo(), '--label', LABEL, '--state', 'open', '--limit', '200', '--json', 'number,title,body,url,comments'))
         if not issues: print('no open shader list issues'); return
         added = {}
+        def out(i, ok, **kw):   # --json: one line a issue, for the workflow (.github/workflows/shader-lists.yml)
+            res.append(dict(number=i['number'], ok=ok, **kw))
         for i in issues:
-            texts = [i['body'] or ''] + [fetch(u) for u in dict.fromkeys(ATTACH.findall(i['body'] or ''))]
+            posts = [i['body'] or ''] + [c.get('body') or '' for c in i.get('comments', []) if c.get('author', {}).get('login') != 'github-actions']   # a file dragged into a comment counts too
+            texts = posts + [fetch(u) for u in dict.fromkeys(u for t in posts for u in ATTACH.findall(t))]
             blob = '\n'.join(texts); h = header(blob)
             tid = h[0] if h else next((t for t in gs if t in blob.upper()), None) or next((g['title_id'] for n, g in byname.items() if n in (i['title'] or '').lower()), None)
-            if tid not in gs: print(f'#{i["number"]}: no game this repository has (left open)'); continue
+            if tid not in gs: print(f'#{i["number"]}: no game this repository has (left open)'); out(i, False, problem='It names no game switch2mac has.'); continue
             kind = lambda e: e.rsplit('-', 1)[0] if e != 'switch2mac' else e
             g = next((x for x in gs[tid] if h and x['engine_id'] == h[1]), None) or next((x for x in gs[tid] if h and kind(x['engine_id']) == kind(h[1])), gs[tid][0])   # the build whose engine the file names, else one of its kind (none: the first, and check refuses it)
             got, bad, unknown = check(g, blob, drop)
-            if bad: print(f'#{i["number"]} {label(g)}: refused (left open): ' + '; '.join(bad)); continue
-            if not got: print(f'#{i["number"]} {g["name"]}: no rows found (left open: no file attached?)'); continue
+            if bad: print(f'#{i["number"]} {label(g)}: refused (left open): ' + '; '.join(bad)); out(i, False, game=g['name'], problem='The file could not be used: ' + '; '.join(bad) + '.'); continue
+            if not got: print(f'#{i["number"]} {g["name"]}: no rows found (left open: no file attached?)'); out(i, False, game=g['name'], problem='No shader rows came through: the file is missing or empty. Please drag the newest `shader-list-<title ID>-<date>.txt` from the folder Finder showed into a comment here.'); continue
             k = append(g, got) if '--apply' in flags else len([r for r in dict.fromkeys(got) if r not in set(rows(g['list'].read_text()))])
             print(f'#{i["number"]} {label(g)}: {len(got)} rows, {k} new' + (f', {len(unknown)} of other shaders dropped' if unknown else '') + ('' if '--apply' in flags else ' (dry run: --apply adds them)'))
-            added[i['number']] = k
+            added[i['number']] = k; out(i, True, game=g['name'], build=g['build'], label=label(g), rows=len(got), new=k, list=str(g['list'].relative_to(ROOT)))
             if '--apply' in flags and '--close' in flags:
                 gh('issue', 'close', str(i['number']), '--repo', repo(), '--comment', f'Thank you! {k} new rows were added to {g["name"]}\'s shared shader list; the next build carries them.' if k else f'Thank you! {g["name"]}\'s shared shader list already had all of these rows.')
-        if '--apply' in flags: print('lists updated: check `git diff games/*/shader_list.tsv`, then commit')
+        if '--apply' in flags and not one: print('lists updated: check `git diff games/*/shader_list.tsv`, then commit')
+        if '--json' in flags: print('JSON ' + json.dumps(res))
     elif a[0] == 'ship' and len(a) == 3:
         g = game(a[1], build)
         bt = Path(base).read_text() if base and Path(base).exists() else ''
