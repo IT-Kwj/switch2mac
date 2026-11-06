@@ -32,7 +32,7 @@
 
 ## Install
 
-- **macOS**: download `NX2Apple-macOS-arm64.zip`, unzip, right-click → Open on first launch. In-app updates work from 0.4.9 on under the NX2Apple name.
+- **macOS**: download `switch2mac-macOS-arm64.zip`, unzip, right-click → Open on first launch. In-app updates work from 0.4.9 on under the switch2mac name.
 - **Windows**: not provided on this page; the Actions artifact has the Qt front end.
 
 ## Credits
@@ -82,7 +82,7 @@
 
 ## 安装
 
-- **macOS**：下载 `NX2Apple-macOS-arm64.zip`，解压后右键 → 打开（首次）。0.4.9 起 App 内更新在 NX2Apple 名下正常工作。
+- **macOS**：下载 `switch2mac-macOS-arm64.zip`，解压后右键 → 打开（首次）。0.4.9 起 App 内更新在 switch2mac 名下正常工作。
 - **Windows**：本页不提供；Actions 产物里有 Qt 前端。
 
 ## 致谢

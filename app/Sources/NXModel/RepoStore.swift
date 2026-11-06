@@ -12,7 +12,7 @@ import NXCore
     var isGit: Bool { get }
 }
 
-/// The repository (LNPANDY/NX2Apple#387, step 7): the checkout the launcher drives, its status line and the updates of it. It
+/// The repository: the checkout the launcher drives, its status line and the updates of it. It
 /// clones it, checks how far it is behind origin/main, pulls (by hand and by itself when the app opens) and connects a ZIP copy
 /// to git. It follows `AppUpdateStore` (`frontend/ARCHITECTURE.md`, "Stores").
 ///
@@ -93,7 +93,7 @@ import NXCore
 
     // ---- Clone ----
 
-    /// First-time flow: clone the project to ~/NX2Apple (the discovery seeds cover it) and select it.
+    /// First-time flow: clone the project to ~/the original launcher (the discovery seeds cover it) and select it.
     @discardableResult
     package func clone() -> Task<Void, Never> {
         guard mayStart else { return Task {} }

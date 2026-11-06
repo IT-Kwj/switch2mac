@@ -1,8 +1,8 @@
 # The Python packages bundled into the launcher (bundle_tools.sh installs them with --only-binary into the bundled CPython).
 # The first six are what Toolchain.pipPackages names (BundledToolsTests keeps them equal); backports.zstd is for Python before 3.14 and
 # the bundled one is 3.13. switch2mac leaves out nsz and its dependencies (pycryptodome among them): it is only for compressed packages opened with console keys, which switch2mac never uses.
-# Every release file of each version is hashed (pip install --require-hashes --only-binary :all:), the format Dependabot updates.
-# Dependabot (.github/dependabot.yml) moves the pins and the hashes weekly in one pull request.
+# Every release file of each version is hashed (pip install --require-hashes --only-binary :all:). To raise a pin, change the version
+# and its hashes together (pip hash, or the hashes PyPI lists for every file of that version), then run tools/bundle_tools.sh and check_bundle.sh.
 backports.zstd==1.8.0 \
     --hash=sha256:029bca2385ebb4355135bdb8559792d2768ae19707705eea84e68c42a30a0276 \
     --hash=sha256:045e15ed3b3ebd8816edaa7d66f024becf050d9aec09605f549ce33cfda01098 \

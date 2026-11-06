@@ -1,6 +1,6 @@
 import Foundation
 
-/// Finds and reads the language files, `frontend/l10n/<code>.json` (LNPANDY/NX2Apple#388). One flat JSON object per language: the keys
+/// Finds and reads the language files, `frontend/l10n/<code>.json`. One flat JSON object per language: the keys
 /// are the texts' names, the values the texts, and `_language` (the language's own name and its locale prefixes) is not a text.
 ///
 /// Where they are, in this order:
@@ -61,6 +61,16 @@ package enum LocalizationFiles {
         }
     }
 
+    /// This file's own path in debug builds (tests and `swift run` find app/l10n beside the sources); nil in a release build, so the
+    /// app never carries the path of the Mac that built it.
+    private static var debugSourceFile: String? {
+        #if DEBUG
+        return #filePath
+        #else
+        return nil
+        #endif
+    }
+
     /// The folder with the language files, nil when none of the places has `en.json`.
     package static func directory(environment: [String: String] = ProcessInfo.processInfo.environment,
                                   resources: URL? = BundledTools.resources,
@@ -77,7 +87,7 @@ package enum LocalizationFiles {
             folder = current.deletingLastPathComponent()
         }
         // Sources/NXCore/<this file> sits two folders below frontend (a run from .build finds app/l10n by the walk above).
-        if let sourceFile {
+        if let sourceFile = sourceFile ?? Self.debugSourceFile {
             candidates.append(URL(fileURLWithPath: sourceFile).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
                 .appendingPathComponent("l10n"))
         }

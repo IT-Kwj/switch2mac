@@ -1,6 +1,7 @@
 // switch2mac's app icon ("Studio"): a laptop whose black screen, showing a "2", sits between a green and a red grip, so the Mac's
-// display reads as a handheld. Shaded grips with sticks and buttons, a black bezel with an aluminium rim, an aluminium base, a soft
-// green glow on a black squircle. Our own drawing: no logo or artwork from anywhere else.
+// display reads as a handheld. Shaded grips with sticks and buttons, a black bezel with an aluminium rim, an aluminium base, on a
+// charcoal squircle lit from behind (a warm halo, the grips' green and red at its sides) with a lit floor edge under the laptop.
+// Our own drawing: no logo or artwork from anywhere else.
 // Usage: swift icon/make_icon.swift <out.png> [size]   (tools/make_app.sh turns the PNG into AppIcon.icns)
 import AppKit
 
@@ -101,6 +102,62 @@ func macScreen(_ ctx: CGContext, _ r: CGRect, _ mark: String, _ s: CGFloat) {
     }
 }
 
+// Lit backdrops (ICON_LIGHT), drawn over the default background inside the squircle, before the device: a charcoal lifted from black,
+// then light that falls off into it, in the grips' green and red
+func lighting(_ ctx: CGContext, _ kind: String, _ body: CGRect, _ s: CGFloat, base: Bool = true) {   // base: the charcoal and the rim (the first of combined lights)
+    func radial(_ at: CGPoint, _ r: CGFloat, _ cols: [CGColor], _ locs: [CGFloat]? = nil, sx: CGFloat = 1, sy: CGFloat = 1) {
+        ctx.saveGState(); ctx.translateBy(x: at.x, y: at.y); ctx.scaleBy(x: sx, y: sy)
+        ctx.drawRadialGradient(grad(cols, locs), startCenter: .zero, startRadius: 0, endCenter: .zero, endRadius: r, options: [])
+        ctx.restoreGState()
+    }
+    // a lifted charcoal base: a top-to-bottom gradient instead of near-black
+    if base { ctx.drawLinearGradient(grad([c(0.115, 0.118, 0.13), c(0.045, 0.046, 0.052), c(0.02, 0.02, 0.024)], [0, 0.55, 1]),
+                           start: CGPoint(x: 0, y: body.maxY), end: CGPoint(x: 0, y: body.minY), options: []) }
+    switch kind {
+    case "spotlight":   // a key light from above, the grips' colours spilling sideways, a soft floor
+        radial(CGPoint(x: 512 * s, y: 900 * s), 560 * s, [c(1, 1, 1, 0.20), c(1, 1, 1, 0.06), c(1, 1, 1, 0)], [0, 0.45, 1], sx: 1.0, sy: 1.25)
+        radial(CGPoint(x: 210 * s, y: 560 * s), 330 * s, [c(G.r, G.g, G.b, 0.34), c(G.r, G.g, G.b, 0)])
+        radial(CGPoint(x: 814 * s, y: 560 * s), 330 * s, [c(R.r, R.g, R.b, 0.32), c(R.r, R.g, R.b, 0)])
+        radial(CGPoint(x: 512 * s, y: 300 * s), 420 * s, [c(1, 1, 1, 0.07), c(1, 1, 1, 0)], sx: 1.3, sy: 0.32)
+    case "streaks":   // long-exposure light streaks sweeping behind the device, green from the lower left, red from the upper right
+        ctx.saveGState(); ctx.setBlendMode(.screen)
+        for (i, (col, from, to)) in [(G, CGPoint(x: -80, y: 140), CGPoint(x: 1100, y: 760)), (G, CGPoint(x: -60, y: 260), CGPoint(x: 1080, y: 880)),
+                                     (R, CGPoint(x: -100, y: 40), CGPoint(x: 1120, y: 640)), (R, CGPoint(x: 1120, y: 960), CGPoint(x: -80, y: 380))].enumerated() {
+            let a = CGPoint(x: from.x * s, y: from.y * s), b = CGPoint(x: to.x * s, y: to.y * s)
+            let width = [26, 10, 16, 8][i] * s, alpha: CGFloat = [0.55, 0.40, 0.45, 0.35][i]
+            for (w, k) in [(width * 6, 0.10), (width * 2.2, 0.35), (width * 0.55, 1.0)] as [(CGFloat, CGFloat)] {   // halo, body, hot core
+                ctx.setLineCap(.round); ctx.setLineWidth(w)
+                ctx.setStrokeColor(k == 1 ? c(min(1, col.r + 0.45), min(1, col.g + 0.3), min(1, col.b + 0.45), alpha) : c(col.r, col.g, col.b, alpha * k))
+                ctx.move(to: a); ctx.addQuadCurve(to: b, control: CGPoint(x: 512 * s, y: (a.y + b.y) / 2 + 60 * s)); ctx.strokePath()
+            }
+        }
+        ctx.restoreGState()
+        radial(CGPoint(x: 512 * s, y: 560 * s), 520 * s, [c(0, 0, 0, 0.45), c(0, 0, 0, 0)])   // darker behind the device, so it stands out
+    case "halo":   // a warm-white halo behind the screen, as NX2Apple's amber glow, falling off into charcoal; green and red at its edges
+        radial(CGPoint(x: 512 * s, y: 600 * s), 430 * s, [c(1, 0.94, 0.84, 0.70), c(0.85, 0.74, 0.58, 0.34), c(0.35, 0.30, 0.25, 0.10), c(0, 0, 0, 0)], [0, 0.42, 0.75, 1],
+               sx: 1.05, sy: 0.9)
+        radial(CGPoint(x: 200 * s, y: 540 * s), 280 * s, [c(G.r, G.g, G.b, 0.30), c(G.r, G.g, G.b, 0)])
+        radial(CGPoint(x: 824 * s, y: 540 * s), 280 * s, [c(R.r, R.g, R.b, 0.30), c(R.r, R.g, R.b, 0)])
+    default:   // horizon: a stage floor whose edge is a thin bright beam, its reflection and a haze above it ("beam": the beam alone, for the header mark)
+        if kind != "beam" {
+            radial(CGPoint(x: 512 * s, y: 330 * s), 470 * s, [c(1, 1, 1, 0.16), c(1, 1, 1, 0)], sx: 1.15, sy: 0.55)
+            ctx.drawLinearGradient(grad([c(1, 1, 1, 0.07), c(1, 1, 1, 0)]), start: CGPoint(x: 0, y: 330 * s), end: CGPoint(x: 0, y: 100 * s), options: [])
+        }
+        for (w, a) in [(60.0, 0.12), (18.0, 0.35), (4.0, 1.0)] as [(CGFloat, CGFloat)] {   // the beam: a wide glow, a body, a hot line
+            ctx.saveGState(); ctx.clip(to: CGRect(x: 0, y: (330 - w / 2) * s, width: 1024 * s, height: w * s))
+            ctx.setBlendMode(.screen)
+            ctx.drawLinearGradient(grad([c(G.r, G.g, G.b, 0), c(G.r, G.g, G.b, a), c(1, 1, 1, a), c(R.r, R.g, R.b, a), c(R.r, R.g, R.b, 0)], [0, 0.25, 0.5, 0.75, 1]),
+                                   start: CGPoint(x: 110 * s, y: 0), end: CGPoint(x: 914 * s, y: 0), options: [])
+            ctx.restoreGState()
+        }
+    }
+    // a light rim at the top of the squircle, as glass catching the light
+    guard base else { return }
+    ctx.saveGState(); ctx.addPath(rr(body.insetBy(dx: 1.5 * s, dy: 1.5 * s), 185 * s)); ctx.setLineWidth(3 * s); ctx.replacePathWithStrokedPath(); ctx.clip()
+    ctx.drawLinearGradient(grad([c(1, 1, 1, 0.35), c(1, 1, 1, 0.0)], [0, 0.5]), start: CGPoint(x: 0, y: body.maxY), end: CGPoint(x: 0, y: body.minY), options: [])
+    ctx.restoreGState()
+}
+
 func icon(_ style: Int, size S: CGFloat = 1024) -> CGImage {
     let ctx = CGContext(data: nil, width: Int(S), height: Int(S), bitsPerComponent: 8, bytesPerRow: 0, space: cs, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
     let s = S / 1024
@@ -122,9 +179,15 @@ func icon(_ style: Int, size S: CGFloat = 1024) -> CGImage {
     ctx.drawRadialGradient(grad([c(0, 0, 0, 0), c(0, 0, 0, 0.15), c(0, 0, 0, 0.88), c(0, 0, 0, 1)], [0, 0.30, 0.66, 0.88]),
                            startCenter: mid, startRadius: 0, endCenter: mid, endRadius: 600 * s, options: [.drawsAfterEndLocation])
     }
-    if isHeader {   // no background (it showed as a dark box on the bar): only a faint green glow under the device
-        let floor = CGPoint(x: 512 * s, y: 300 * s)
-        ctx.drawRadialGradient(grad([c(G.r, G.g, G.b, 0.22), c(G.r, G.g, G.b, 0)]), startCenter: floor, startRadius: 0, endCenter: floor, endRadius: 250 * s, options: [])
+    // The lighting: "halo+horizon" (chosen 2026-11-05), or another of lighting()'s kinds to compare (ICON_LIGHT=spotlight, streaks, halo,
+    // horizon, or several joined by "+"; ICON_LIGHT=none: the earlier plain black squircle)
+    let light = ProcessInfo.processInfo.environment["ICON_LIGHT"] ?? "halo+horizon"
+    if !isMark && !isHeader && light != "none" { for (i, k) in light.split(separator: "+").enumerated() { lighting(ctx, String(k), body, s, base: i == 0) } }   // "halo+horizon": both
+    if isHeader {   // no background (it showed as a dark box on the bar): a small warm glow behind the screen and the floor beam, as the icon has them,
+        // gentler and well inside the fade (the icon's wide halo and side glows showed their edges on the bar)
+        let behind = CGPoint(x: 512 * s, y: 600 * s)
+        ctx.drawRadialGradient(grad([c(1, 0.94, 0.84, 0.30), c(1, 0.94, 0.84, 0)]), startCenter: behind, startRadius: 0, endCenter: behind, endRadius: 260 * s, options: [])
+        lighting(ctx, "beam", body, s, base: false)
     }
     if style == 2 && !isMark {   // a faint red counter-glow top right
         let p = CGPoint(x: 800 * s, y: 820 * s)

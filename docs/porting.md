@@ -4,6 +4,19 @@ This guide covers how to bring up a new Switch 2 game with switch2mac, or a new 
 
 Bring-up is research. A new game will boot partway, draw wrong, or crash, and each problem has to be traced. Nothing below promises that a given game will run.
 
+## The easy case: a game nxnative already runs
+
+Most of switch2mac's games were added this way, in a few minutes each and without a test build: upstream [nxnative](https://github.com/seedds/nxnative) has a profile for the game (`dm/games/<title ID>/` on its `main`), and switch2mac builds it with nxnative's own builder plus switch2mac's front end. Copy Donkey Kong Bananza's folder as the pattern:
+
+1. **`games/<game>/game.json`**: `title_id`, `name`, `version` (from the profile's `game.tsv` build line), `"engine": {"kind": "nxnative", "repo": "https://github.com/seedds/nxnative", "commit": <the newest commit that touches dm/games/<title ID>, in full>}`, and `disk_gb` (the RomFS size from the profile's README, plus room for the build).
+2. **`games/<game>/README.md`**: what nxnative reports (the Mac it played on, how far, the frame rate), the dump folder layout, the shader count (over 100,000 means a build of hours), and known problems with their issue numbers.
+3. **`games/<game>/shader_list.tsv`**: the header only (`game=<title ID>`, `engine=nxnative-<commit, 12 characters>`).
+4. **`games/<game>/reports.tsv`**: every report that names the Mac, from the profile's README and from nxnative's GitHub issues (search the game's name), with its source. Leave out reports without a Mac model.
+5. **The README's game table and dump-folder table**, and **NOTICE.md** (the game in nxnative's line, its trademarks).
+6. Check: `./switch2mac.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
+
+A game with a second port (Pokopia: pokopia-native and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
+
 ## How a build works
 
 | Step | Tool | Output in `work/` |
@@ -45,6 +58,8 @@ nxnative's `dm/games/README.md` ([in switch2mac-engine](https://github.com/azmas
 When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds switch2mac's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `switch2mac.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
 
 **Several builds of one game.** A game can list `builds` instead of one `engine`: each `{"id", "name", "engine": {...}, "shader_list": <file in the game folder>, "about"}`, and `choose`, rules read in order (`chip_min` / `chip_max`: the chip generation, 1 for M1; `memory_min` / `memory_max` in GB; `build`, `why`); the first the Mac meets wins, else the first build. Base the rules on `games/<game>/reports.tsv` (players' Macs and how each build ran). `build --engine <id>` overrides; `builds <game>` shows the choice. Mario Kart World is the example.
+
+**On GitHub, this runs by itself.** `.github/workflows/update-builds.yml` checks every 5 minutes: when a game's engine has a newer commit, or nxnative has a Switch 2 profile switch2mac has no folder for, a Mac runner applies it (`update.py --new-games --apply --compile --ci`) and commits each game that compiles to `main`. Players' apps pull it when they open. The steps below are the same by hand.
 
 Keeping such a game current: `tools/engine/update.py` says whose build has a newer commit (nxnative: commits that change the game's profile; pokopia-native: any commit), and `--apply --compile` moves the game to it on the `dev` branch: it re-applies the front end, compiles the host as a check, and updates `game.json`, the shader list's header (its rows are kept), the game's page and NOTICE.md, one commit per game. A new commit the front end no longer fits stops that game where it was, with the reason. Nothing is pushed.
 

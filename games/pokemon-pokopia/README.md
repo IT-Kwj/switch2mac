@@ -1,6 +1,19 @@
 # Pokémon Pokopia
 
-Title ID `0400A3A01EE4C000`, update v327680 or 2.0.1 (v655360). **pokopia-native reports it plays on its author's M4 Mac** past the first wake-up with no issues found; not yet tested in switch2mac.
+Title ID `0400A3A01EE4C000`, update v327680 or 2.0.1 (v655360). **pokopia-native reports it plays on its author's M4 Mac** past the first wake-up with no issues found.
+
+## Two builds
+
+Pokopia can be built two ways. Same game, same save; each has its own shared shader list.
+
+| Build (`--engine`) | Engine | Takes | Build time |
+|---|---|---|---|
+| `pokopia-native` (default) | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals | update v327680 or 2.0.1 | about an hour: the ~3,800 shaders the game needs |
+| `nxnative` | upstream [nxnative](https://github.com/seedds/nxnative)'s Pokopia profile (commit in `game.json`) | 2.0.1 (v655360) only | hours: all ~131,000 shaders, and over 200 GB of disk while it builds ([#1174](https://github.com/seedds/nxnative/issues/1174)) |
+
+`./switch2mac.py build` takes pokopia-native's; `--engine nxnative` builds the other (the app has a Build menu for it). `./switch2mac.py builds pokemon-pokopia` shows both and how each ran on players' Macs. Neither has been test-built in switch2mac.
+
+## pokopia-native's build
 
 Built with [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals (MIT) at the commit `game.json` names (fetched once into `./engines`; its setup fetches nxnative and applies its Switch 2 patch), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
@@ -19,7 +32,13 @@ Built with [pokopia-native](https://github.com/xFractals/pokopia-native) by xFra
 
 [`shader_list.tsv`](shader_list.tsv): this game's own list of shaders and pipelines players have met, for this engine version only (its first line says which). pokopia-native ships no list of its own, so the app's list is this list's rows; the app prepares them before the first frame. It starts empty: when you close the game, the app offers to send what it built (every 100 new rows), as described in the main README's Contributing section.
 
+## How it runs on players' Macs
+
+[`reports.tsv`](reports.tsv): every report that names the Mac (from GitHub issues on this game's builder), with the fps and memory where given, and whether it was fixed.
+
 ## Build
+
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

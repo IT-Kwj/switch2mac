@@ -1,0 +1,11 @@
+{
+ "title_id": "04003F40232DE000",
+ "name": "Hyrule Warriors: Age of Imprisonment",
+ "version": "update v196608",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "aafe01d31dece4fb9dc032d86a566f35fa826f69"
+ },
+ "disk_gb": 100
+}

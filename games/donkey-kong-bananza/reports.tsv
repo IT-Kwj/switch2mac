@@ -1,0 +1,8 @@
+# How Donkey Kong Bananza ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
+MacBook Pro	M4 Pro			nxnative	60		Opening areas and the mining tunnel; busy scenes drop to 30 for a few seconds	nxnative profile page
+MacBook Pro	M4 Pro			nxnative 68a0ac67	59.2		Walking on an idle Mac, p50 16.7 ms; 42-52 fps with a heavy job in the background	seedds/nxnative#931
+MacBook Air	M5	16	27.0.1	nxnative	30		From the Hilltop Layer on, mostly 30 fps rather than 60 (open)	seedds/nxnative#1243
+MacBook Air	M5		27.0.1	nxnative			Donkey Kong turned bright white in some areas; reproduced on an M4 Pro and fixed on main, not yet confirmed by the player	seedds/nxnative#1100
+MacBook Air	M5		27	nxnative	13		3D scene drawn as a blocky grid with MetalFX on; fixed (closed)	seedds/nxnative#1028
+MacBook Pro	M1	8	26.6.2	nxnative			Square graphical artifacts, no crash (closed)	seedds/nxnative#1146

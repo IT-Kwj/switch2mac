@@ -2,7 +2,7 @@ import SwiftUI
 import NXCore
 import NXModel
 
-/// Settings, "NX2Apple": the language, notifications, the guided setup, the self-update and the uninstaller. Observes the update
+/// Settings, "the original launcher": the language, notifications, the guided setup, the self-update and the uninstaller. Observes the update
 /// store. The two switches that live in the app's defaults come as bindings, and what the uninstaller needs from the library
 /// and the build store as a closure.
 package struct AppCard: View {
@@ -90,7 +90,7 @@ package struct AppCard: View {
             CardDivider()
             if updates.installability == .ok {
                 // The uninstaller (Uninstall.swift): state folders and the launcher's own checkout go; the
-                // games folder and prod.keys stay; the app itself goes to the Trash.
+                // games folder stays; the app itself goes to the Trash.
                 CardRow(loc.t("uninstall.title"), detail: loc.t("uninstall.note")) {
                     Button(loc.t("uninstall.button")) { updates.uninstallPlan = uninstallPlan() }
                     .disabled(buildRunning)

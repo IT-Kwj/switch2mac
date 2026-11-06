@@ -15,7 +15,7 @@ APP="$OUT/switch2mac.app"
 MAP=(-Xswiftc -file-prefix-map -Xswiftc "$PWD=/switch2mac")
 swift build -c release "${MAP[@]}"
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$(swift build -c release "${MAP[@]}" --show-bin-path)/NX2Apple" "$APP/Contents/MacOS/switch2mac"
+cp "$(swift build -c release "${MAP[@]}" --show-bin-path)/Switch2Mac" "$APP/Contents/MacOS/switch2mac"
 strip -S "$APP/Contents/MacOS/switch2mac"   # the debug map names each object file by its full path on the Mac that built it
 cp -R l10n "$APP/Contents/Resources/l10n"
 

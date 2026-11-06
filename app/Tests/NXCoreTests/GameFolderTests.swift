@@ -1,7 +1,7 @@
 import XCTest
 @testable import NXCore
 
-/// LNPANDY/NX2Apple#512 and #445: a Switch 2 game comes as a folder of its files (pack_dump.py's layout). The rules are the
+/// and #445: a Switch 2 game comes as a folder of its files (pack_dump.py's layout). The rules are the
 /// script's, checked here on synthetic folders: an NPDM with only a program ID, empty RomFS folders, no game data.
 final class GameFolderTests: XCTestCase {
     private var root = ""

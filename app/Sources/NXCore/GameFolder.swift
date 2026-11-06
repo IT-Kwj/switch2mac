@@ -1,6 +1,6 @@
 import Foundation
 
-/// A game that comes as a folder of its files instead of NSP or XCI packages (LNPANDY/NX2Apple#512, #445). Switch 2 games come
+/// A game that comes as a folder of its files instead of NSP or XCI packages. Switch 2 games come
 /// this way. The engine builds such a folder with `scripts/pack_dump.py`, called by `build_ipa_from_nsp.py` when it is given the
 /// folder, and needs no `prod.keys` for it: the files are not encrypted. The layout, as pack_dump.py reads it:
 ///

@@ -220,9 +220,12 @@ package enum LauncherHeroAction {
 }
 
 package struct LauncherHeroActionLabel: View {
-    package init(title: String, symbol: String) { self.title = title; self.symbol = symbol }
+    package init(title: String, symbol: String, fill: Color = LauncherPalette.cream) {
+        self.title = title; self.symbol = symbol; self.fill = fill
+    }
     package let title: String
     package let symbol: String
+    package let fill: Color   // switch2mac: Play is red, Build stays green
 
     package var body: some View {
         HStack(spacing: LauncherHeroAction.iconSpacing) {
@@ -233,7 +236,7 @@ package struct LauncherHeroActionLabel: View {
         .foregroundStyle(.black)
         .padding(.horizontal, LauncherHeroAction.horizontalPadding)
         .frame(width: LauncherHeroAction.width, height: LauncherHeroAction.height)
-        .background(LauncherPalette.cream, in: Capsule())
+        .background(fill, in: Capsule())
     }
 }
 

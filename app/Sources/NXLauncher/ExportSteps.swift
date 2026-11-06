@@ -2,7 +2,7 @@ import SwiftUI
 import NXCore
 import NXModel
 
-/// The export of the shared app as an IPA, in three steps (LNPANDY/NX2Apple#416): export it, install it with another tool, send the
+/// The export of the shared app as an IPA, in three steps: export it, install it with another tool, send the
 /// game data. Shown by the Install card when its switch says "Export as IPA". One game's own IPA (#540) holds its game data, so it has
 /// the first two steps only. Observes the build store (the steps' state) and the
 /// device store (the device and the place the data goes to).

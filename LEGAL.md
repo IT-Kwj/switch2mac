@@ -4,4 +4,5 @@
 - To build an app you need **your own dump** of a game you own, made from your own Switch 2. switch2mac does not decrypt anything and needs no keys: it reads an already extracted dump (folders), as dump tools produce it.
 - What the build makes (the `.app`, `work/`, captured shaders, the RomFS image) holds the game's data. **Do not share it**, and do not attach game files, shader dumps or builds to issues.
 - No help with console exploits, keys or decryption is given here.
-- Nintendo, Nintendo Switch 2 and Mario Kart are trademarks of Nintendo. This is an independent fan project, not affiliated with or endorsed by Nintendo.
+- The switch2mac app downloads the official eShop banner of each game in your library onto your Mac when it runs (from Nintendo's image server, listed by [titledb](https://github.com/blawar/titledb)). No Nintendo artwork, logos or icons are in this repository or in the app download.
+- Nintendo, Nintendo Switch 2 and the names of the games are trademarks of Nintendo and their other owners (Pokémon: Nintendo, Creatures and GAME FREAK; Hyrule Warriors: Nintendo and Koei Tecmo). This is an independent fan project, not affiliated with or endorsed by Nintendo.

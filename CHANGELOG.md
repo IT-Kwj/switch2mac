@@ -1,5 +1,71 @@
 # Changelog
 
+## 2026-11-05 (12): switch2mac app 0.3.1
+
+- **A new icon:** the Mac-as-handheld, now lit from behind with a warm glow and standing on a lit floor.
+- **What's New opens straight away**, and News shows five more at a time (Show more) instead of everything at once.
+- **Performance:** a run's numbers line up in even columns.
+- Shader lists: Mario Kart World's nxnative build gains 8,503 rows (#13, #14, #15). Lists sent for a game's second build now reach that build.
+
+## 2026-11-05 (11)
+
+- Shader lists: Mario Kart World's switch2mac build gains 1,049 rows (#11).
+
+## 2026-11-05 (10): switch2mac app 0.3.0
+
+- **New What's New tab.** News about switch2mac first (the newest five, Show all for the rest), then new games, every build update day by day, and nxnative's latest changes with the games each one names. A dot on the tab shows something arrived since you last looked.
+- **Update available in the Library.** When a newer build of one of your games is out, its banner says so: click to see what changed since your build, and Rebuild (your saves are kept).
+- **Performance shows your last 20 runs** as a history: the newest in full, the others one line each; click one for its numbers and Share.
+- **+ Build game replaces the Builds tab.** It opens the build page, and shows a running build.
+- Builds now update reliably: GitHub's updater runs on a Mac with Xcode 27, which nxnative's newest code needs.
+
+## 2026-11-05 (9)
+
+- Builds now check for updates every 5 minutes instead of every 30 (the shortest GitHub allows; GitHub sometimes starts a check a few minutes late).
+- Shader lists: Mario Kart World's nxnative build gains 388 rows (#10).
+
+## 2026-11-05 (8): switch2mac app 0.2.0
+
+- **New Performance tab** in the app, between Builds and Settings. It shows your last three game runs: average, lowest and highest frame rate, 1% low, peak memory, and GPU and CPU use, read from the game's own log when it closes. Nothing leaves your Mac.
+- **Share** on a run fills in the How it ran form for you (game, build, your Mac's model, chip and memory, macOS, frame rate, memory) and lets you add a comment; you check it on GitHub and press Create.
+- The How it ran form's Game and Build questions are now text boxes, so the app can fill them in.
+
+## 2026-11-05 (7)
+
+- **Tell others how a game ran, and it's added for you.** Fill in the How it ran form (now with Star Fox, the build version and untested builds): it is read automatically and becomes a row in the game's reports, once a maintainer has checked it. Reports now record their date and build version.
+
+## 2026-11-05 (6)
+
+- **Builds now keep themselves up to date.** Every 30 minutes GitHub checks each game's engine for a newer version, and nxnative for new Switch 2 games; anything that passes a compile check is added here automatically, and your app picks it up when it opens.
+
+## 2026-11-05 (5)
+
+- New game: **Star Fox**, built with nxnative. nxnative reports it plays through the title, the prologue and the tutorial flight at 56–60 fps on an M4 Pro.
+
+## 2026-11-05 (4)
+
+- **Try any Switch 2 game on any engine.** Every game can be built on each engine switch2mac knows (switch2mac's, nxnative's, pokopia-native's) as an **untested** build, and so can Switch 2 games switch2mac has no page for yet. Each engine guesses a starting profile from the game's own files. Untested builds will often fail: they're for trying, and for anyone who wants to take a game further in a port of their own.
+- The performance overlay now shows which engine the game was built with, next to the frame rate (the detailed view shows its version too). It appears after your next build of a game.
+- A damaged dump now stops the build at its first step and says how to fix it.
+- App fixes, coming in the next app release: a game you build shows in the Library straight away; the Build menu starts on the build recommended for your Mac; untested builds ask before you pick them.
+- A new report for Mario Kart World on nxnative's build (M1 Max, 64 GB). Pokopia's pokopia-native build moved to its newest version.
+
+## 2026-11-05 (3)
+
+- The README now starts with the app: download it, open it, choose your dump folder, press Build. `Build a Game.command` is gone; the Terminal commands are still there.
+- New **How it ran** form on the Issues page: tell others how a game runs on your Mac. Each game's reports and the build your Mac gets come from these.
+- Builds moved to their newest upstream versions: Donkey Kong Bananza (the white Donkey Kong fix), Mario Kart World's nxnative build (fewer stray bright dots), Yoshi and the Mysterious Book (395 more shaders), Pokopia's pokopia-native build, and Mario Kart World's own engine.
+- Switching a game between its builds keeps what each build learned, so switching back doesn't bring back first-play stutter.
+- App bug fixes, coming in the next app release.
+- Docs updated for nine games and three engines.
+
+## 2026-11-05 (2)
+
+- Five more Switch 2 games, built with nxnative: **Yoshi and the Mysterious Book**, **Splatoon Raiders**, **Hyrule Warriors: Age of Imprisonment**, **Fire Emblem Fortune's Weave** and **Mario Tennis Fever**. Like Donkey Kong Bananza, they start straight into the game, with the performance overlay on key 1 and the settings on key 2. None has been test-built in switch2mac yet: each game's page says what nxnative and players report. Thanks to seedds and nxnative's contributors.
+- **Pokémon Pokopia now has two builds**: xFractals' pokopia-native (the default, about an hour to build) and nxnative's (2.0.1 only; it builds all ~131,000 shaders, which takes hours and over 200 GB of disk).
+- Every game now has a **reports table** (`reports.tsv`): how it ran on players' Macs, from GitHub issues and nxnative's notes, with fixes noted. Mario Kart World's adds nxnative's build on 16 GB Macs (60 fps on an M6, 36–40 on an M1 Pro) and update 1.8.0 on 24 GB Macs.
+- The switch2mac app no longer contains the prod.keys and cheats code it inherited from NX2Apple; switch2mac never used either.
+
 ## 2026-11-05
 
 - New: the **switch2mac app** (preview). Choose your dump folder, press Build, and the game lands in Applications, with a library of your built games and their eShop banners (downloaded onto your Mac, never stored here). It shows your Mac's chip, memory and macOS. Download it from [Releases](https://github.com/azmasm/switch2mac/releases/latest) (version 0.1.0; the README says how to open it the first time). Its design comes from NX2Apple (MIT), with thanks to LNPANDY and its contributors.

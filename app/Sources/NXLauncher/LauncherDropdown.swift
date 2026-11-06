@@ -235,7 +235,7 @@ package struct LauncherDropdown: View {
     package var label = ""
     package var style: LauncherDropdownStyle = .pill
     package var fill = false
-    /// With `fill`: the choice starts at the left, like the text of a field (the export's device, LNPANDY/NX2Apple#416).
+    /// With `fill`: the choice starts at the left, like the text of a field (the export's device, ).
     package var leading = false
     package let choose: (String) -> Void
     @Environment(\.launcherDropdownHost) private var host

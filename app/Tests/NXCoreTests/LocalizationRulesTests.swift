@@ -1,12 +1,12 @@
 import XCTest
 @testable import NXCore
 
-/// The rules every language file in `frontend/l10n` keeps (LNPANDY/NX2Apple#388). The languages are the files of the folder, so a new
+/// The rules every language file in `frontend/l10n` keeps. The languages are the files of the folder, so a new
 /// `<code>.json` is checked here without a change to this test. The Qt front end has the same rules in
 /// `frontend-qt/tests/test_localization_rules.py`.
 final class LocalizationRulesTests: XCTestCase {
     private static let directory = LocalizationFiles.directory()
-    private static let required = ["en", "zh"]
+    private static let required = ["en"]   // switch2mac is English only
 
     private func files() throws -> [(code: String, url: URL)] {
         let directory = try XCTUnwrap(Self.directory, "frontend/l10n was not found")
@@ -56,12 +56,12 @@ final class LocalizationRulesTests: XCTestCase {
         return re.matches(in: text, range: NSRange(location: 0, length: ns.length)).map { ns.substring(with: $0.range(at: 1)) }
     }
 
-    func testEnglishAndChineseExistAndHaveTheSameKeys() throws {
+    /// switch2mac is English only: en.json is the one file, and it has texts.
+    func testEnglishExistsAndIsTheOnlyLanguage() throws {
         let all = try texts()
         for code in Self.required { XCTAssertNotNil(all[code], "\(code).json is missing") }
-        let en = Set(all["en"]?.keys ?? [:].keys), zh = Set(all["zh"]?.keys ?? [:].keys)
-        XCTAssertEqual(en.subtracting(zh).sorted(), [], "keys only in en.json")
-        XCTAssertEqual(zh.subtracting(en).sorted(), [], "keys only in zh.json")
+        XCTAssertEqual(all.keys.sorted(), ["en"])
+        XCTAssertGreaterThan(all["en"]?.count ?? 0, 100)
     }
 
     func testNoLanguageHasAKeyEnglishDoesNotHave() throws {

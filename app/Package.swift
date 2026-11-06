@@ -2,21 +2,23 @@
 import PackageDescription
 
 // The import rules are in ARCHITECTURE.md. Each target may only import the ones above it:
-// NXCore (Foundation), NXModel (NXCore), NXLauncher (NXModel, NXCore), NX2Apple (all).
+// NXCore (Foundation), NXModel (NXCore), NXLauncher (NXModel, NXCore), Switch2Mac (all).
 // All targets build in Swift 5 mode for now: NXCore does not build in Swift 6 mode yet (LauncherWork.counts, PipeReader).
 let package = Package(
-    name: "NX2Apple",
+    name: "switch2mac-app",
     platforms: [.macOS(.v13)],
     targets: [
         .target(name: "NXCore", path: "Sources/NXCore"),
         .target(name: "NXModel", dependencies: ["NXCore"], path: "Sources/NXModel"),
         .target(name: "NXLauncher", dependencies: ["NXModel", "NXCore"], path: "Sources/NXLauncher"),
-        .executableTarget(name: "NX2Apple", dependencies: ["NXLauncher", "NXModel", "NXCore"], path: "Sources/NX2Apple"),
+        .executableTarget(name: "Switch2Mac", dependencies: ["NXLauncher", "NXModel", "NXCore"], path: "Sources/Switch2Mac"),
+        // Points the tests at app/l10n (the test runner is Xcode's xctest, so the app's own search does not find it).
+        .target(name: "TestL10n", path: "Tests/TestL10n"),
         // Tests of the pure logic: they link NXCore only, so they run without SwiftUI.
-        .testTarget(name: "NXCoreTests", dependencies: ["NXCore"]),
+        .testTarget(name: "NXCoreTests", dependencies: ["NXCore", "TestL10n"]),
         // Tests of the stores: they link NXModel and NXCore, never SwiftUI.
-        .testTarget(name: "NXModelTests", dependencies: ["NXModel", "NXCore"]),
-        .testTarget(name: "NX2AppleTests", dependencies: ["NX2Apple", "NXLauncher", "NXModel", "NXCore"])
+        .testTarget(name: "NXModelTests", dependencies: ["NXModel", "NXCore", "TestL10n"]),
+        .testTarget(name: "Switch2MacTests", dependencies: ["Switch2Mac", "NXLauncher", "NXModel", "NXCore", "TestL10n"])
     ],
     swiftLanguageModes: [.v5]
 )

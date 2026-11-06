@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-/// Where the engine of a checkout is, and whether it needs `tools/engine.py sync` (LNPANDY/NX2Apple#214).
+/// Where the engine of a checkout is, and whether it needs `tools/engine.py sync`.
 ///
 /// The engine is not committed: it is built into `<checkout>/engine/` (seedds/nxnative at `.upstream-ref` plus `patches/`) by
 /// `tools/engine.py sync`. The rule, the same as the Qt front end's (frontend-qt/nspb_qt/engine.py):
@@ -81,7 +81,7 @@ package enum EngineLayout {
     package static func isStale(_ repo: String) -> Bool {
         guard hasEngineTool(repo) else { return false }
         let eng = repo + "/engine"
-        guard let text = try? String(contentsOfFile: eng + "/.git/nx2apple-stamp", encoding: .utf8) else { return true }
+        guard let text = try? String(contentsOfFile: eng + "/.git/switch2mac-stamp", encoding: .utf8) else { return true }
         var stamp: [String: String] = [:]
         for line in text.split(separator: "\n") {
             let kv = line.split(separator: " ", maxSplits: 1)

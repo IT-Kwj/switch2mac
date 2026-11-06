@@ -63,7 +63,7 @@ package enum AppUpdate {
 
     package enum BundleProblem: Error, Equatable { case noInfo, wrongIdentifier, noExecutable, wrongVersion }
 
-    /// Whether `app` is an NX2Apple launcher of the release `tag`: the running app's bundle identifier (a zip of
+    /// Whether `app` is an the original launcher launcher of the release `tag`: the running app's bundle identifier (a zip of
     /// something else must not take its place), an executable where its Info.plist says, and the release's version
     /// (the release workflow writes the tag into the plist; another number would be a different build).
     package static func bundleProblem(_ app: URL, expectedID: String, tag: String) -> BundleProblem? {
@@ -121,7 +121,7 @@ package enum AppUpdate {
     /// Whether the launcher at `bundle` may replace itself. A released copy is an `.app` whose Info.plist has a bundle
     /// identifier and, as its version, this binary's own release number (the release workflow stops when the two
     /// differ), and which is not where a developer's build sits: in SwiftPM's .build, Xcode's DerivedData, or beside
-    /// the Package.swift it was built from (frontend/NX2Apple.app, which the README's own recipe makes). `swift run`
+    /// the Package.swift it was built from (frontend/the original launcher.app, which the README's own recipe makes). `swift run`
     /// runs a bare executable with no bundle at all.
     package static func installability(_ bundle: URL, appVersion: String) -> Installability {
         let path = bundle.standardizedFileURL.path
@@ -161,7 +161,7 @@ package enum AppUpdate {
     /// Where the staged release goes: its own bundle name when it differs from the running copy's,
     /// else the current URL.
     ///
-    /// The two-name case is a rename era (nxnative → NS Port Builder → NX2Apple). Replacing in place
+    /// The two-name case is a rename era (nxnative → NS Port Builder → the original launcher). Replacing in place
     /// would keep the old folder's name for ever: the app inside is the new version, but the
     /// Finder, the Dock and /Applications keep saying the old name, which read as "the update did
     /// not happen" (a 0.4.6 install updated to 0.4.8 and still saw NS Port Builder). Under the new
@@ -243,8 +243,8 @@ package enum AppUpdate {
     // ---- Which release is the latest ----
 
     /// The download names this build accepts, newest first. Every release must carry at least one of
-    /// them or an install from that era cannot update itself: NX2Apple is current, nxnative is for
-    /// installs from before the rename to NX2Apple, NS-Port-Builder for installs before that.
+    /// them or an install from that era cannot update itself: the original launcher is current, nxnative is for
+    /// installs from before the rename to the original launcher, NS-Port-Builder for installs before that.
     package static let assetNames = ["switch2mac-macOS-arm64.zip"]
 
     /// `tag` ("v0.4.10") is a later version than `current` ("0.4.8"), compared number by number.
@@ -258,7 +258,7 @@ package enum AppUpdate {
         return false
     }
 
-    /// The release's asset this app installs, with its digest: NX2Apple-macOS-arm64.zip, or the zip under an older
+    /// The release's asset this app installs, with its digest: the original launcher-macOS-arm64.zip, or the zip under an older
     /// name (releases from before each rename).
     package static func release(fromJSON obj: [String: Any]) -> Release? {
         let tag = obj["tag_name"] as? String ?? ""
@@ -340,7 +340,7 @@ package enum AppUpdate {
         let unzip = runner.capture(ProcessLaunch(executable: "/usr/bin/ditto", arguments: ["-x", "-k", zip.path, dir.path]))
         guard unzip.started else { return .failure(.unpack) }
         try? fm.removeItem(at: zip)
-        // The archive holds one app: NX2Apple.app, or the bundle under an older name in a release from before a rename
+        // The archive holds one app: the original launcher.app, or the bundle under an older name in a release from before a rename
         guard unzip.status == 0,
               let app = ((try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []).first(where: { $0.pathExtension == "app" })
         else { return .failure(.unpack) }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// One game's own IPA with its game data inside (LNPANDY/NX2Apple#540), the second kind of the export next to the shared app. It is
+/// One game's own IPA with its game data inside, the second kind of the export next to the shared app. It is
 /// the engine's one-game app as build_ipa_from_nsp.py makes it without `--shell-framework`: the RomFS goes to `<App>/romfs` (or
 /// `romfs.img`) and the add-on content to `<App>/aoc`, which the app reads when its Documents hold no image (dm/ios main.m). The
 /// fork's build_ipa.sh leaves the game data out by default (patch 0004, the slim IPA), so `DM_FULL_ROMFS=1` asks for it. pack_ipa.py

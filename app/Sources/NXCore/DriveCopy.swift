@@ -1,6 +1,6 @@
 import Foundation
 
-/// The game data onto a drive or a folder of this Mac (LNPANDY/NX2Apple#416), for the iPhone's "Game data" folder. A plain file copy: no
+/// The game data onto a drive or a folder of this Mac, for the iPhone's "Game data" folder. A plain file copy: no
 /// device and no signing. The shell finds a game's data in `<chosen folder>/<title ID>/` by name (GameCatalogue.swift, `DataLocator`:
 /// `holder(of: titleFolder)` accepts a `romfs.img` of the size the game's manifest names), and by scanning up to two levels for the
 /// image's identity, which the shell derives from the image itself (RomfsIdentity.swift). So `romfs.img` and the `aoc/` images the

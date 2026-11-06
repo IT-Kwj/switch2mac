@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-// The archive step after the script: the RomFS image the game data goes over with (LNPANDY/NX2Apple#387).
+// The archive step after the script: the RomFS image the game data goes over with.
 
 extension BuildStore {
     // MARK: Archive

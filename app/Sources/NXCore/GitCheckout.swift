@@ -118,7 +118,7 @@ package struct SystemGitCheckout: GitCheckout {
             let present = tree.out.split(separator: "\0").map(String.init).filter { FileManager.default.fileExists(atPath: dir + "/" + $0) }
             let list = NSTemporaryDirectory() + "nspb-zip-paths-\(UUID().uuidString.prefix(8)).txt"
             defer { try? FileManager.default.removeItem(atPath: list) }
-            let identity = ["-c", "user.name=NX2Apple", "-c", "user.email=nx2apple@localhost", "-c", "commit.gpgsign=false"]
+            let identity = ["-c", "user.name=switch2mac", "-c", "user.email=switch2mac@localhost", "-c", "commit.gpgsign=false"]
             ok = tree.ok
                 && step(["symbolic-ref", "HEAD", "refs/heads/" + branch]).ok
                 && ((try? Data(present.joined(separator: "\0").utf8).write(to: URL(fileURLWithPath: list))) != nil)

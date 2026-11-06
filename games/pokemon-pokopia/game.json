@@ -2,10 +2,36 @@
  "title_id": "0400A3A01EE4C000",
  "name": "Pokemon Pokopia",
  "version": "update v327680 or v655360 (2.0.1)",
- "engine": {
-  "kind": "pokopia-native",
-  "repo": "https://github.com/xFractals/pokopia-native",
-  "commit": "53d61c40a1fca8b35039e4ea4df1da7a69ea1901"
- },
- "disk_gb": 20
+ "disk_gb": 20,
+ "builds": [
+  {
+   "id": "pokopia-native",
+   "name": "pokopia-native (xFractals)",
+   "engine": {
+    "kind": "pokopia-native",
+    "repo": "https://github.com/xFractals/pokopia-native",
+    "commit": "9a7ffd2fa259e0539d1b0323fb1eb67410439ed2"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "xFractals' Pokopia builder: builds only the ~3,800 shaders the game needs (about an hour), takes update v327680 or 2.0.1. The default."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "95f9a6a929ede91ab35177987aa8fa15a7dfa031"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "disk_gb": 250,
+   "about": "Upstream nxnative's Pokopia profile (2.0.1 / v655360 only): builds all ~131,000 shaders, which takes hours (about 6.5 h on an M4 Max before its latest speed-ups) and over 200 GB of disk while it builds."
+  }
+ ],
+ "choose": [
+  {
+   "build": "pokopia-native",
+   "why": "pokopia-native builds in about an hour and has more player reports; nxnative's full build takes hours and over 200 GB of disk"
+  }
+ ]
 }

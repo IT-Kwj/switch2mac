@@ -2,7 +2,7 @@ import SwiftUI
 import NXModel
 
 /// The build log as a scrolling text. It is the only view that observes `BuildLog`, so a log line redraws this and not the
-/// launcher around it (LNPANDY/NX2Apple#387).
+/// launcher around it.
 package struct BuildLogView: View {
     @ObservedObject var log: BuildLog
     let placeholder: String

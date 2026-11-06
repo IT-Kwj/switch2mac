@@ -1,0 +1,11 @@
+{
+ "title_id": "0400E88025B1A000",
+ "name": "Star Fox",
+ "version": "update v131072",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "7bccfc88a4f2e93a2d225c9d91c0e3ee44ade4d2"
+ },
+ "disk_gb": 40
+}

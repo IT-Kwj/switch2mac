@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import NXCore
 
-/// The engine (LNPANDY/NX2Apple#387, step 7): which engine the launcher builds with and how it gets it. It follows
+/// The engine: which engine the launcher builds with and how it gets it. It follows
 /// `AppUpdateStore` (`frontend/ARCHITECTURE.md`, "Stores").
 ///
 /// Two kinds of launcher have an engine, and the store does both:

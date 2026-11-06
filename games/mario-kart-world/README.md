@@ -24,6 +24,8 @@ Mario Kart World can be built two ways: on switch2mac's own engine, or on upstre
 
 Built with switch2mac's own engine, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
+In the switch2mac app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
+
 ```bash
 ./switch2mac.py build "<your dump folder>"
 ```
