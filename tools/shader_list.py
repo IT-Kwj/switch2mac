@@ -88,13 +88,27 @@ def known_keys(g):   # the game's shader keys, or None when its table is not at 
 def check(g, text, drop_unknown):   # (rows to add, problems): problems refuse the file
     h = header(text); bad = []
     if h and h[0] != g['title_id']: bad.append(f'it is for title {h[0]}, not {g["name"]} ({g["title_id"]})')
-    if h and h[1] != g['engine_id']: bad.append(f'it was recorded with engine {h[1]}; {label(g)}\'s list is for {g["engine_id"]}: keys differ between engines')
     got = rows(text); keys = known_keys(g); unknown = []
     if keys is not None:
-        unknown = [r for r in got if r[0] in 'SC' and r.split('\t')[1][:16] not in keys]
+        unknown = [r for r in got if any(k not in keys for k in row_keys(r))]
+    # Another commit of the same engine kind: nxnative keys a shader by the game's own code, so the keys hold across its commits; the file is taken when every shader it names
+    # (pipeline rows included) is in this build's map. Another kind (or no map to check against) is refused: switch2mac's engine and nxnative key shaders differently
+    other = h and h[1] != g['engine_id']
+    same_kind = other and g['engine_id'] != 'switch2mac' and h[1].rsplit('-', 1)[0] == g['engine_id'].rsplit('-', 1)[0]
+    if other and not (same_kind and keys is not None and not unknown):
+        bad.append(f'it was recorded with engine {h[1]}; {label(g)}\'s list is for {g["engine_id"]}: keys differ between engines'
+                   + (f' ({len(unknown)} of its rows name shaders this build\'s map lacks)' if same_kind and unknown else ''))
+    if keys is not None:
         if unknown and not drop_unknown: bad.append(f'{len(unknown)} of its {len(got)} rows name shaders {g["name"]} does not have (another game or version?): --drop-unknown drops them')
         got = [r for r in got if r not in unknown]
     return got, bad, unknown
+
+
+def row_keys(r):   # the shader keys a row names: S / C its key; R the keys inside its render pipeline key (hex of ASCII '<16 hex>_<variant>' fields)
+    t, v = r.split('\t')[:2]
+    if t in 'SC': return [v[:16]]
+    try: return [k.decode() for k in re.findall(rb'([0-9a-f]{16})_', bytes.fromhex(v))]
+    except ValueError: return []
 
 
 def append(g, new):   # rows the list lacks, appended in their order; the count added
@@ -157,7 +171,8 @@ def main():
             blob = '\n'.join(texts); h = header(blob)
             tid = h[0] if h else next((t for t in gs if t in blob.upper()), None) or next((g['title_id'] for n, g in byname.items() if n in (i['title'] or '').lower()), None)
             if tid not in gs: print(f'#{i["number"]}: no game this repository has (left open)'); continue
-            g = next((x for x in gs[tid] if h and x['engine_id'] == h[1]), gs[tid][0])   # the build whose engine the file names (none: the first, and check refuses it)
+            kind = lambda e: e.rsplit('-', 1)[0] if e != 'switch2mac' else e
+            g = next((x for x in gs[tid] if h and x['engine_id'] == h[1]), None) or next((x for x in gs[tid] if h and kind(x['engine_id']) == kind(h[1])), gs[tid][0])   # the build whose engine the file names, else one of its kind (none: the first, and check refuses it)
             got, bad, unknown = check(g, blob, drop)
             if bad: print(f'#{i["number"]} {label(g)}: refused (left open): ' + '; '.join(bad)); continue
             if not got: print(f'#{i["number"]} {g["name"]}: no rows found (left open: no file attached?)'); continue
