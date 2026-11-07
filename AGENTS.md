@@ -17,6 +17,7 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 ## Rules
 
 - **Never commit or upload game content**: RomFS / ExeFS files, shader dumps (`*.ctl`, `*.code`), Metal libraries, saves, built apps, or screenshots and logs with the user's paths or personal data. `work/` and `.venv/` are ignored; keep it that way.
+- **No keys or decryption here.** switch2mac contains no decryption code and never reads, copies, stores or uploads keys. A Switch 1 game's files are opened by its builder with the player's own `prod.keys`, whose path only is passed to it (`switch2mac.py build --keys`); the path is hidden in every output (`HIDE` in switch2mac.py, `BuildStore.hidingKeys` in the app). Never add code that decrypts game files, even a header check: identify reads only the file names and NSP ticket names.
 - **Ask before launching the game.** It takes the screen and plays sound. Never send it scripted inputs unless the user asks for that.
 - **Ask before anything slow or large**: a build takes 20 minutes to hours (some games have over 100,000 shaders) and tens of GB of disk.
 - **Reports name the Mac.** `reports.tsv` keeps only reports that name the Mac (model, chip, memory), with their source; never a player's name or anything personal.

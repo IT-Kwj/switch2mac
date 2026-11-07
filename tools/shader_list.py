@@ -38,11 +38,12 @@ def lists():   # one entry a game and build (a game with one "engine" has one bu
     for p in sorted((ROOT / 'games').glob('*/game.json')):
         g = json.loads(p.read_text())
         bs = g.get('builds') or [{'id': g['engine']['kind'], 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}]
-        for b in bs:
+        wip = [{'id': f'{k}-untested', 'engine': e, 'shader_list': f'shader_list-{k}.tsv'} for k, e in g.get('wip', {}).items()]   # a port still in progress (switch2mac.py untested_builds)
+        for b in bs + wip:
             e = b['engine']
             # engine_id: what a list and a contribution name. switch2mac's own engine keeps "switch2mac" across its commits (its shader keys change only with its translator,
             # which switch2mac controls); another engine is named with its commit. engine_dir: where switch2mac.py build fetched it (engines/<kind>-<commit>)
-            out.append(dict(g, engine=e, build=b['id'], multi=len(bs) > 1, dir=p.parent, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
+            out.append(dict(g, engine=e, build=b['id'], multi=len(bs + wip) > 1, dir=p.parent, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
                             engine_dir=ROOT / f'engines/{e["kind"]}-{e["commit"][:12]}', engine_id='switch2mac' if e['kind'] == 'switch2mac' else f'{e["kind"]}-{e["commit"][:12]}'))
     return out
 

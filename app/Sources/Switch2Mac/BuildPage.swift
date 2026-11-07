@@ -23,6 +23,8 @@ struct BuildPage: View {
         SetupHintCard(repo: repo, dependencies: dependencies, onOpenSettings: onOpenSettings)
         YourMacCard()
         DumpCard(build: build)
+        if let info = build.dumpInfo, info.ok, info.dumpForm == "switch1" { SwitchFilesCard(build: build, info: info) }
+        if build.dumpInfo?.needsKeys == true { KeysCard(build: build) }
         if let info = build.dumpInfo, info.ok, info.allBuilds.count > 1 { GameBuildCard(build: build, info: info) }
         LogCard(log: build.log, devices: devices, isOpen: $logOpen,
                 showRequests: BuildNotifier.shared.$showLog.eraseToAnyPublisher(),   // a clicked notification of a failed build
@@ -43,10 +45,10 @@ struct DumpCard: View {
     @EnvironmentObject var loc: Localizer
 
     var body: some View {
-        CardGroup("Your game", footnote: "The folder your dump tool wrote (exefs and romfs, or base and updates), or a .nup file. No keys needed.") {
+        CardGroup("Your game", footnote: "Switch: the game's .nsp or .xci file, or the folder with its base game, update and DLC. Built with your own prod.keys.\n\nSwitch 2: the folder your dump tool wrote (exefs and romfs, or base and updates), or a .nup file. No keys needed.") {
             CardRow(title, detail: detail, detail2: build.gameDir.isEmpty ? "" : RepoLayout.shortPath(build.gameDir), dot: dot, help: build.gameDir) {
                 if build.identifying { ProgressView().controlSize(.small) }
-                Button(build.gameDir.isEmpty ? "Choose folder or .nup…" : "Change…") {
+                Button(build.gameDir.isEmpty ? "Choose game…" : "Change…") {
                     if let f = build.chooseFolder() { build.chooseDump(f) }
                 }
                 .disabled(build.running)
@@ -60,7 +62,7 @@ struct DumpCard: View {
     }
 
     private var title: String {
-        guard let i = build.dumpInfo else { return build.gameDir.isEmpty ? "No dump folder or .nup file chosen" : "Reading the dump…" }
+        guard let i = build.dumpInfo else { return build.gameDir.isEmpty ? "No game chosen: a dump folder, .nup, .nsp or .xci" : "Reading the dump…" }
         return i.ok ? i.name : "Not a game switch2mac builds"
     }
     private var detail: String {
@@ -68,13 +70,81 @@ struct DumpCard: View {
         guard i.ok else { return i.problem }
         let chosen = i.allBuilds.first { $0.id == build.buildChoice(i) }
         let engine = chosen?.name ?? (i.engine == "switch2mac" ? "switch2mac's engine" : i.engine)
-        return [i.version, "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
+        return [i.dumpForm == "switch1" ? "Switch" : "", i.version, "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
             .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
     }
     private var dot: Color {
         guard let i = build.dumpInfo else { return build.identifying ? LauncherPalette.building : LauncherPalette.unbuilt }
         return i.ok ? LauncherPalette.ready : .red
     }
+}
+
+/// A Switch game's other files: the update and DLC found beside it (by title ID), the ones the player added, Add files… for more, and, for a cartridge
+/// with several games, which one to build. Both Switch builders (nxnative's and MacNativeGames') take an update and DLC.
+struct SwitchFilesCard: View {
+    @ObservedObject var build: BuildStore
+    let info: DumpInfo
+
+    var body: some View {
+        CardGroup("Update and DLC", footnote: "Found beside the game by its title ID, or added here from your own Switch. They are built into the game; the newest update sets its version.") {
+            if info.gamesInFiles.count > 1 {
+                CardRow("This cartridge holds \(info.gamesInFiles.count) games", detail: "One is built at a time. Build the other afterwards the same way.") {
+                    Picker("", selection: Binding(get: { info.titleID }, set: { build.pickSwitchGame($0) })) {
+                        ForEach(Array(info.gamesInFiles.enumerated()), id: \.element.titleID) { i, g in
+                            Text(g.name.isEmpty ? "Game \(i + 1) · \(g.titleID)" : g.name).tag(g.titleID)
+                        }
+                    }
+                    .labelsHidden().frame(width: 260).disabled(build.running || build.identifying)
+                }
+                CardDivider()
+            }
+            CardRow("Update", detail: (info.parts?.update ?? "").isEmpty ? "None: the game builds as \(info.version.isEmpty ? "its first version" : info.version)" : info.parts!.update,
+                    dot: (info.parts?.update ?? "").isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
+            CardDivider()
+            CardRow("DLC", detail: (info.parts?.dlc ?? []).isEmpty ? "None" : (info.parts?.dlc ?? []).joined(separator: "\n"),
+                    dot: (info.parts?.dlc ?? []).isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
+            ForEach(build.s1Extra, id: \.self) { f in
+                CardDivider()
+                CardRow((f as NSString).lastPathComponent, detail: "Added by you", help: f) {
+                    Button("Remove") { build.removeSwitchFile(f) }.disabled(build.running)
+                }
+            }
+            CardDivider()
+            CardRow("Add an update or DLC", detail: "An .nsp, .nsz, .xci or .xcz file of this game") {
+                Button("Add files…") { build.addSwitchFiles(build.chooseSwitchFiles()) }.disabled(build.running || build.identifying)
+            }
+        }
+    }
+}
+
+/// A Switch 1 game's prod.keys: its files are encrypted, and the builder opens them with the keys the player dumped from their own Switch. switch2mac keeps
+/// only where the file is (never its contents), passes it to the builder alone, and never writes it into logs, reports or shader lists (BuildStore+Switch2Mac.swift).
+/// The first time, a short note says so before the file is chosen; Settings → Forget my keys file drops the path.
+struct KeysCard: View {
+    @ObservedObject var build: BuildStore
+    @State private var explaining = false
+
+    var body: some View {
+        let path = build.keysPath, info = build.dumpInfo
+        CardGroup("Your keys", footnote: "Switch games are encrypted. The builder unlocks them with prod.keys from your own Switch, only while it builds. switch2mac remembers where the file is, never what is in it, and never uploads or shares it.") {
+            CardRow(path.isEmpty ? "No prod.keys chosen" : (path as NSString).lastPathComponent,
+                    detail: path.isEmpty ? "Needed for this game: dump it from your own Switch." : (info?.keysNote ?? ""),
+                    dot: path.isEmpty ? LauncherPalette.unbuilt : info?.keysOK == false ? .red : LauncherPalette.ready) {
+                Button(path.isEmpty ? "Choose prod.keys…" : "Change…") {
+                    if UserDefaults.standard.bool(forKey: BuildStore.keysExplainedKey) { pick() } else { explaining = true }
+                }
+                .disabled(build.running)
+            }
+        }
+        .alert("Your own keys", isPresented: $explaining) {
+            Button("Choose prod.keys…") { UserDefaults.standard.set(true, forKey: BuildStore.keysExplainedKey); pick() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Switch game files are encrypted. To build one, the builder needs prod.keys dumped from your own Switch. switch2mac passes the file to the builder while it builds and keeps only where it is: not a copy, not what is in it. It never goes into logs, reports or shader lists, and nothing is uploaded. You can forget it any time in Settings.")
+        }
+    }
+
+    private func pick() { if let f = build.chooseKeysFile() { build.setKeys(f) } }
 }
 
 /// A game with several builds (Mario Kart World: switch2mac's engine and nxnative's): which one this Mac gets and why, a menu to pick the other (with a warning),

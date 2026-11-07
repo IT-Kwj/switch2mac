@@ -26,6 +26,7 @@ struct LauncherView: View {
     @State private var controllerSheet = false
     @FocusState private var searchFocused: Bool
     @State var artwork: [UUID: NSImage] = [:]
+    @State var boxArt: [UUID: NSImage] = [:]   // retail box fronts (BoxArt.swift) for the case views, where one was found
     @State var bannerFocus: [UUID: CGPoint] = [:]   // where each banner's title is (BannerFocus), for the hero
     @State var activeBuildID: UUID?
     @State var launching = false
@@ -82,25 +83,46 @@ struct LauncherView: View {
     }
 
     @State var libraryFilter: LibraryFilter = LibraryFilter.load()
+    @State var consoleFilter: ConsoleFilter = ConsoleFilter.load()
+    @State var libraryLayout: LibraryLayout = LibraryLayout.load()   // a row of wide cards, every game as a cover, or 3D cases (CoverArt.swift)
+    @State var openCase: OpenCaseControl?   // the selected game's case, opened (OpenCase.swift)
+    @State var heroArt: (id: UUID, image: NSImage)?   // the hero's banner at full size: only its one game's (the rest are read small)
 
     func setLibraryFilter(_ filter: LibraryFilter) {
         guard filter != libraryFilter else { return }
         withAnimation(.easeInOut(duration: 0.2)) { libraryFilter = filter }
         filter.save()
-        let after = filter.reconcile(games: library.games, selectedID: library.selectedID, focused: padFocus.focused)
+        reconcileFilters()
+    }
+
+    func setConsoleFilter(_ filter: ConsoleFilter) {
+        guard filter != consoleFilter else { return }
+        withAnimation(.easeInOut(duration: 0.2)) { consoleFilter = filter }
+        filter.save()
+        reconcileFilters()
+    }
+
+    /// The console filter counts only while the library holds games of both consoles (it is hidden otherwise).
+    var activeConsoleFilter: ConsoleFilter { ConsoleFilter.mixed(library.games) ? consoleFilter : .all }
+
+    /// Whether the build and console filters show a game (search aside).
+    func shows(_ game: LibraryGame) -> Bool { libraryFilter.includes(game) && activeConsoleFilter.includes(game) }
+
+    private func reconcileFilters() {
+        let after = LibraryFilter.reconcile(games: library.games, selectedID: library.selectedID, focused: padFocus.focused, shows: shows)
         if after.selectedID != library.selectedID { library.selectedID = after.selectedID }
         if after.focused != padFocus.focused { padFocus.focused = after.focused }
     }
 
     var filteredGames: [LibraryGame] {
-        library.games.filter { (search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)) && libraryFilter.includes($0) }
+        library.games.filter { (search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)) && shows($0) }
     }
 
-    /// The hero's game: the selection, unless the filter hides it, then the first game the filter shows.
+    /// The hero's game: the selection, unless the filters hide it, then the first game they show.
     var heroGame: LibraryGame? {
-        guard libraryFilter != .owned else { return library.selected }
-        if let selected = library.selected, libraryFilter.includes(selected) { return selected }
-        return library.games.first(where: libraryFilter.includes)
+        guard libraryFilter != .owned || activeConsoleFilter != .all else { return library.selected }
+        if let selected = library.selected, shows(selected) { return selected }
+        return library.games.first(where: shows)
     }
 
     var body: some View {
@@ -250,6 +272,10 @@ struct LauncherView: View {
         .onChange(of: scenePhase) { phase in
             if phase == .active { library.objectWillChange.send() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: MemoryTrim.didTrim)) { _ in artwork = [:]; boxArt = [:]; heroArt = nil }   // MemoryTrim.swift
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            if MemoryTrim.trimmed { MemoryTrim.restored(); refreshArtwork() }   // back in front after a game: the pictures read again
+        }
         .alert(loc.t("library.error"), isPresented: Binding(
             get: { launchError != nil || library.error != nil },
             set: { if !$0 { launchError = nil; library.error = nil } }
@@ -307,7 +333,7 @@ struct LauncherView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         (Text("switch").foregroundColor(.white) + Text("2").foregroundColor(LauncherPalette.building) + Text("mac").foregroundColor(.white))
                             .font(.manrope(26, .bold)).tracking(-0.6)
-                        Text("Switch 2 games, native on your mac.").font(.manrope(10.5, .medium))
+                        Text("Switch games, native on your Mac.").font(.manrope(10.5, .medium))
                             .foregroundStyle(LauncherPalette.unbuilt).tracking(0.1)
                     }
                     .fixedSize(horizontal: true, vertical: false)
@@ -468,11 +494,14 @@ struct LauncherView: View {
                     if gamepad.connected {
                         // The buttons a controller has here, named as the game names them (A on the right)
                         HStack(spacing: 18) {
-                            padHint(.activate, loc.t("pad.play")); padHint(.launchOptions, loc.t("pad.options")); padHint(.back, loc.t("pad.back"))
+                            let shelf = page == .library && libraryLayout.cases != nil && !padFocus.visible   // the 3D shelves: A opens the case, then plays
+                            padHint(.activate, shelf && openCase == nil ? "Open case" : loc.t("pad.play")); padHint(.launchOptions, loc.t("pad.options"))
+                            padHint(.back, shelf && openCase != nil ? "Close case" : loc.t("pad.back"))
                             padHint(.manage, loc.t("pad.manage"))
                             if enterConsole != nil { padHint(.select, loc.t("console.entry")) }
                         }
                     }
+                    if page == .library { SoundToggle() }   // InterfaceSound.swift
                 }
             }
             .padding(.horizontal, 30).frame(height: 84)
@@ -522,10 +551,13 @@ struct LauncherView: View {
             // The folder the game's files were found in (a base package may sit one level down in its own folder) — from the
             // scan, or from the last build. Falling back to the base's folder would put the update and DLC out of reach.
             m.gameDir = game.sourceFolder.isEmpty ? (m.basePath as NSString).deletingLastPathComponent : game.sourceFolder
+            // A Switch game found as a file goes to the build as that file, the one the library found: its folder may hold other games
+            // (a ROMs folder), and switch2mac.py takes the file's own update and DLC from beside it by title ID.
+            if let base = game.inputs["base"]?.first, ["nsp", "nsz", "xci", "xcz"].contains((base as NSString).pathExtension.lowercased()) { m.gameDir = base }
         }
         m.outDir = game.outputDirectory
         m.done = false; m.doneNote = ""; m.stages = []
-        m.target = game.lastTarget
+        m.target = BuildTarget.mac   // switch2mac builds Mac apps only (a library game never built carried the iPhone default of the launcher it began from)
         page = .builds
     }
 
@@ -565,6 +597,7 @@ struct LauncherView: View {
         // The Free space sheet: B closes it, the D-pad and A work in it, X, L and R do nothing behind it
         if freeSpaceFor != nil && [.b, .x, .l, .r].contains(action) { if action == .b { freeSpaceFor = nil }; return }
         if deleting != nil && [.b, .x, .l, .r].contains(action) { if action == .b { deleting = nil }; return }
+        if page == .library, !sheetOpen, libraryLayout.cases != nil, !filteredGames.isEmpty, shelfPad(action) { return }
         if action == .b {
             if optionsFor != nil { optionsFor = nil } else if controlsOpen { controlsOpen = false }
             else if searching { searching = false; search = "" } else if page != .library { page = .library }
@@ -696,25 +729,21 @@ struct LauncherView: View {
 
     private func checkTools() { toolsAge.check(games: library.games, repo: stores.repo.path) }
 
-    private func refreshArtwork() {
-        artwork = Dictionary(uniqueKeysWithValues: library.games.compactMap { game in
-            GameLibrary.artwork(for: game, repo: stores.repo.path).map { (game.id, $0) }
-        })
-        let pictures = artwork
-        Task.detached(priority: .utility) {   // the titles' places, off the main thread (a second or so a banner)
-            var found: [UUID: CGPoint] = [:]
-            for (id, image) in pictures { if let p = BannerFocus.find(image) { found[id] = p } }
-            let result = found
-            await MainActor.run { bannerFocus = result }
-        }
+    private func refreshArtwork() {   // one loader: a new ask cancels the last, pictures already read are kept (ArtworkLoader.swift)
+        ArtworkLoader.shared.load(library.games, repo: stores.repo.path, boxArt: BoxArtStore.enabled,
+                                  pictures: { a, b in artwork = a; boxArt = b }, places: { bannerFocus = $0 })
     }
+
 
     /// The eShop key art of the games that have none yet; the cards and the hero redraw as it arrives.
     private func fetchArtwork() {
         let ids = library.games.map(\.titleID)
+        let boxes = library.games.map { (titleID: $0.titleID, name: $0.name, switch2: ConsoleFilter.console(of: $0) == .switch2) }
         Task {
             let added = await ArtworkStore.shared.fetchMissing(ids)
             if !added.isEmpty { await MainActor.run { refreshArtwork() } }
+            let boxed = await BoxArtStore.shared.fetchMissing(boxes)   // box fronts for the case views (one large download of LaunchBox's list a month)
+            if !boxed.isEmpty { await MainActor.run { refreshArtwork() } }
         }
     }
 

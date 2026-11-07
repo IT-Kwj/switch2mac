@@ -1,22 +1,28 @@
 # switch2mac
 
-**Play your Nintendo Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose the dump folder, press Build, play.
+**Play your Nintendo Switch and Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose your game, press Build, play.
 
 It is not an emulator. The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
 
 ## The switch2mac app
 
-A Mac app that builds your games for you: choose a dump folder, press **Build**, and the game lands in Applications. It keeps a **Library** of your games with their eShop banners (downloaded onto your Mac when it runs; none are stored here), shows **Your Mac** (chip, memory, macOS) and the build of each game that suits it, with how that build ran on other players' Macs.
+A Mac app that builds your games for you: choose your game, press **Build**, and it lands in Applications.
+
+- **Library:** your games as 3D game cases (Carousel, Flipbook or Stack), as covers or as a row of banners. Click a case to open it (its cartridge and booklet slide out), click again to play. Drag, scroll, use the arrow keys or a controller. Box fronts and eShop banners are downloaded onto your Mac when the app runs (see [LEGAL.md](LEGAL.md)); none are stored here.
+- **Several builds per game:** nxnative, switch2mac's own engine, MacNativeGames and community ports. The app picks the one that runs best on **Your Mac** (chip, memory, macOS), from how each build ran on players' Macs.
+- **Switch and Switch 2:** Switch 2 dumps need no keys; Switch games are built with your own `prod.keys`, with their update and DLC.
+- **What's New, Performance and updates:** game fixes arrive by themselves; every play session's frame rate and memory is kept, and can be shared as a report.
+- **Light while you play:** switch2mac lets go of its pictures while a game runs, or closes and opens again after (Settings › While you play).
 
 1. **Download** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to your Applications folder.
 2. **Open it.** The first time, macOS says it cannot verify the app (it is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
 3. **Follow the setup.** It checks your Mac and tells you what to install: **Xcode** (free, App Store) with its **Metal Toolchain**, and the **.NET 10 SDK** ([dot.net](https://dot.net)). Python and the other build tools are inside the app.
-4. **Build a game.** On the **Builds** page, choose your game's dump folder. The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
+4. **Build a game.** Press **+ Build game** and choose your game (a dump folder, a `.nup`, or a Switch game's `.nsp` / `.xci`). The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
 5. **Play** from the app's **Library** or from Applications. The very first start waits 1-3 minutes with no window while macOS checks the new app: wait, don't open it twice. In the game, **1** shows the performance overlay and **2** the settings.
 
 The app keeps itself and its game list up to date: new games and fixes arrive when you open it.
 
-> **You need:** a Mac with Apple silicon and **macOS 26 or later**, and a dump of a game you own. switch2mac needs no keys and decrypts nothing. This repository holds no game content, and what the build makes must not be shared. See [LEGAL.md](LEGAL.md).
+> **You need:** a Mac with Apple silicon and **macOS 26 or later**, and a dump of a game you own. Switch 2 games need no keys; Switch 1 games are built with your own `prod.keys`, which switch2mac only passes to the builder (see [LEGAL.md](LEGAL.md)). switch2mac itself decrypts nothing. This repository holds no game content, and what the build makes must not be shared. See [LEGAL.md](LEGAL.md).
 
 ## Games
 
@@ -33,6 +39,9 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
 | Kirby Air Riders | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000). | [games/kirby-air-riders](games/kirby-air-riders) |
 | The Legend of Zelda: Ocarina of Time | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/6121fd75312cb4d1af404a01921d437741fea91e/dm/games/0400486024DEC000). | [games/the-legend-of-zelda-ocarina-of-time](games/the-legend-of-zelda-ocarina-of-time) |
+| The Legend of Zelda: Tears of the Kingdom (Switch) | 1.4.3 (update v720896) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (default), or nxnative's builder | New in switch2mac, **not built here yet**: MacNativeGames reports it runs well on Apple silicon. Built with your own `prod.keys`. | [games/the-legend-of-zelda-tears-of-the-kingdom](games/the-legend-of-zelda-tears-of-the-kingdom) |
+| The Legend of Zelda: Breath of the Wild (Switch) | 1.9.0 (update v1114112) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) (default), or nxnative's builder | New in switch2mac, **not built here yet**. Built with your own `prod.keys`. | [games/the-legend-of-zelda-breath-of-the-wild](games/the-legend-of-zelda-breath-of-the-wild) |
+| Other Switch games | | nxnative's builder, with the profile nxnative has for the game or one guessed from its files (untested) | Super Mario Bros. Wonder built and played at 60 fps here (M1 Max). Games with no profile may stop partway. | |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -56,6 +65,8 @@ The files your dump tool wrote, for example:
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 
 **A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; switch2mac's own engine (Mario Kart World's `switch2mac` build) needs a dump folder, so the app recommends another build for a `.nup`.
+
+**Switch games:** choose the game's `.nsp` or `.xci` file, or the folder with its base game, update and DLC, then your own `prod.keys` when the app asks. The app recognises the game from the file names dump tools write (`Game [0100F2C0115B6000][v0].nsp`); nxnative's builder opens the files. Tested builds for Switch 1 games, and more of them, are coming.
 
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 

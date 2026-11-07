@@ -1,0 +1,45 @@
+{
+ "title_id": "0100F2C0115B6000",
+ "name": "The Legend of Zelda: Tears of the Kingdom",
+ "version": "nxnative: 1.4.3 (update v720896); MacNativeGames: see its build",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' runtime",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca"
+   },
+   "shader_list": "shader_list-macnativegames.tsv",
+   "watch": [
+    "games/totk",
+    "build_app.py",
+    "tools/builder"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Tears of the Kingdom 1.0.0, 1.2.1 or 1.4.3 (1.4.3 recommended), up to native 4K (5K on Macs with 32 GB or more): its main game, the most polished port there. Needs Homebrew's python@3.14, opus and libvpx."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v720896"
+   ],
+   "shader_list": "shader_list.tsv",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "e9d71e271a6a1216e78a83f910a8059f8327c49f"
+   },
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3."
+  }
+ ],
+ "disk_gb": 55,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is the most polished way to play this game on a Mac (up to native 4K)."
+  }
+ ]
+}

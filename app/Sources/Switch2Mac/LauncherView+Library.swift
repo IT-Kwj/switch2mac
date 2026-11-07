@@ -10,6 +10,8 @@ extension LauncherView {
         GeometryReader { geometry in
             if library.games.isEmpty {
                 emptyLibrary
+            } else if let style = libraryLayout.cases {
+                carouselPage(width: geometry.size.width, height: geometry.size.height, style: style)   // CaseCarousel.swift
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
@@ -54,8 +56,8 @@ extension LauncherView {
 
     func hero(_ game: LibraryGame, width: CGFloat, height: CGFloat) -> some View {
         ZStack(alignment: .bottomLeading) {
-            if let image = artwork[game.id] {
-                FocusedBanner(image: image, focus: bannerFocus[game.id], width: width, height: height)   // the title in the middle, as the original launcher frames it
+            if let image = heroArt?.id == game.id ? heroArt?.image : artwork[game.id] {   // the full picture once read, the small one meanwhile
+                FullBanner(image: image, width: width, height: height)   // the whole picture, sharp, on the right (BannerFocus.swift)
             } else {
                 GameCover(name: game.name, titleID: game.titleID, large: true).frame(width: width, height: height).clipped()   // switch2mac's own cover (GameCover.swift)
             }
@@ -164,28 +166,73 @@ extension LauncherView {
             .padding(.horizontal, 34).padding(.bottom, 34)
         }
         .frame(width: width, height: height).clipped()
+        .task(id: game.id) {   // the hero's banner at full size, read in the background; only one is kept
+            guard heroArt?.id != game.id else { return }
+            let repo = m.repo.path
+            let full = await Task.detached(priority: .userInitiated) { GameLibrary.artworkURL(for: game, repo: repo).flatMap { BoxArtStore.load($0, maxPixels: 1920) } }.value
+            if let full, !Task.isCancelled { heroArt = (game.id, full) }
+        }
+    }
+
+    /// The Library's heading and its switches: the layout, the console, the build filter and the count (the row, the covers and the carousel share them).
+    var libraryControls: some View {
+            HStack(spacing: 16) {
+            Text(loc.t("library.collection")).font(.manrope(28, .bold)).tracking(-0.6)
+            LauncherSegmented(options: LibraryLayout.allCases.map { ($0.rawValue, $0.label) }, selection: libraryLayout.rawValue) { v in
+                let l = LibraryLayout(rawValue: v) ?? .row
+                withAnimation(.easeInOut(duration: 0.2)) { libraryLayout = l }; l.save()
+            }
+            .frame(width: 440)   // five views, each label whole, beside the heading (the filters stay on the right)
+            .padTarget("library.layout", scope: "main", radius: 17,   // a controller: A takes the next view, left and right step through them
+                       activate: { stepLayout(1, wrap: true) }, adjust: { stepLayout($0) })
+            Spacer()
+            if ConsoleFilter.mixed(library.games) {   // Switch 1 and Switch 2 games in one library: which to show
+                LauncherSegmented(options: ConsoleFilter.allCases.map { ($0.rawValue, loc.t($0.labelKey)) },
+                                  selection: consoleFilter.rawValue) { setConsoleFilter(ConsoleFilter(rawValue: $0) ?? .all) }
+                    .frame(width: LauncherControl.width * 1.3)
+                    .padTarget("library.console", scope: "main", radius: 17, activate: { stepConsole(1, wrap: true) }, adjust: { stepConsole($0) })
+            }
+            LauncherSegmented(options: LibraryFilter.allCases.map { ($0.rawValue, loc.t($0.labelKey)) },
+                              selection: libraryFilter.rawValue) { setLibraryFilter(LibraryFilter(rawValue: $0) ?? .owned) }
+                .frame(width: LauncherControl.width)
+                .padTarget("library.filter", scope: "main", radius: 17,
+                           activate: { setLibraryFilter(libraryFilter == .owned ? .built : .owned) },
+                           adjust: { d in   // past either end the focus moves on to the next control
+                               let want: LibraryFilter = d > 0 ? .built : .owned
+                               if want == libraryFilter { padFocus.move(dx: CGFloat(d), dy: 0) } else { setLibraryFilter(want) }
+                           })
+            Text(String(format: loc.t("library.gameCount"), library.games.filter(shows).count))
+                .font(.manrope(12)).foregroundStyle(.secondary)
+        }
+    }
+
+    /// A controller on the view switch: left and right take the previous or next view, as a click would; past either end the focus moves on to the
+    /// control beside it. A takes the next view, round to the first.
+    func stepLayout(_ by: Int, wrap: Bool = false) {
+        let all = LibraryLayout.allCases, at = all.firstIndex(of: libraryLayout) ?? 0
+        guard wrap || all.indices.contains(at + by) else { padFocus.move(dx: CGFloat(by), dy: 0); return }
+        let l = all[(at + by + all.count) % all.count]
+        withAnimation(.easeInOut(duration: 0.2)) { libraryLayout = l }; l.save()
+    }
+    /// A controller on the console switch (All, Switch, Switch 2), the same way.
+    func stepConsole(_ by: Int, wrap: Bool = false) {
+        let all = ConsoleFilter.allCases, at = all.firstIndex(of: consoleFilter) ?? 0
+        guard wrap || all.indices.contains(at + by) else { padFocus.move(dx: CGFloat(by), dy: 0); return }
+        setConsoleFilter(all[(at + by + all.count) % all.count])
     }
 
     func collection(width: CGFloat) -> some View {
         let cardWidth = min(300, max(190, (width - 124) / 5))
         let step = cardWidth + 14
+        let _ = { row.cardStep = step; row.onPass = { InterfaceSound.ticks($0) } }()   // a click for every card the row passes, as the shelves do
         let games = filteredGames
         let heroID = heroGame?.id
         return VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 16) {
-                Text(loc.t("library.collection")).font(.manrope(28, .bold)).tracking(-0.6)
-                Spacer()
-                LauncherSegmented(options: LibraryFilter.allCases.map { ($0.rawValue, loc.t($0.labelKey)) },
-                                  selection: libraryFilter.rawValue) { setLibraryFilter(LibraryFilter(rawValue: $0) ?? .owned) }
-                    .frame(width: LauncherControl.width)
-                    .padTarget("library.filter", scope: "main", radius: 17,
-                               activate: { setLibraryFilter(libraryFilter == .owned ? .built : .owned) },
-                               adjust: { setLibraryFilter($0 > 0 ? .built : .owned) })
-                Text(String(format: loc.t("library.gameCount"), libraryFilter == .owned ? library.games.count : library.games.filter(libraryFilter.includes).count))
-                    .font(.manrope(12)).foregroundStyle(.secondary)
-            }
+            libraryControls
             if games.isEmpty {
                 Text(loc.t("library.noResults")).foregroundStyle(.secondary).padding(.vertical, 28)
+            } else if libraryLayout == .covers {
+                coverGrid(games, width: width, heroID: heroID)
             } else {
                 ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -241,6 +288,29 @@ extension LauncherView {
             }
         }
         .padding(.horizontal, 34).padding(.top, 8).padding(.bottom, 22)
+    }
+
+    /// Every game as a cover (CoverArt.swift), as many to a line as the window fits: the whole library at a glance, for a big one. A click selects the game
+    /// (the hero above shows it), as a card in the row does.
+    func coverGrid(_ games: [LibraryGame], width: CGFloat, heroID: UUID?) -> some View {
+        let inner = width - 68, coverW = min(190, max(130, (inner - 14 * 5) / 6))
+        return LazyVGrid(columns: [GridItem(.adaptive(minimum: coverW, maximum: coverW + 30), spacing: 16, alignment: .top)], alignment: .leading, spacing: 22) {
+            ForEach(games) { game in
+                Button { library.selectedID = game.id } label: {
+                    VStack(alignment: .leading, spacing: 7) {
+                        CoverImage(game: game, image: artwork[game.id], focus: bannerFocus[game.id], width: coverW, box: boxArt[game.id])
+                            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(game.id == heroID ? LauncherPalette.cream : .clear, lineWidth: 2))
+                            .shadow(color: .black.opacity(0.35), radius: 8, y: 4)
+                        Text(game.name).font(.manrope(13.5, .semibold)).lineLimit(2).frame(width: coverW, alignment: .leading)
+                        status(game)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(game.id == heroID ? .isSelected : [])
+                .padTarget("card." + game.id.uuidString, scope: "main", radius: 7) { if !launching { primaryAction(game) } }
+            }
+        }
     }
 
     /// A round button floating over the row's edge, centred on the artwork, shown while the row scrolls that way.

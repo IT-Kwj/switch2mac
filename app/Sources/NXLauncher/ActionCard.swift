@@ -53,6 +53,8 @@ package struct ActionCard: View {
             Text("Choose your game’s dump folder").font(.manrope(13)).foregroundStyle(.secondary)
         } else if build.dumpInfo?.ok != true {
             Text("This folder can’t be built: see above").font(.manrope(13)).foregroundStyle(LauncherPalette.building)
+        } else if !build.keysReady {   // a Switch 1 game without a usable prod.keys
+            Text("Choose your prod.keys above").font(.manrope(13)).foregroundStyle(LauncherPalette.building)
         } else {
             Text("The game goes to " + build.shortPath(build.switch2macLibraryDir))
                 .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)

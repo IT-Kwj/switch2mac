@@ -11,17 +11,21 @@ package struct AppCard: View {
     let notify: Binding<Bool>
     let notifyAvailable: Bool   // false without an app bundle, e.g. under swift run
     let returnAfterPlay: Binding<Bool>
+    let closeWhilePlaying: Binding<Bool>
+    let interfaceSounds: Binding<Bool>
     let onRunSetup: (() -> Void)?   // the guided first-run setup, again (nil where there is none)
     let uninstallPlan: () -> Uninstall.Plan
     @EnvironmentObject var loc: Localizer
 
     package init(updates: AppUpdateStore, buildRunning: Bool, notify: Binding<Bool>, notifyAvailable: Bool, returnAfterPlay: Binding<Bool>,
-                 onRunSetup: (() -> Void)?, uninstallPlan: @escaping () -> Uninstall.Plan) {
+                 closeWhilePlaying: Binding<Bool> = .constant(false), interfaceSounds: Binding<Bool> = .constant(true), onRunSetup: (() -> Void)?, uninstallPlan: @escaping () -> Uninstall.Plan) {
         self.updates = updates
         self.buildRunning = buildRunning
         self.notify = notify
         self.notifyAvailable = notifyAvailable
         self.returnAfterPlay = returnAfterPlay
+        self.closeWhilePlaying = closeWhilePlaying
+        self.interfaceSounds = interfaceSounds
         self.onRunSetup = onRunSetup
         self.uninstallPlan = uninstallPlan
     }
@@ -35,6 +39,18 @@ package struct AppCard: View {
     /// What the picker shows for a choice: "system" follows the UI language, a language shows its own name.
     private func languageLabel(_ code: String) -> String {
         code.isEmpty ? loc.t("settings.language.system") : (Lang.find(code)?.name ?? code)
+    }
+
+    package static let whilePlayingChoices = ["stay", "back", "close"]
+    /// The two stored switches as the one choice.
+    private var whilePlaying: String { closeWhilePlaying.wrappedValue ? "close" : returnAfterPlay.wrappedValue ? "back" : "stay" }
+    private func setWhilePlaying(_ v: String) {
+        closeWhilePlaying.wrappedValue = v == "close"
+        returnAfterPlay.wrappedValue = v != "stay"
+    }
+    private func stepWhilePlaying(_ by: Int) {
+        let all = Self.whilePlayingChoices, at = all.firstIndex(of: whilePlaying) ?? 1
+        setWhilePlaying(all[min(max(at + by, 0), all.count - 1)])
     }
 
     package var body: some View {
@@ -66,10 +82,18 @@ package struct AppCard: View {
                 }
                 CardDivider()
             }
-            // The launcher back in front when a game it started quits (ReturnAfterPlay.swift)
-            CardRow(loc.t("settings.returnAfterPlay"), detail: loc.t("settings.returnAfterPlayNote")) {
-                Toggle("", isOn: returnAfterPlay).toggleStyle(LauncherSwitchStyle()).labelsHidden()
-                    .padTarget("set.returnAfterPlay", scope: "main") { returnAfterPlay.wrappedValue.toggle() }
+            // What switch2mac does while a game it started runs, one choice (ReturnAfterPlay.swift): stay where it is, come to the front when the game
+            // quits, or close and open again when the game quits (closing implies coming back)
+            CardRow(loc.t("settings.whilePlaying"), detail: loc.t("settings.whilePlaying." + whilePlaying + "Note")) {
+                LauncherDropdown(options: Self.whilePlayingChoices.map { (value: $0, label: loc.t("settings.whilePlaying." + $0)) },
+                                 selection: whilePlaying, label: loc.t("settings.whilePlaying"), style: .button) { setWhilePlaying($0) }
+                    .padTarget("set.whilePlaying", scope: "main", activate: { stepWhilePlaying(1) }, adjust: { stepWhilePlaying($0) })
+            }
+            CardDivider()
+            // the Library's small sounds (InterfaceSound.swift)
+            CardRow(loc.t("settings.interfaceSounds"), detail: loc.t("settings.interfaceSoundsNote")) {
+                Toggle("", isOn: interfaceSounds).toggleStyle(LauncherSwitchStyle()).labelsHidden()
+                    .padTarget("set.interfaceSounds", scope: "main") { interfaceSounds.wrappedValue.toggle() }
             }
             CardDivider()
             CardRow("switch2mac", detail: String(format: loc.t("app.version"), updates.version),

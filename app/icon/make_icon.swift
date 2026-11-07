@@ -1,4 +1,4 @@
-// switch2mac's app icon ("Studio"): a laptop whose black screen, showing a "2", sits between a green and a red grip, so the Mac's
+// switch2mac's app icon ("Studio"): a laptop whose black screen (since 0.4.0 without the "2" it showed) sits between a green and a red grip, so the Mac's
 // display reads as a handheld. Shaded grips with sticks and buttons, a black bezel with an aluminium rim, an aluminium base, on a
 // charcoal squircle lit from behind (a warm halo, the grips' green and red at its sides) with a lit floor edge under the laptop.
 // Our own drawing: no logo or artwork from anywhere else.
@@ -10,7 +10,10 @@ func c(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> CGColor { 
 func grad(_ cols: [CGColor], _ locs: [CGFloat]? = nil) -> CGGradient { CGGradient(colorsSpace: cs, colors: cols as CFArray, locations: locs)! }
 let headerMode = ProcessInfo.processInfo.environment["ICON_HEADER"] == "1"
 // the grips' green and red; richer in the header mark, where they are small
-let G = headerMode ? (r: 0.10 as CGFloat, g: 0.90 as CGFloat, b: 0.38 as CGFloat) : (r: 0.25 as CGFloat, g: 0.84 as CGFloat, b: 0.47 as CGFloat)
+// ICON_LEFT=blue: the left grip blue instead of green
+let leftBlue = ProcessInfo.processInfo.environment["ICON_LEFT"] == "blue"
+let G = leftBlue ? (headerMode ? (r: 0.0 as CGFloat, g: 0.62 as CGFloat, b: 1.0 as CGFloat) : (r: 0.16 as CGFloat, g: 0.62 as CGFloat, b: 0.95 as CGFloat))
+    : headerMode ? (r: 0.10 as CGFloat, g: 0.90 as CGFloat, b: 0.38 as CGFloat) : (r: 0.25 as CGFloat, g: 0.84 as CGFloat, b: 0.47 as CGFloat)
 let R = headerMode ? (r: 1.0 as CGFloat, g: 0.14 as CGFloat, b: 0.16 as CGFloat) : (r: 0.92 as CGFloat, g: 0.27 as CGFloat, b: 0.27 as CGFloat)
 
 func rr(_ r: CGRect, _ rad: CGFloat) -> CGPath { CGPath(roundedRect: r, cornerWidth: rad, cornerHeight: rad, transform: nil) }
@@ -133,6 +136,21 @@ func lighting(_ ctx: CGContext, _ kind: String, _ body: CGRect, _ s: CGFloat, ba
         }
         ctx.restoreGState()
         radial(CGPoint(x: 512 * s, y: 560 * s), 520 * s, [c(0, 0, 0, 0.45), c(0, 0, 0, 0)])   // darker behind the device, so it stands out
+    case "vignette":   // a soft light at the centre falling off to pure black at the edges
+        ctx.setFillColor(c(0, 0, 0)); ctx.fill(body)
+        radial(CGPoint(x: 512 * s, y: 560 * s), 620 * s, [c(0.30, 0.30, 0.32), c(0.14, 0.14, 0.15), c(0.04, 0.04, 0.045), c(0, 0, 0)], [0, 0.35, 0.72, 1], sx: 1.0, sy: 0.95)
+    case "amber":   // near-black with a gentle warm amber glow behind the screen, dark edges (the manner of NX2Apple's icon)
+        ctx.setFillColor(c(0.035, 0.03, 0.028)); ctx.fill(body)
+        radial(CGPoint(x: 512 * s, y: 560 * s), 560 * s, [c(0.78, 0.52, 0.24, 0.80), c(0.50, 0.31, 0.13, 0.45), c(0.18, 0.10, 0.04, 0.14), c(0, 0, 0, 0)], [0, 0.32, 0.68, 1], sx: 1.15, sy: 0.95)
+        radial(CGPoint(x: 512 * s, y: 512 * s), 760 * s, [c(0, 0, 0, 0), c(0, 0, 0, 0), c(0, 0, 0, 0.55)], [0, 0.6, 1])
+    case "duo":   // near-black, the two grips' colours glowing behind the device and blending where they meet, dark edges
+        ctx.setFillColor(c(0.03, 0.03, 0.035)); ctx.fill(body)
+        ctx.saveGState(); ctx.setBlendMode(.screen)
+        radial(CGPoint(x: 360 * s, y: 570 * s), 470 * s, [c(G.r, G.g, G.b, 0.62), c(G.r, G.g, G.b, 0.26), c(G.r, G.g, G.b, 0.06), c(G.r, G.g, G.b, 0)], [0, 0.35, 0.7, 1], sx: 1.05, sy: 0.95)
+        radial(CGPoint(x: 664 * s, y: 570 * s), 470 * s, [c(R.r, R.g, R.b, 0.62), c(R.r, R.g, R.b, 0.26), c(R.r, R.g, R.b, 0.06), c(R.r, R.g, R.b, 0)], [0, 0.35, 0.7, 1], sx: 1.05, sy: 0.95)
+        radial(CGPoint(x: 512 * s, y: 600 * s), 260 * s, [c(1, 1, 1, 0.10), c(1, 1, 1, 0)])   // a soft white where they meet
+        ctx.restoreGState()
+        radial(CGPoint(x: 512 * s, y: 512 * s), 760 * s, [c(0, 0, 0, 0), c(0, 0, 0, 0), c(0, 0, 0, 0.6)], [0, 0.6, 1])
     case "halo":   // a warm-white halo behind the screen, as NX2Apple's amber glow, falling off into charcoal; green and red at its edges
         radial(CGPoint(x: 512 * s, y: 600 * s), 430 * s, [c(1, 0.94, 0.84, 0.70), c(0.85, 0.74, 0.58, 0.34), c(0.35, 0.30, 0.25, 0.10), c(0, 0, 0, 0)], [0, 0.42, 0.75, 1],
                sx: 1.05, sy: 0.9)
@@ -181,7 +199,7 @@ func icon(_ style: Int, size S: CGFloat = 1024) -> CGImage {
     }
     // The lighting: "halo+horizon" (chosen 2026-11-05), or another of lighting()'s kinds to compare (ICON_LIGHT=spotlight, streaks, halo,
     // horizon, or several joined by "+"; ICON_LIGHT=none: the earlier plain black squircle)
-    let light = ProcessInfo.processInfo.environment["ICON_LIGHT"] ?? "halo+horizon"
+    let light = ProcessInfo.processInfo.environment["ICON_LIGHT"] ?? "amber"   // 0.4.0: the gold glow (chosen 2026-11-07); "halo+horizon" before
     if !isMark && !isHeader && light != "none" { for (i, k) in light.split(separator: "+").enumerated() { lighting(ctx, String(k), body, s, base: i == 0) } }   // "halo+horizon": both
     if isHeader {   // no background (it showed as a dark box on the bar): a small warm glow behind the screen and the floor beam, as the icon has them,
         // gentler and well inside the fade (the icon's wide halo and side glows showed their edges on the bar)
@@ -266,7 +284,7 @@ func icon(_ style: Int, size S: CGFloat = 1024) -> CGImage {
     ctx.setFillColor(c(0.16, 0.18, 0.22)); ctx.fillEllipse(in: CGRect(x: lid.midX - 3 * s, y: lid.maxY - 11.5 * s, width: 6 * s, height: 6 * s))   // the camera
 
     // the "2": soft white, or glowing green in Neon
-    let noTwo = ProcessInfo.processInfo.environment["NO_TWO"] == "1"
+    let noTwo = ProcessInfo.processInfo.environment["NO_TWO"] != "0"   // 0.4.0: no "2" on the screen (NO_TWO=0 brings it back)
     let mark = ProcessInfo.processInfo.environment["SCREEN"] ?? ""   // cmd | window | dock | desktop: a Mac cue on the screen instead of the "2"
     if !mark.isEmpty { macScreen(ctx, screen, mark, s) } else if noTwo {} else if style == 2 { two(ctx, center: CGPoint(x: screen.midX, y: screen.midY), size: 170 * s, color: c(0.55, 1, 0.70), glow: c(G.r, G.g, G.b, 1)) }
     else { two(ctx, center: CGPoint(x: screen.midX, y: screen.midY), size: (big ? 180 : 160) * s, color: c(0.96, 0.97, 0.98)) }

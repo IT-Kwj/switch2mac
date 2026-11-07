@@ -67,18 +67,15 @@ import NXModel
 
     // MARK: Pure parts
 
-    func testIOSRequirementFollowsThePlatformAndKeepsOldBehaviourWithoutAChoice() {
-        XCTAssertTrue(LauncherStores.needsIOSPlatform(defaults: defaults), "no stored choice: the iOS SDK stays required")
-        defaults.set("mac", forKey: OnboardingDefaults.platform)
-        defaults.set("mac-app", forKey: "buildTarget")
-        XCTAssertFalse(LauncherStores.needsIOSPlatform(defaults: defaults), "Mac only, Mac builds: no iOS SDK")
-        defaults.set("ios", forKey: "buildTarget")
-        XCTAssertTrue(LauncherStores.needsIOSPlatform(defaults: defaults), "an iPhone build still needs it")
-        for value in ["iphone", "both"] {
-            defaults.set(value, forKey: OnboardingDefaults.platform); defaults.set("mac-app", forKey: "buildTarget")
-            XCTAssertTrue(LauncherStores.needsIOSPlatform(defaults: defaults))
+    /// switch2mac builds Mac apps only: the iOS SDK is never required, whatever an older setup or build target stored.
+    func testTheIOSSDKIsNeverRequired() {
+        XCTAssertFalse(LauncherStores.needsIOSPlatform(defaults: defaults), "no stored choice")
+        for (platform, target) in [("mac", "mac-app"), ("mac", "ios"), ("iphone", "mac-app"), ("both", "ios")] {
+            defaults.set(platform, forKey: OnboardingDefaults.platform); defaults.set(target, forKey: "buildTarget")
+            XCTAssertFalse(LauncherStores.needsIOSPlatform(defaults: defaults), "\(platform), \(target)")
         }
     }
+
 
     func testXcodeStateFromTheProbe() {
         func eval(_ p: XcodeProbe, metal: Bool = true, ios: Bool = true, includesIOS: Bool = false) -> OnboardingState.Xcode {

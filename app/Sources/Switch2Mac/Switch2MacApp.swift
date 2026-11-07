@@ -55,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        MemoryTrim.watchPressure()   // pictures let go under memory pressure while in the background (MemoryTrim.swift)
     }
 
     /// Closing the window quits the app, as players expect of a one-window app. While a game builds it stays open in the Dock

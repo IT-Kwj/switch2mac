@@ -73,7 +73,9 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     nonisolated package static let targetKey = "buildTarget"
     nonisolated package static let bcOnCPUKey = "bcOnCPU"
 
-    @Published package var gameDir = ""
+    @Published package var gameDir = "" { didSet { if gameDir != oldValue { s1Extra = []; s1Pick = "" } } }   // another game: its own added files and pick
+    @Published package var s1Extra: [String] = []   // a Switch game: update and DLC files the player added (switch2mac.py --add)
+    @Published package var s1Pick = ""   // a Switch cartridge with several games: the one to build (switch2mac.py --title-id), "" for its first
     @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Switch2Mac.swift)
     @Published package var identifying = false
     /// The build picked for each game this time (the Build card's menu); a game chosen again starts on its recommended build (BuildStore+Switch2Mac.swift).
@@ -162,6 +164,8 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     package var choosePaths: (FilePick) -> [String] = { _ in [] }
     /// The folder panel of "Save to": the folder's path, nil when they cancelled.
     package var chooseFolder: () -> String? = { nil }
+    package var chooseKeysFile: () -> String? = { nil }   // the Build page's Your keys: a prod.keys file (LauncherStores.keysPanel)
+    package var chooseSwitchFiles: () -> [String] = { [] }   // the Build page's Update and DLC: .nsp / .nsz / .xci / .xcz files (LauncherStores.switchFilesPanel)
     /// The save panel of "Save IPA" (title, the name offered): where to write, nil when they cancelled.
     package var chooseSaveLocation: (String, String) -> URL? = { _, _ in nil }
     /// A notice the player must see (the shader chain changed): an alert.
@@ -236,7 +240,7 @@ func hop(_ body: @escaping @MainActor () -> Void) {
 
     /// A build may start: the repository is usable, the base game and the keys are there (a game folder needs no keys), the tools
     /// are all present and none runs.
-    package var canBuild: Bool { repo.isRepo && dumpInfo?.ok == true && deps.allPresent && !running }   // switch2mac: one identified dump folder
+    package var canBuild: Bool { repo.isRepo && dumpInfo?.ok == true && keysReady && deps.allPresent && !running }   // switch2mac: one identified dump, and a Switch 1 game's keys
 
     /// A line for the build card's note, from a store that has no card of its own (the dependency store's failed install).
     package func note(_ text: String) { doneNote = text }

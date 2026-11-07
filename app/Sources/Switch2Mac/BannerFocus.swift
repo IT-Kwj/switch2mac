@@ -22,6 +22,30 @@ enum BannerFocus {
     }
 }
 
+/// The whole banner at its own shape (16:9, 1920 × 1080 from the eShop), never cut or enlarged past its height, on the right of the hero; a blurred, darkened copy
+/// fills the width behind it and the picture fades into it on its left, where the game's name and buttons sit. A hero wider than 16:9 used to fill its width with
+/// the picture, cutting its top and bottom and enlarging it (softer); this keeps every pixel of the art and its sharpness.
+struct FullBanner: View {
+    let image: NSImage
+    let width: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        let size = image.size, aspect = max(size.width, 1) / max(size.height, 1)
+        let fitW = min(width, height * aspect), fitH = fitW / aspect
+        ZStack(alignment: .trailing) {
+            Image(nsImage: image).resizable().interpolation(.medium).scaledToFill()
+                .frame(width: width, height: height).blur(radius: 40).overlay(Color.black.opacity(0.45)).clipped()
+                .allowsHitTesting(false)
+            Image(nsImage: image).resizable().interpolation(.high)
+                .frame(width: fitW, height: fitH)
+                .mask(LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: fitW < width ? 0.28 : 0)],
+                                     startPoint: .leading, endPoint: .trailing))
+        }
+        .frame(width: width, height: height).clipped()
+    }
+}
+
 /// A banner filling `width` × `height`, moved so its title (BannerFocus) sits at the frame's centre as far as the picture allows; centred without one.
 struct FocusedBanner: View {
     let image: NSImage

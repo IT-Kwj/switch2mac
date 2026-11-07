@@ -96,6 +96,31 @@ import XCTest
         XCTAssertFalse(store.canBuild, "a build runs")
     }
 
+    /// A Switch 1 game: identify says it needs keys; the build waits for a prod.keys that looks right, and the keys file's path is never shown in a command.
+    func testASwitch1GameNeedsKeysAndTheirPathIsHidden() throws {
+        let key = BuildStore.keysPathKey, saved = UserDefaults.standard.object(forKey: key)
+        defer { if let saved { UserDefaults.standard.set(saved, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) } }
+        UserDefaults.standard.removeObject(forKey: key)
+        let store = makeStore()
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0100F2C0115B6000", "name": "Game", "dump_form": "switch1", "needs_keys": true}"#)
+        XCTAssertEqual(store.dumpInfo?.dumpForm, "switch1")
+        XCTAssertFalse(store.keysReady); XCTAssertFalse(store.canBuild, "a Switch 1 game with no keys file")
+        let keys = NSTemporaryDirectory() + "s2m-test-\(UUID().uuidString).keys"
+        FileManager.default.createFile(atPath: keys, contents: Data("header_key = 00\n".utf8))
+        defer { try? FileManager.default.removeItem(atPath: keys) }
+        UserDefaults.standard.set(keys, forKey: key)
+        XCTAssertEqual(store.keysPath, keys)
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0100F2C0115B6000", "name": "Game", "dump_form": "switch1", "needs_keys": true, "keys_ok": false, "keys_note": "no master keys"}"#)
+        XCTAssertFalse(store.keysReady, "a keys file switch2mac.py found wrong")
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0100F2C0115B6000", "name": "Game", "dump_form": "switch1", "needs_keys": true, "keys_ok": true}"#)
+        XCTAssertTrue(store.keysReady); XCTAssertTrue(store.canBuild)
+        XCTAssertEqual(store.hidingKeys(["build", "--keys", keys]), ["build", "--keys", BuildStore.keysPlaceholder])
+        store.forgetKeys()
+        XCTAssertEqual(store.keysPath, ""); XCTAssertFalse(store.keysReady)
+        store.dumpInfo = DumpInfo(json: #"{"ok": true, "title_id": "0400C3F00006E000", "name": "Game"}"#)
+        XCTAssertTrue(store.keysReady, "a Switch 2 dump needs no keys")
+    }
+
     /// #416: the export choice is not an install, so the stop for a missing device and team does not apply to it.
     func testTheExportChoiceNeedsNoDeviceAndNoTeam() throws {
         throw XCTSkip("the original launcher's iPhone export: switch2mac builds Mac apps only and startBuild goes straight to switch2mac.py (the iPhone code is kept for later)")
@@ -436,5 +461,19 @@ import XCTest
         XCTAssertNil(store.confirmShellMove())
         XCTAssertFalse(store.running)
         XCTAssertNil(defaults.string(forKey: "shellRoot"))
+    }
+
+    /// A Switch cartridge with two games: identify names both and the files that go to the builder; the store passes the pick and added files on,
+    /// and forgets them when another game is chosen.
+    func testSwitchCartridgeAndAddedFiles() throws {
+        let line = #"{"ok": true, "title_id": "010038E016264000", "dump_form": "switch1", "needs_keys": true, "parts": {"base": "Mega [010038E016264000+0100734016266000].xci", "update": "", "dlc": ["d.nsp"]}, "games_in_files": [{"title_id": "010038E016264000", "name": ""}, {"title_id": "0100734016266000", "name": "Vol 2"}]}"#
+        let info = try XCTUnwrap(DumpInfo(json: line))
+        XCTAssertEqual(info.gamesInFiles.map(\.titleID), ["010038E016264000", "0100734016266000"])
+        XCTAssertEqual(info.parts?.dlc ?? [], ["d.nsp"]); XCTAssertEqual(info.parts?.update ?? "-", "")
+        let store = makeStore()
+        store.gameDir = "/x/Mega.xci"; store.s1Pick = "0100734016266000"; store.s1Extra = ["/y/u.nsp"]
+        XCTAssertEqual(store.switchChoices, ["--title-id", "0100734016266000", "--add", "/y/u.nsp"])
+        store.gameDir = "/x/Other.nsp"
+        XCTAssertEqual(store.switchChoices, [], "another game starts without the last one's pick and files")
     }
 }

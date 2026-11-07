@@ -15,6 +15,17 @@ One SwiftPM package. Each target may only import the ones above it in this table
 
 Everything the app keeps on a Mac is its own: `~/Library/Application Support/switch2mac/` (its repository copy, builds, engines), its preferences (`io.github.azmasm.switch2mac`), and its update channel (this repository's Releases).
 
+## The Library
+
+| Part | Files |
+|---|---|
+| The 3D shelves (Carousel, Flipbook, Stack): SceneKit cases, hover, drag and scroll, drawn only while something moves | `CaseScene.swift`, `CaseCarousel.swift` |
+| Open case (cover, booklet, cartridge; click to play, click off to go back) | `OpenCase.swift` |
+| Covers and the Row; box fronts (GameTDB, LaunchBox) and eShop banners | `CoverArt.swift`, `BoxArt.swift`, `Artwork.swift` |
+| One loader for every picture (a new ask cancels the last; pictures kept until their file changes) | `ArtworkLoader.swift` |
+| Light while a game runs: pictures let go, the load watcher, While you play | `MemoryTrim.swift`, `PlayLoad.swift`, `ReturnAfterPlay.swift` |
+| Interface sounds, made in code | `InterfaceSound.swift` |
+
 ## How it drives switch2mac
 
 - **Its copy of the repository.** At first start the app clones `azmasm/switch2mac` into `~/Library/Application Support/switch2mac/repo` and pulls `main` each time it opens (`RepoStore`). New games, builds and fixes in `games/`, `switch2mac.py` and `tools/` reach players this way, with no new app release.
