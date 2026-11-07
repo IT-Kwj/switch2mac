@@ -2,13 +2,14 @@
 
 本文档记录在本机对 switch2mac 项目做的自定义修改。合并上游最新代码、或引擎被重新拉取后，按这里的说明恢复这些改动。
 
-更新时间：2026-11-07
+更新时间：2026-11-08
 
 ## 修改总览
 
 | 类别 | 仓库内位置 | 内容 | 恢复方式 |
 |---|---|---|---|
 | 中文化 | `tools/engine/patch.py`、`tools/engine/s2m_ui.m` | 设置面板、通用设置、语言名中文 | 已提交 git；`build` 时 `patch.py` 幂等自动应用 |
+| 默认游戏语言 | `games/donkey-kong-bananza/game.json`、`switch2mac.py` | 打包时默认简体中文（`zh-Hans`） | `build` 自动应用；改 `game.json` 的 `language` 即可 |
 | poll 卡顿修复 | `tools/engine/patch.py`（`hle_net_poll()`） | 引擎 `hle_net.c` 的 poll 空等上限 100 ms | `build` 时 `patch.py` 自动应用 |
 | 游戏图标 | dump 里的 `Mario Kart World.png` → `work/<tid>/extract/v0/icon.jpg` | 自定义 App 图标 | 手动生成 `icon.jpg` |
 | 存档迁移 | 旧 `work/run/save/` → nxnative App 存档目录 | 恢复旧进度 | 手动复制 `account.sav` |
@@ -163,3 +164,34 @@ builds/
 - 每个游戏的 shader 缓存、RomFS、管线归档各存一份，磁盘占用会变大，定期清理旧游戏的缓存。
 - 存档仍在 `~/Library/Application Support/nxnative/<title ID>/`，与构建目录无关。
 - 以后新增游戏时，先 `mkdir -p builds/<名字>`，然后用 `--work builds/<名字>` 构建。
+
+## 9. 默认游戏语言（简体中文）
+
+### 内容
+
+《大金刚：狂暴香蕉》的 `games/donkey-kong-bananza/game.json` 里有：
+
+```json
+"language": "zh-Hans"
+```
+
+`switch2mac.py` 的 `engine_build()` 会把该值作为 `--language zh-Hans` 传给 nxnative 的 `build_ipa_from_nsp.py`。构建器会把它写进：
+
+- `Contents/Info.plist` 的 `DMLanguage`（没有 env.txt 或保存的选择覆盖时，启动器用它作为默认语言）
+- `launcher.json` 里“游戏语言”的默认值（`DM_LANG`）
+
+所以以后重新 `build` 出来的 App 默认就是简体中文，不需要再手动改 `Info.plist`。
+
+### 覆盖
+
+- 想改默认语言：修改 `games/donkey-kong-bananza/game.json` 的 `language`（例如 `en-US`、`ja`、`zh-Hant`）。
+- 直接调用 nxnative 的构建器时，可以用 `--language <code>` 覆盖。
+- 在 App 的设置面板里手动改过语言后，会保存为该 App 的偏好（`launcher.DM_LANG`），优先于打包默认值。要回到打包默认值：
+
+```bash
+defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
+```
+
+### 恢复
+
+这些改动在 switch2mac 仓库的 git 里；合并上游后保留 `game.json` 的 `language` 字段和 `switch2mac.py` 里把 `language` 传给 `--language` 的代码即可。

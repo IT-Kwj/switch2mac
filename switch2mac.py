@@ -425,9 +425,11 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
             seed.write_text(subprocess.run(['git', '-C', nx, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
             ship_list(tid, nx / f'dm/games/{tid}/pso_manifest.tsv', seed)
         sw = w / 'app_switches.txt'; sw.write_text(app_switches(g) + '\n')
+        lang = g.get('build', {}).get('language') or g.get('language')   # a game's packed default language (game.json "language"), e.g. Donkey Kong Bananza's zh-Hans
+        lang_args = ['--language', lang] if lang else []
         P.end()
         run([py(), nx / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
-             '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + eng.get('args', []), env=e, cwd=nx, shift=P.k if P.json else None)
+             '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + lang_args + eng.get('args', []), env=e, cwd=nx, shift=P.k if P.json else None)
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
         P.stage('engine', f'pokopia-native {eng["commit"][:12]} with switch2mac\'s overlay and settings')

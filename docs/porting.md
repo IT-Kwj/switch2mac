@@ -39,7 +39,7 @@ Updates: an update dump's RomFS is the full patched tree. Build from the update'
 
 ## 2. A game folder and a profile
 
-1. **`games/<game>/game.json`**: `title_id`, `name`, `version` and `marker`. The marker is a RomFS file that only this game has, used by the app to check its image.
+1. **`games/<game>/game.json`**: `title_id`, `name`, `version` and `marker`. The marker is a RomFS file that only this game has, used by the app to check its image. `language` optionally sets the packed default language (e.g. `zh-Hans`; `engine_build` passes it to nxnative's builder as `--language`).
 2. **switch2mac-engine's `dm/games/<title ID>/game.tsv`**: the profile (a game on switch2mac's engine has its profile there: commit it in that repository, then pin the new commit in `games/<game>/game.json`). Start from a copy of Mario Kart World's (`0400C3F00006E000/`) and change:
    - `title_id`, `program_id`, `name`.
    - `build v0 <version> main=<id> sdk=<id> subsdk0=<id> ...`: one line per version, with the IDs the build prints when it stops.

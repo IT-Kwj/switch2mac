@@ -5,6 +5,7 @@ Title ID `040074A01BF12000`, update v458752. **nxnative reports it plays at 60 f
 Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
 - the game starts at once: no settings window first
+- the game language defaults to Simplified Chinese (`zh-Hans`): `game.json`'s `language` sets it, and nxnative's `--language` overrides it
 - **key 1**: the performance overlay in the top right (compact FPS and resolution → detailed graph, GPU, frame time, CPU, memory → off)
 - **key 2**: the settings nxnative's own launch window offers for this game, in the Mario Kart style; most apply at the next launch
 
