@@ -2,16 +2,17 @@
 
 Title ID `0400A3A01EE4C000`, update v327680 or 2.0.1 (v655360). **pokopia-native reports it plays on its author's M4 Mac** past the first wake-up with no issues found.
 
-## Two builds
+## Three builds
 
-Pokopia can be built two ways. Same game, same save; each has its own shared shader list.
+Pokopia can be built three ways. Same game, same save; each has its own shared shader list.
 
 | Build (`--engine`) | Engine | Takes | Build time |
 |---|---|---|---|
 | `pokopia-native` (default) | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals | update v327680 or 2.0.1 | about an hour: the ~3,800 shaders the game needs |
 | `nxnative` | upstream [nxnative](https://github.com/seedds/nxnative)'s Pokopia profile (commit in `game.json`) | 2.0.1 (v655360) only | hours: all ~131,000 shaders, and over 200 GB of disk while it builds ([#1174](https://github.com/seedds/nxnative/issues/1174)) |
+| `horizon-nx2` | [joaoalvess/horizon-nx2](https://github.com/joaoalvess/horizon-nx2) (MIT), tuned on a fanless 16 GB MacBook Air M4 | 2.0.1 (v655360) only | as nxnative's |
 
-`./switch2mac.py build` takes pokopia-native's; `--engine nxnative` builds the other (the app has a Build menu for it). `./switch2mac.py builds pokemon-pokopia` shows both and how each ran on players' Macs. Neither has been test-built in switch2mac.
+`./switch2mac.py build` takes horizon-nx2's on a MacBook Air or a Mac with 16 GB or less when the dump is 2.0.1, and pokopia-native's otherwise; `--engine nxnative` builds the other (the app has a Build menu for it). `./switch2mac.py builds pokemon-pokopia` shows both and how each ran on players' Macs. Neither has been test-built in switch2mac.
 
 ## pokopia-native's build
 

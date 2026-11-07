@@ -9,16 +9,18 @@ Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in switch2mac
 
 > **16 GB Macs:** Mario Kart World currently needs about 13-16 GB of memory, up to about 20 GB in long free roam, so on a 16 GB Mac it may not run smoothly. Optimizations are under way ([Known issues](#known-issues)).
 
-## Two builds
+## Four builds
 
-Mario Kart World can be built two ways: on switch2mac's own engine, or on upstream [nxnative](https://github.com/seedds/nxnative) with switch2mac's overlay and key-2 settings added. Same game, same save; each has its own shared shader list.
+Mario Kart World can be built four ways. Same game, same save; each has its own shared shader list.
 
-| Build (`--engine`) | Engine | Suits | Why |
-|---|---|---|---|
-| `switch2mac` | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
-| `nxnative` | upstream nxnative (commit in `game.json`) | M3 and newer, and any Mac with less than 24 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
+| Build (`--engine`) | Engine | Game version | Suits | Why |
+|---|---|---|---|---|
+| `switch2mac` | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
+| `nxnative` | upstream nxnative (commit in `game.json`) | 1.0.0 | M3 and newer, and Macs with 17-23 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
+| `mkw-neo` | [MenAtCafe/mkw-neo](https://github.com/MenAtCafe/mkw-neo) (MIT) | 1.0.0 | 16 GB or less, and every MacBook Air | Tuned to fit 8 GB: a race holds about 4 GB (40-58 fps on a MacBook Neo, every course played) |
+| `nxnative-mkw` | [Thijs2004/nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (MIT) | 1.8.0 (update v917504) | any Mac whose dump has the 1.8.0 update | The only build here with a 1.8.0 profile |
 
-`./switch2mac.py build` picks the one for your Mac (`game.json` "choose": less than 24 GB of memory or an M3 and newer get nxnative's, the rest switch2mac's); `./switch2mac.py builds mario-kart-world` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine nxnative` or `--engine switch2mac` builds the other one; the switch2mac app has a Build menu for it. Installing the other build keeps your save; the old build's pipeline record is put aside, since the two engines name shaders differently.
+`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac`. `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the switch2mac app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
 
 ## Build
 
@@ -106,4 +108,4 @@ An update has other build IDs, and from 1.8.0 on also a `subsdk1` module and a n
 2. Add a `build` line for it in `game.tsv` (the IDs are printed when `build` stops) and the modules in its `modules` line, then run `build` again.
 3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in switch2mac-engine's `dm/host`).
 
-Please report what happens (log + screenshots, no game files). Mark such builds as untested.
+Please report what happens (log + screenshots, no game files). Mark such builds as untested. For 1.8.0 there is now a tested build, `nxnative-mkw` (above).

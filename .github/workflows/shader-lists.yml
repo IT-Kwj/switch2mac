@@ -1,0 +1,87 @@
+# Players' shader lists reach everyone's next build without waiting for a maintainer.
+#
+# For every new or edited issue whose title starts with "[Shader list]", and every comment on one (players drag a forgotten file into a comment),
+# tools/shader_list.py reads that issue by its number only (nothing from the issue reaches a shell command): the file attached to the issue or a comment,
+# its game and engine, and every row's shader keys against the build's own shader map. Rows it takes are appended to that build's list and committed to
+# main as github-actions[bot] (one job at a time, so lists never clash); the issue gets a thank-you and is closed. A list it cannot use gets a comment
+# saying why and stays open. The app pulls main when it opens, so the next build of the game carries the rows.
+name: Shader lists
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: shader-lists
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: startsWith(github.event.issue.title, '[Shader list]') && github.event.issue.state == 'open' && !github.event.issue.pull_request && github.event.sender.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Read the list and add its rows
+        id: read
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 tools/shader_list.py collect --issue "$NUMBER" --apply --json > out.txt || true
+          cat out.txt
+          grep '^JSON ' out.txt | sed 's/^JSON //' > result.json || echo '[]' > result.json
+          python3 - <<'PY'
+          import json, os
+          r = (json.load(open('result.json')) or [{}])[0]
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"ok={'true' if r.get('ok') else 'false'}\n")
+              f.write(f"new={r.get('new', 0)}\n")
+          PY
+      - name: Commit the rows, thank and close
+        if: steps.read.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 - <<'PY' > msg.txt
+          import json
+          r = json.load(open('result.json'))[0]
+          print(f"Shader list: {r['label']} gains {r['new']:,} rows (#{r['number']})")
+          print()
+          print(f"From the shader list in issue #{r['number']}: {r['rows']:,} rows read, every shader key checked against the build's shader map, {r['new']:,} new (tools/shader_list.py collect).")
+          PY
+          python3 - <<'PY' > thanks.txt
+          import json
+          r = json.load(open('result.json'))[0]
+          if r['new']:
+              print(f"Thank you! {r['new']:,} new rows were added to {r['game']}'s shared shader list, so everyone's next build of the game prepares them before it plays.")
+          else:
+              print(f"Thank you! {r['game']}'s shared shader list already had every row of this list, so there was nothing new to add this time.")
+          PY
+          if [ "${{ steps.read.outputs.new }}" != "0" ]; then
+            git add games
+            git commit -q -F msg.txt
+            for i in 1 2 3; do
+              git pull -q --rebase origin main && git push -q origin HEAD:main && break
+              sleep 5
+            done
+          fi
+          gh issue close "$NUMBER" --comment "$(cat thanks.txt)"
+      - name: Say what is wrong
+        if: steps.read.outputs.ok != 'true' && (github.event.action == 'opened' || github.event_name == 'issue_comment')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python3 -c 'import json; r=(json.load(open("result.json")) or [{}])[0]; print("Thanks for sending this! " + r.get("problem", "The list could not be read.") + " Adding the file in a comment reads it again.")' > why.txt
+          gh issue comment "$NUMBER" --body-file why.txt

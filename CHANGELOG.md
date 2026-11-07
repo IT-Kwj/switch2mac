@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-11-06 (9): switch2mac app 0.3.4
+
+- **`.nup` files in the app:** the Build page's **Choose folder or .nup…** takes a `.nup` file as well as a dump folder, and the app says so where you choose your dumps (one folder or `.nup` file per game).
+
+## 2026-11-06 (8)
+
+- **`.nup` dumps:** a game packed as one `.nup` file can be built as it is: choose the file, or a folder that holds it. The app reads which game and version it is and recommends a build that opens it (every build on nxnative's builder; Mario Kart World's switch2mac build still needs a dump folder). A copy cut short is caught before anything is built. Choosing the `.nup` file itself in the Build page needs the next app release; a folder holding it works now.
+
+## 2026-11-06 (7): switch2mac app 0.3.3
+
+- **What's New:** the News dates now show the day each change was published, wherever you are (west of UTC they showed the day before).
+- **Shader lists:** after **Send**, only the file to drag in is left in the folder (an emptied file beside it was being sent instead), and every list sent is now checked and added within minutes, with a thank-you on the issue: everyone's next build prepares those shaders. Files attached in a comment count too.
+
+## 2026-11-06 (6)
+
+- New builds from other Mac ports (all MIT, credited in NOTICE.md): **Mario Kart World** gets [mkw-neo](https://github.com/MenAtCafe/mkw-neo) (a race in about 4 GB) and [nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (the first build for update 1.8.0); **Donkey Kong Bananza** and **Pokémon Pokopia** get [horizon-nx2](https://github.com/joaoalvess/horizon-nx2), tuned on a fanless MacBook Air.
+- The recommended build now looks at your dump first, then your Mac: a build is only recommended for game versions it plays (Mario Kart World 1.8.0 gets the 1.8.0 build), then 16 GB or less and MacBook Airs get the lightest build, and other Macs keep the builds they had. Ocarina of Time's kid-with-sword-remake is now also recommended on Macs with 16 GB or less.
+
+## 2026-11-06 (5)
+
+- The Legend of Zelda: Ocarina of Time: on a MacBook Air the app now recommends the kid-with-sword-remake build, which was made and tested on one; other Macs keep nxnative's build.
+
+## 2026-11-06 (4)
+
+- The Legend of Zelda: Ocarina of Time gets a second build: [kid-with-sword-remake](https://github.com/cheemu21/kid-with-sword-remake), cheemu21's nxnative port of the game (Ocarina fixes ahead of upstream, a 30 / 60 fps frame step, MetalFX upscaling). Pick it with **Build with…**; nxnative's build stays the default. Thanks to cheemu21.
+
+## 2026-11-06 (3)
+
+- Shader lists: The Legend of Zelda: Ocarina of Time's build gains 796 rows (#19, #21); Mario Kart World's nxnative build gains 246 rows (#20). A list recorded with an earlier nxnative commit is now taken when every shader it names is in the current build.
+
+## 2026-11-06 (2)
+
+- Shader lists: The Legend of Zelda: Ocarina of Time's build gains 10,067 rows (#18); Mario Kart World's nxnative build gains 2,246 rows (#16, #17).
+
+## 2026-11-06 (1): switch2mac app 0.3.2
+
+- **What's New:** a new game's line now says only when it was added and which engine builds it. The build page already marks untested builds.
+- New game: The Legend of Zelda: Ocarina of Time, built with nxnative.
+
 ## 2026-11-05 (12): switch2mac app 0.3.1
 
 - **A new icon:** the Mac-as-handheld, now lit from behind with a warm glow and standing on a lit floor.

@@ -31,6 +31,8 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Fire Emblem Fortune's Weave | v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays through the first battle map at **60 fps** (120 offered; 30 as shipped). | [games/fire-emblem-fortunes-weave](games/fire-emblem-fortunes-weave) |
 | Mario Tennis Fever | update v327680 (1.1.1) | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: **60 fps on an M4 Pro** in Free Play matches. A player's **M3 Pro (18 GB)** gets 30-45 fps in Adventure exploration, with black outdoor textures (open). | [games/mario-tennis-fever](games/mario-tennis-fever) |
 | Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
+| Kirby Air Riders | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000). | [games/kirby-air-riders](games/kirby-air-riders) |
+| The Legend of Zelda: Ocarina of Time | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/6121fd75312cb4d1af404a01921d437741fea91e/dm/games/0400486024DEC000). | [games/the-legend-of-zelda-ocarina-of-time](games/the-legend-of-zelda-ocarina-of-time) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -50,6 +52,10 @@ The files your dump tool wrote, for example:
 | Fire Emblem Fortune's Weave | `exefs/` and `romfs/` |
 | Mario Tennis Fever | `base/` and `updates/327680/` |
 | Star Fox | `base/` and `updates/131072/` |
+| Kirby Air Riders | `base/` and `updates/458752/` |
+| The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
+
+**A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; switch2mac's own engine (Mario Kart World's `switch2mac` build) needs a dump folder, so the app recommends another build for a `.nup`.
 
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 
@@ -148,7 +154,8 @@ Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 w
 
 You don't need to do anything while you play. The app keeps what it built that the list lacks in `~/Library/Application Support/nxnative/<title ID>/shader-list-contribution.txt`, and each time 100 new rows have built up it asks when you close the game:
 
-- **Send** opens the **Shader list** form on GitHub and shows the file in Finder: drag it into the form and press **Create**. The game never uploads anything by itself.
+- **Send** opens the **Shader list** form on GitHub and shows the one file to send in Finder (`shader-list-<title ID>-<date>.txt`): drag it into the form and press **Create**. The game never uploads anything by itself.
+- Within a minute or two the list is checked and added to the game's shared list, and the issue is closed with a thank-you: everyone's next build of the game prepares those shaders. If something is wrong (no file came through, another game), a comment on the issue says so, and dragging the file into a comment tries again.
 - **Remind me later** asks again after 100 more; **Stop reminding** never asks again.
 
 ### Is sending safe?
@@ -161,7 +168,7 @@ Yes. The file is **a list of shader IDs, not shaders**: like sending library boo
 - The list only takes lines of that exact form: anything else in a file is thrown away.
 - The game never uploads anything by itself: you see the file, you choose to send it, and it appears publicly on this repository under your GitHub account.
 
-Maintainers collect the forms with `./tools/shader_list.py collect` (it checks every file belongs to that game and engine and refuses anything else), then `--apply --close`, and commit; later builds carry the new rows. `./tools/shader_list.py stats` shows each list. This works the way [MacNativeGames](https://github.com/ly05010419/MacNativeGames) shares Tears of the Kingdom's shader list, by ly05010419.
+Each form is read by a GitHub workflow (`.github/workflows/shader-lists.yml`, running `./tools/shader_list.py collect --issue <n> --apply`): it checks the file belongs to that game, and every shader it names to that build's shader map, refuses anything else, and commits the new rows to `main`; later builds carry them. Maintainers can run `collect` by hand too (`--apply --close`). `./tools/shader_list.py stats` shows each list. This works the way [MacNativeGames](https://github.com/ly05010419/MacNativeGames) shares Tears of the Kingdom's shader list, by ly05010419.
 
 Other improvements are welcome too: speed-ups, fixes, testing on other Macs, game updates and new games. Open an issue with the log and screenshots, or a pull request. Give speed-ups an off switch and check that the picture is unchanged. Never attach game files, shader dumps, Metal libraries, saves or built apps.
 

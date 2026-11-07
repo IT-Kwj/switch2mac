@@ -1,4 +1,5 @@
 import AppKit
+import UniformTypeIdentifiers
 import NXCore
 import NXModel
 
@@ -101,7 +102,7 @@ import NXModel
         }
         build.target = BuildTarget.mac   // switch2mac builds Mac apps only (an old saved choice could say iPhone)
         build.chooseFolder = {
-            let d = Self.buildFolderPanel()
+            let d = Self.dumpPanel()
             guard d.runModal() == .OK, let u = d.url else { return nil }
             return u.path
         }
@@ -130,6 +131,15 @@ import NXModel
     static func buildFolderPanel() -> NSOpenPanel {
         let d = NSOpenPanel()
         d.canChooseDirectories = true; d.canChooseFiles = false; d.canCreateDirectories = true
+        return d
+    }
+
+    /// The panel of the Build page's dump: a dump folder, or one .nup file (a NUP container, which switch2mac.py reads and the nxnative-based builds open).
+    static func dumpPanel() -> NSOpenPanel {
+        let d = NSOpenPanel()
+        d.canChooseDirectories = true; d.canChooseFiles = true
+        d.allowedContentTypes = [.folder] + [UTType(filenameExtension: "nup")].compactMap { $0 }
+        d.message = "Choose a dump folder, or a .nup file"
         return d
     }
 

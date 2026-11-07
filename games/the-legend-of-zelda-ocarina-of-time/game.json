@@ -1,0 +1,60 @@
+{
+ "title_id": "0400486024DEC000",
+ "name": "The Legend of Zelda: Ocarina of Time",
+ "version": "update v131072",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "5636e7a7cfe67745f2eacedabc02c298290b44ab"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch.",
+   "versions": [
+    "v131072"
+   ]
+  },
+  {
+   "id": "kid-with-sword",
+   "name": "kid-with-sword-remake",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/cheemu21/kid-with-sword-remake",
+    "commit": "d1d672ac674875ccdc572fdf9b82952a1868f76b"
+   },
+   "shader_list": "shader_list-kid-with-sword.tsv",
+   "watch": [
+    ""
+   ],
+   "switches": [
+    "DM_UPSCALER=metalfx",
+    "DM_FPS_HOLD=off",
+    "DM_ALIAS_SIZE=0x200000000"
+   ],
+   "about": "cheemu21's nxnative port of this game (MIT): Ocarina fixes merged ahead of upstream, fewer render-pass splits, a 30 / 60 fps frame step, MetalFX upscaling. Its author reports 60 fps at 720p on a MacBook Air M5; recommended for MacBook Air.",
+   "versions": [
+    "v131072"
+   ]
+  }
+ ],
+ "choose": [
+  {
+   "model": "MacBook Air",
+   "build": "kid-with-sword",
+   "why": "MacBook Air: cheemu21's port was made and tested on one (60 fps at 720p on an M5 Air)"
+  },
+  {
+   "memory_max": 16,
+   "build": "kid-with-sword",
+   "why": "16 GB or less: cheemu21's port was made on a 16 GB Mac and releases texture memory (about 7.5 GB in Kokiri Forest)"
+  },
+  {
+   "build": "nxnative",
+   "why": "Other Macs: nxnative's own Ocarina of Time build"
+  }
+ ],
+ "disk_gb": 50
+}

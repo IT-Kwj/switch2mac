@@ -43,7 +43,7 @@ def games():   # one entry a game and build (Mario Kart World has two: switch2ma
         g = json.loads(p.read_text())
         bs = g.get('builds') or ([{'id': g['engine']['kind'], 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if g.get('engine') else [])
         for b in bs:
-            out.append(dict(g, engine=b['engine'], dir=p.parent, json=p, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
+            out.append(dict(g, **({'watch': b['watch']} if 'watch' in b else {}), engine=b['engine'], dir=p.parent, json=p, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
                             name=g['name'] + (f' ({b["id"]} build)' if len(bs) > 1 else '')))
     return out
 

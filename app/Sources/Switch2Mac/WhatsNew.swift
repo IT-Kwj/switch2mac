@@ -131,7 +131,7 @@ enum WhatsNew {
     /// (a point's following lines belong to it).
     static func news(changelog text: String, limit: Int = 8) -> [News] {
         var out: [News] = []
-        let day = DateFormatter(); day.locale = Locale(identifier: "en_US_POSIX"); day.dateFormat = "yyyy-MM-dd"; day.timeZone = TimeZone(identifier: "UTC")
+        let day = DateFormatter(); day.locale = Locale(identifier: "en_US_POSIX"); day.dateFormat = "yyyy-MM-dd"; day.timeZone = .current   // a calendar day: read in the Mac's own time zone, so it shows as written (read as UTC it showed the day before west of UTC)
         for line in text.split(separator: "\n", omittingEmptySubsequences: false) {
             if line.hasPrefix("## ") {
                 if out.count == limit { break }

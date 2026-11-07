@@ -9,7 +9,8 @@
   ./switch2mac.py install                     move the finished app to /Applications (replacing the old one)
   ./switch2mac.py run [VAR=value ...]         run the build straight from ./work with a log in work/logs (for porting and debugging: docs/porting.md)
 
-The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs.
+The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs; or the dump is one .nup file (a NUP container: base, updates and DLC),
+which the nxnative-based builds open themselves (tools/nup.py reads its title ID and version first).
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
 Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: switch2mac-engine's dm/games/<title ID>).
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
@@ -43,18 +44,33 @@ def unknown_game(tid):   # a Switch 2 game switch2mac has no folder for: it can 
 def this_mac():   # what the build choice reads: the chip (its generation: 1 for M1, ...) and memory
     def sysctl(k): return subprocess.run(['sysctl', '-n', k], capture_output=True, text=True).stdout.strip()
     chip = sysctl('machdep.cpu.brand_string'); m = re.search(r'\bM(\d+)\b', chip)
-    return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'macos': macos()}
+    try: model = json.loads(subprocess.run(['system_profiler', 'SPHardwareDataType', '-json'], capture_output=True, text=True, timeout=20).stdout)['SPHardwareDataType'][0].get('machine_name', '')
+    except Exception: model = ''   # "MacBook Air", "MacBook Pro", "Mac mini" ...: a "choose" rule's "model"
+    return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'model': model, 'macos': macos()}
 
 
-def recommend(g, mac):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max), else the first build
+def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any),
+    # and this dump's form: switch2mac's own engine reads a dump's folders, so a .nup goes to the engines whose builders open it (nxnative, pokopia-native)
+    if DUMP_NUP and b['engine']['kind'] == 'switch2mac': return False
+    return not ver or not b.get('versions') or ver in b['versions']
+
+
+def recommend(g, mac, ver=None):   # (build id, why): the first game.json "choose" rule this Mac meets (chip_min, chip_max, memory_min, memory_max, model) whose build plays the dump's version, else the first build that does
+    bs = {b['id']: b for b in builds(g)}
+    if not ver and builds(g) and builds(g)[0].get('versions'): ver = builds(g)[0]['versions'][0]   # version unknown (no dump at hand): the game's main one, its first build's
     for r in g.get('choose', []):
+        if r['build'] in bs and not fits(bs[r['build']], ver): continue
+        models = [r['model']] if isinstance(r.get('model'), str) else r.get('model', [])
+        if models and mac.get('model', '').lower() not in [m.lower() for m in models]: continue   # the Mac's model name, as "About This Mac" gives it ("MacBook Air")
         if mac['generation'] < r.get('chip_min', 0) or mac['generation'] > r.get('chip_max', 99): continue
         if mac['memory_gb'] < r.get('memory_min', 0) or mac['memory_gb'] > r.get('memory_max', 1 << 20): continue
         return r['build'], r.get('why', '')
     if not builds(g):   # no tested build: nxnative's guess is the most complete (its survey and memory check)
         u = [b['id'] for b in untested_builds(g)]
         return ('nxnative-untested' if 'nxnative-untested' in u else (u[0] if u else '')), 'No tested build of this game yet: every build here is untested'
-    return builds(g)[0]['id'], ''
+    ok = [b for b in builds(g) if fits(b, ver)]
+    if ver and not ok: return builds(g)[0]['id'], f'No build here knows your dump\'s version ({ver}); this one may not start'
+    return (ok or builds(g))[0]['id'], ''
 
 
 KINDS = {'switch2mac': "switch2mac's engine", 'nxnative': "nxnative's engine", 'pokopia-native': "pokopia-native's engine"}
@@ -88,9 +104,9 @@ def untested_builds(g):
 def profile_src(tid): return PROFILE or NX / f'dm/games/{tid}'
 
 
-def with_build(g, bid=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac)
+def with_build(g, bid=None, ver=None):   # the game as one of its builds: its engine and shader list (bid None: the one game.json "choose" picks for this Mac and the dump's version)
     bs = builds(g) + untested_builds(g)
-    if not bid: bid = recommend(g, this_mac())[0]
+    if not bid: bid = recommend(g, this_mac(), ver)[0]
     b = next((b for b in bs if b['id'] == bid), None)
     if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
     return dict(g, engine=b['engine'], build=b, disk_gb=b.get('disk_gb', g.get('disk_gb')))   # a build may need more disk than the game's usual (Pokopia's full nxnative build)
@@ -309,13 +325,50 @@ def update_dirs(d):   # the newest update's exefs and romfs when it holds both (
     return (found[0] / 'exefs', found[0] / 'romfs') if found else None
 
 
+DUMP_NUP = None   # the .nup the dump path names (read_dump), or None for a dump folder
+
+
+def nup_file(d):   # the NUP container a dump path names: the .nup file itself, or the one .nup in a folder holding no exefs/ or base/; None for a dump folder
+    d = Path(d).expanduser().resolve()
+    sys.path.insert(0, str(ROOT / 'tools')); import nup
+    if d.is_file(): return d if nup.is_nup(d) else None
+    if d.is_dir() and not any((d / x).is_dir() for x in ('exefs', 'base')):
+        found = [p for p in sorted(d.glob('*.nup')) if nup.is_nup(p)]
+        if len(found) > 1: sys.exit(f'more than one .nup in {d}: {", ".join(p.name for p in found)}; keep one game per folder, or choose the .nup file itself')
+        if found: return found[0]
+    return None
+
+
+def nup_scan(p):   # (title ID, newest update version or 0) of a NUP: its table of contents and main.npdm, every file read checked against its SHA-256
+    sys.path.insert(0, str(ROOT / 'tools')); import nup
+    try:
+        with nup.Nup(p) as n:
+            app, _, vers, _ = nup.scan(n)
+            return f'{app:016X}', max(vers) if vers else 0
+    except nup.Error as x: sys.exit(f'{x}. Copy the .nup again, or extract it to a dump folder.')
+
+
+def read_dump(d):   # once per command: whether the dump is a .nup (DUMP_NUP), so the build choice and the checks know
+    global DUMP_NUP
+    DUMP_NUP = nup_file(d) if Path(d).expanduser().exists() else None
+    return DUMP_NUP
+
+
+def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), "v0" with no update, None when it cannot tell
+    if read_dump(d): return f'v{nup_scan(DUMP_NUP)[1]}'
+    d = Path(d).expanduser().resolve(); u = update_dirs(d)
+    if not u: return 'v0'
+    return f'v{u[0].parent.name}' if u[0].parent.name.isdigit() else None
+
+
 def title_id(npdm):
     npdm = npdm.read_bytes()
     aci = struct.unpack_from('<I', npdm, 0x70)[0]   # ACI0 offset in the META header
     return f'{struct.unpack_from("<Q", npdm, aci + 0x10)[0]:016X}'
 
 
-def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/)
+def dump_title(d):   # the title ID from exefs/main.npdm or base/exefs/main.npdm, whatever else the folder holds (updates/, dlc/); a .nup's from its own main.npdm
+    if read_dump(d): return nup_scan(DUMP_NUP)[0]
     d = Path(d).expanduser().resolve()
     for base in (d, d / 'base'):
         if (base / 'exefs/main.npdm').is_file(): return title_id(base / 'exefs/main.npdm')
@@ -349,8 +402,8 @@ def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine
 # Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
-def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested)
-    return f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])
+def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested); a build's own "switches" in game.json follow (a port's recommended settings)
+    return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])] + g.get('build', {}).get('switches', []))
 
 
 def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
@@ -525,10 +578,12 @@ def build(a):
     if bad: sys.exit(f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
     if tid not in GAMES: GAMES[tid] = unknown_game(tid)   # any Switch 2 game can be tried with the untested builds
     if True:
-        GAMES[tid] = with_build(GAMES[tid], a.engine); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
-        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac())[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        ver = dump_version(a.dump); GAMES[tid] = with_build(GAMES[tid], a.engine, ver); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
+        print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
+        if not fits(chosen, ver) and not (DUMP_NUP and chosen['engine']['kind'] == 'switch2mac'): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
         free_space(w, GAMES[tid])
     if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
+    if DUMP_NUP: sys.exit(f'{GAMES[tid]["build"]["name"]} builds from a dump folder (exefs/ and romfs/), not a .nup: choose another build of this game, or extract the .nup to a folder first')
     use_engine(GAMES[tid])
     global PROFILE
     untested = GAMES[tid]['build'].get('untested'); PROFILE = None
@@ -571,6 +626,7 @@ def refresh(a):
 
 
 def damaged_modules(d):   # code modules (NSO) of a dump whose segments reach past the end of the file: a copy cut short, as an FTP copy in text mode leaves them
+    if read_dump(d): return []   # a .nup: its size and table of contents were checked when it was read, and every file is checked against its SHA-256 as the build reads it
     d = Path(d).expanduser().resolve(); bad = []
     for exefs in [d / 'exefs', d / 'base/exefs'] + sorted(d.glob('updates/*/exefs')) + sorted(d.glob('updates/exefs')):
         if not exefs.is_dir(): continue
@@ -590,20 +646,20 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
     try:
         tid = dump_title(a.dump); out['title_id'] = tid
     except SystemExit as x:
-        out['problem'] = 'This isn\'t a game dump: ' + str(x); print(json.dumps(out)); return
+        out['problem'] = ('The .nup could not be read: ' if str(x).endswith('extract it to a dump folder.') else 'This isn\'t a game dump: ') + str(x); print(json.dumps(out)); return
     bad = damaged_modules(a.dump)
     if bad:
         g = GAMES.get(tid); out.update(name=g['name'] if g else '', damaged=bad,
             problem=f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
         print(json.dumps(out, ensure_ascii=False)); return
     g = GAMES.get(tid) or unknown_game(tid)   # a game switch2mac has no folder for: offered with the untested builds only
-    mac = this_mac(); rec, why = recommend(g, mac)
+    mac = this_mac(); ver = dump_version(a.dump); rec, why = recommend(g, mac, ver)
     if not rec: out['problem'] = f'title {tid}: no engine is set up to try it'; print(json.dumps(out)); return
     eng = with_build(g, rec)['engine']
     out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
                disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md' if g.get('dir') else '', untested=not builds(g),
-               mac=mac, recommended=rec, why=why, reports=reports(g),
-               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', '')} for b in builds(g)],
+               mac=mac, recommended=rec, why=why, reports=reports(g), dump_version=ver, dump_form='nup' if DUMP_NUP else 'folder',
+               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', ''), 'fits': fits(b, ver)} for b in builds(g)],
                experimental=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b['about']} for b in untested_builds(g)])
     print(json.dumps(out, ensure_ascii=False))
 
@@ -612,10 +668,12 @@ def builds_cmd(a):   # the builds a game has and which one this Mac gets, for pe
     tid = dump_title(a.dump) if Path(a.dump).expanduser().exists() else a.dump.upper()
     g = GAMES.get(tid) or next((g for g in GAMES.values() if g['dir'].name == a.dump), None) or (unknown_game(tid) if re.fullmatch(r'[0-9A-F]{16}', tid) else None)
     if not g: sys.exit(f'{a.dump}: not a Switch 2 game dump, a title ID or a games/ folder')
-    mac = this_mac(); rec, why = recommend(g, mac); rs = reports(g)
-    print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}')
+    ver = dump_version(a.dump) if Path(a.dump).expanduser().exists() else None
+    mac = this_mac(); rec, why = recommend(g, mac, ver); rs = reports(g)
+    print(f'{g["name"]}: this Mac is an {mac["chip"]} with {mac["memory_gb"]} GB, macOS {mac["macos"]}' + (f'; the dump is {ver}' if ver else ''))
     for b in builds(g):
-        print(f'\n  {"*" if b["id"] == rec else " "} {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})' + (f'  <- this Mac: {why}' if b['id'] == rec and why else ''))
+        print(f'\n  {"*" if b["id"] == rec else " "} {b["id"]}: {b["name"]} ({b["engine"]["kind"]} {b["engine"]["commit"][:12]})' + (f'  <- this Mac: {why}' if b['id'] == rec and why else '')
+              + (f'  [plays {", ".join(b["versions"])} only]' if b.get('versions') and not fits(b, ver) else ''))
         if b.get('about'): print(f'      {b["about"]}')
         for r in rs:
             if r['build'].split()[0] == b['id']:

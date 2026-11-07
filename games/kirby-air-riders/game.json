@@ -1,0 +1,11 @@
+{
+ "title_id": "040077201BE50000",
+ "name": "Kirby Air Riders",
+ "version": "update v458752",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "04df08d429dc70f8665b0bfa4891057ea30d5d89"
+ },
+ "disk_gb": 50
+}
