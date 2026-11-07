@@ -1,6 +1,0 @@
-# BUILD_ID	90ebba182862b9ecdc21fcb87b999012
-0x14ab00	22	d503237f	VammManager::AllocateAddressRegion entry: the size in x2
-0x14ac84	5655	f9000296	VammManager::AllocateAddressRegion: the new region's address in x22, stored through the out pointer
-0x14b460	24	d503237f	VammManager::FreeAddressRegion entry: the address in x1
-0x13c4ec	25	2a1f03e3	StandardAllocator::Initialize(void *, size_t) entry: the size in x2, capped when the address in x1 is null
-0x13c514	25	d503237f	StandardAllocator::Initialize(void *, size_t, bool) entry: the size in x2, capped when the address in x1 is null

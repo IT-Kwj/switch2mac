@@ -15,3 +15,5 @@ __pycache__/
 /app/build/
 /app/release/
 /work
+/builds
+/work

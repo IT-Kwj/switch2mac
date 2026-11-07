@@ -118,3 +118,48 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 - 存档在 `~/Library/Application Support/nxnative/0400C3F00006E000/save/Play/account.sav`，**不在 App 里**，删除或移动 App 都不影响它。
 - 清理磁盘时永远不要动 `~/Library/Application Support/nxnative/` 和 `work/run/`（旧 run 模式存档）。
 - 日志在 `~/Library/Logs/nxnative/0400C3F00006E000.log`，同样不随 App 位置变化。
+
+## 8. 多游戏独立构建目录
+
+### 为什么
+
+默认 `work/` 里，每个游戏的实际产物在 `work/<title ID>/` 下是独立的，但顶层的 `title.txt`、`build.txt`、`app_switches.txt`、`logs/`、`run/` 是共享的，会被最后构建的游戏覆盖。构建多个游戏时用各自的 `--work` 目录，就能完全隔离。
+
+### 当前结构
+
+```
+builds/
+  mkw/                         # Mario Kart World
+    0400C3F00006E000/          # 构建产物（~28 GB）
+    0400C3F00006E000-engine-seed.tsv
+    title.txt                  # 0400C3F00006E000
+    build.txt                  # nxnative
+    app_switches.txt           # S2M_ENGINE=nxnative-1ed28ed0981f
+    run/                       # run 模式数据（存档、pso_user、shdump）
+    logs/
+  dk/                          # Donkey Kong Bananza
+    040074A01BF12000/          # 构建产物（~19 GB）
+    040074A01BF12000-engine-seed.tsv
+    title.txt                  # 040074A01BF12000
+    build.txt                  # nxnative
+    app_switches.txt           # S2M_ENGINE=nxnative-b5948342b58f
+    logs/
+```
+
+### 用法
+
+```bash
+# 马车世界
+./switch2mac.py --work builds/mkw build "<MKW dump>"
+./switch2mac.py --work builds/mkw install
+
+# 大金刚（以后其它游戏同理，建 builds/<名字>/）
+./switch2mac.py --work builds/dk build "<DK dump>"
+./switch2mac.py --work builds/dk install
+```
+
+### 注意
+
+- 每个游戏的 shader 缓存、RomFS、管线归档各存一份，磁盘占用会变大，定期清理旧游戏的缓存。
+- 存档仍在 `~/Library/Application Support/nxnative/<title ID>/`，与构建目录无关。
+- 以后新增游戏时，先 `mkdir -p builds/<名字>`，然后用 `--work builds/<名字>` 构建。
