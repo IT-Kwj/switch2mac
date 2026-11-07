@@ -9,7 +9,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "3ccb7da07a0ae35b90fcaa48d9b8c2cf09bcbaf1"
+    "commit": "b547f1e2b073482d87e978b0fa9dbdfed8809b04"
    },
    "shader_list": "shader_list.tsv",
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch.",
