@@ -94,3 +94,27 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 ### 汉化全面性检查
 
 `launcher.json` 中所有设置项的 label、note 均已中文，唯一保留英文的是 `MetalFX`（Apple 专有名词，和“Metal 4 管线”里的 Metal 一样保留原文）。
+
+## 7. 打包与升级流程
+
+### 打正式包
+
+```bash
+./switch2mac.py install
+```
+
+把 `work/Mario Kart World.app` 移到 `/Applications/Mario Kart World.app`。首次启动 macOS 会扫描 1–3 分钟（无窗口无 Dock 图标），不要重复打开。
+
+### 以后升级前先删旧包（省空间）
+
+重新构建会占用约 50 GB，磁盘不够会直接停止。构建前先删掉下面这些（用 Python `shutil.rmtree`，避开 shell 的 `rm` 限制）：
+
+1. `/Applications/Mario Kart World.app`（旧正式包）
+2. `work/Mario Kart World.app`（旧构建产物，如果还在）
+3. `engines/nxnative-<旧commit>/`（旧引擎源码，可重新拉取）
+
+### 存档绝对不能丢
+
+- 存档在 `~/Library/Application Support/nxnative/0400C3F00006E000/save/Play/account.sav`，**不在 App 里**，删除或移动 App 都不影响它。
+- 清理磁盘时永远不要动 `~/Library/Application Support/nxnative/` 和 `work/run/`（旧 run 模式存档）。
+- 日志在 `~/Library/Logs/nxnative/0400C3F00006E000.log`，同样不随 App 位置变化。
