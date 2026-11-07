@@ -2,7 +2,7 @@
 
 本文档记录在本机对 switch2mac 项目做的自定义修改。合并上游最新代码、或引擎被重新拉取后，按这里的说明恢复这些改动。
 
-更新时间：2026-11-06
+更新时间：2026-11-07
 
 ## 修改总览
 
@@ -80,3 +80,17 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 
 - 游玩时约一半时间 fps 在 30–40：游戏自身帧率控制器在帧时间超过 16.7 ms 时切到 30 fps 档，触发源是 host 的 `submit+present` 偶尔抖动到 20–38 ms。GPU、CPU、内存都不是瓶颈，尚未修。
 - 0fps 卡顿在 poll 修复后需继续观察是否还出现在“选赛道之前”等其它位置。
+
+## 6. 引擎升级记录
+
+### 2026-11-07：nxnative 引擎 `865cc35fad70` → `822f724c92fa`
+
+- 合并上游后，马车世界 nxnative build 的引擎 commit 更新到 `822f724c92fa`（修 shader 表检查，issue #1592）。
+- shader 翻译链从 `223f10d34f97` 变为 `d866f9700d78`，所以 shader 库不能复用，需要重新编译全部约 11,560 个 shader（本次约 16 分钟）。
+- **新依赖**：新引擎需要 `zbic` Python 包（ZBIC 压缩解码），`pip install zbic`。应同步进 `requirements.txt`，否则 `setup` 后仍会缺。
+- 汉化、poll 修复、前端补丁在新引擎上锚点全部匹配，`build` 时 `patch.py` 自动应用，无需改动。
+- **构建前需清理磁盘**：删除旧引擎目录（`engines/nxnative-<旧commit>/`）和旧 App，释放约 2 GB；否则构建会因“需要约 50 GB、磁盘只有 46 GB”而停止。清理时不要把 `work/run/`（存档）和 dump 的 RomFS 删掉。
+
+### 汉化全面性检查
+
+`launcher.json` 中所有设置项的 label、note 均已中文，唯一保留英文的是 `MetalFX`（Apple 专有名词，和“Metal 4 管线”里的 Metal 一样保留原文）。
