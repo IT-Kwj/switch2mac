@@ -10,7 +10,7 @@
    "engine": {
     "kind": "pokopia-native",
     "repo": "https://github.com/xFractals/pokopia-native",
-    "commit": "ee87707e2bdedebfd93883754e070ba1d899d344"
+    "commit": "ef80c4c4d5fc1667ae5055ac0faf147215e9b339"
    },
    "shader_list": "shader_list.tsv",
    "about": "xFractals' Pokopia builder: builds only the ~3,800 shaders the game needs (about an hour), takes update v327680 or 2.0.1. The default.",
