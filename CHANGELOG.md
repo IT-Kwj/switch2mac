@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (9): switch2mac app 0.3.4
+
+- **`.nup` files in the app:** the Build page's **Choose folder or .nup…** takes a `.nup` file as well as a dump folder, and the app says so where you choose your dumps (one folder or `.nup` file per game).
+
 ## 2026-11-06 (8)
 
 - **`.nup` dumps:** a game packed as one `.nup` file can be built as it is: choose the file, or a folder that holds it. The app reads which game and version it is and recommends a build that opens it (every build on nxnative's builder; Mario Kart World's switch2mac build still needs a dump folder). A copy cut short is caught before anything is built. Choosing the `.nup` file itself in the Build page needs the next app release; a folder holding it works now.
