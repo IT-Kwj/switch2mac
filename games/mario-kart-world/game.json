@@ -11,7 +11,7 @@
    "engine": {
     "kind": "switch2mac",
     "repo": "https://github.com/azmasm/switch2mac-engine",
-    "commit": "95eefde56004c1efb3c9319c8cee5ba9215d1359"
+    "commit": "e3653e994e7d6e6dc8949927a4a2114add8e51e9"
    },
    "shader_list": "shader_list.tsv",
    "about": "switch2mac's own engine: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far.",
