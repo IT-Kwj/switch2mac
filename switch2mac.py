@@ -785,9 +785,15 @@ def build(a):
         ver = dump_version(a.dump); GAMES[tid] = with_build(GAMES[tid], a.engine, ver); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
         print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
         if not fits(chosen, ver) and not (DUMP_NUP and chosen['engine']['kind'] == 'switch2mac'): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
-        if DUMP_NUP and not NUP_BASE and chosen.get('nup_needs_base'):   # its builder predates NUPs without a base game (nxnative 777a5f6c): it would stop later, inside the engine's builder
-            sys.exit(f'This .nup holds only the update ({ver}), not the base game, and {chosen["name"]} needs both in one file: pack the base game and its update into one NUP with your dump tool, '
-                     f'or extract them to a folder (base/ and updates/{ver[1:]}/) and choose that folder')
+        if DUMP_NUP and ((not NUP_BASE and chosen.get('nup_needs_base')) or own_engine(GAMES[tid])):   # a builder that cannot read this .nup (one from before NUPs without a base
+            # game, nxnative 777a5f6c, or switch2mac's engine, which reads folders): switch2mac reads it itself into the dump folder layout, as it reads a Switch game's .xci
+            print(f'  {chosen["name"]} reads dump folders' + (' or NUPs with a base game' if not own_engine(GAMES[tid]) else '') + f': unpacking {DUMP_NUP.name} into the build folder (once; every file checked)')
+            sys.path.insert(0, str(ROOT / 'tools')); import nup
+            try:
+                with nup.Nup(DUMP_NUP) as n: folder = nup.unpack(n, w / 'nup-dump')
+            except nup.Error as x: sys.exit(f'{x}. Copy the .nup again, or extract it to a dump folder.')
+            except OSError as x: sys.exit(f'Unpacking {DUMP_NUP.name} failed: {x.strerror or x} (free space? it needs about the size of the .nup)')
+            a.dump = str(folder); read_dump(a.dump)
         free_space(w, GAMES[tid])
     if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
     if DUMP_NUP: sys.exit(f'{GAMES[tid]["build"]["name"]} builds from a dump folder (exefs/ and romfs/), not a .nup: choose another build of this game, or extract the .nup to a folder first')

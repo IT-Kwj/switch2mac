@@ -200,3 +200,34 @@ def scan(n):
             if k.title_id in dlc: raise Error(f'{n.path}: DLC {k.title_id:016X} more than once')
             dlc[k.title_id] = k
     return app, base, vers, dlc
+
+
+def unpack(n, out, say=print):
+    """The NUP as a dump folder, for builders that read only folders (or a NUP with a base game): base/exefs, base/romfs and updates/<version>/exefs, romfs,
+    the layout pack_dump.py reads. An update in a NUP holds its whole RomFS (pack_nup.py), so a NUP of standalone updates becomes base/exefs (the newest update's code,
+    which names the game) and updates/<version>/. Every file is checked against its SHA-256 as it is written. A folder already unpacked from this same NUP (its TOC hash
+    and size, in .from-nup) is kept. DLC is left out. Returns the folder"""
+    out = Path(out); stamp = out / '.from-nup'
+    key = f'{n.path.stat().st_size} {n.toc_sha.hex()}\n'   # the TOC hash covers every name and file hash
+    if stamp.exists() and stamp.read_text() == key: return out
+    if out.exists(): shutil.rmtree(out)
+    def tree(d, dst):
+        dst.mkdir(parents=True, exist_ok=True)
+        for name, isdir, i in n.children(d):
+            p = dst / name.decode()
+            if isdir: tree(i, p)
+            else:
+                with open(p, 'wb') as f: n.copy(i, f)
+    bases = [k for k in n.packages if k.kind == BASE and n.tree_bytes(k.root)]
+    updates = sorted((k for k in n.packages if k.kind == UPDATE), key=lambda k: k.version)
+    for k in bases:
+        if k.exefs != NO_DIR: tree(k.exefs, out / 'base/exefs')
+        if k.romfs != NO_DIR: tree(k.romfs, out / 'base/romfs')
+    for k in updates:
+        say(f'  unpacking update {k.version} from {n.path.name}')
+        if k.exefs != NO_DIR: tree(k.exefs, out / f'updates/{k.version}/exefs')
+        if k.romfs != NO_DIR: tree(k.romfs, out / f'updates/{k.version}/romfs')
+    if not bases and updates and updates[-1].exefs != NO_DIR:   # no base game: the newest update's code stands in for base/exefs (main.npdm names the game)
+        tree(updates[-1].exefs, out / 'base/exefs')
+    stamp.write_text(key)
+    return out
