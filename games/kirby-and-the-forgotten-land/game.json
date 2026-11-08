@@ -1,0 +1,40 @@
+{
+ "title_id": "01004D300C5AE000",
+ "name": "Kirby and the Forgotten Land",
+ "version": "1.0.0",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca",
+    "builder": {
+     "script": "games/kirby/scripts/build_kirby.py",
+     "args": [
+      "--game",
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--work",
+      "{work}",
+      "--out",
+      "{app}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ]
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/kirby"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its kirby port: Community port, early. Base game 1.0.0 (.nsp or .xci); an .nsp carries no system fonts, so add your firmware."
+  }
+ ],
+ "disk_gb": 30
+}

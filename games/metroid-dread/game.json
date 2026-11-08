@@ -1,0 +1,39 @@
+{
+ "title_id": "010093801237C000",
+ "name": "Metroid Dread",
+ "version": "1.0.0",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca",
+    "builder": {
+     "script": "games/dread/build.py",
+     "args": [
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--out",
+      "{app}",
+      "--work",
+      "{work}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ]
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/dread"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its dread port: Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet."
+  }
+ ],
+ "disk_gb": 30
+}

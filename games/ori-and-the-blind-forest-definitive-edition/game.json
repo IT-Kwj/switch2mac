@@ -1,0 +1,39 @@
+{
+ "title_id": "010061D00DB74000",
+ "name": "Ori and the Blind Forest: Definitive Edition",
+ "version": "1.0.1",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca",
+    "builder": {
+     "script": "games/ori/scripts/build_ori.py",
+     "args": [
+      "--game",
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--update?",
+      "{update}",
+      "--out",
+      "{app}",
+      "--firmware?",
+      "{firmware}"
+     ],
+     "cwd": "games/ori"
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/ori"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its ori port: Community port. The card image (.xci) that holds the 1.0.1 update, or a base game with the 1.0.1 update; your firmware for the system fonts."
+  }
+ ],
+ "disk_gb": 30
+}

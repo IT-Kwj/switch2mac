@@ -1,0 +1,47 @@
+{
+ "title_id": "01006A800016E000",
+ "name": "Super Smash Bros. Ultimate",
+ "version": "1.0.0 with update 13.0.2 or 13.0.5",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca",
+    "builder": {
+     "script": "games/ssbu/scripts/build_ssbu.py",
+     "args": [
+      "--game",
+      "{base}",
+      "--update",
+      "{update}",
+      "--keys",
+      "{keys}",
+      "--work",
+      "{work}",
+      "--out",
+      "{app}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ],
+     "cwd": "games/ssbu",
+     "needs": [
+      "update"
+     ],
+     "update_note": "13.0.2 or 13.0.5"
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/ssbu"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its ssbu port: Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code."
+  }
+ ],
+ "disk_gb": 30
+}

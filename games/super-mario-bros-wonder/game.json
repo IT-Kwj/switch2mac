@@ -3,10 +3,61 @@
  "name": "Super Mario Bros. Wonder",
  "version": "1.0.0, 1.0.1 (update v65536) or 1.2.1 (update v327680)",
  "console": "switch",
- "engine": {
-  "kind": "nxnative",
-  "repo": "https://github.com/seedds/nxnative",
-  "commit": "b1c5e4e5301954a7172e3e64366e1c9eb310b503"
- },
- "disk_gb": 15
+ "disk_gb": 15,
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "b1c5e4e5301954a7172e3e64366e1c9eb310b503"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's tested profile with switch2mac's overlay and key-2 settings: 1.0.0, 1.0.1 or 1.2.1. 60 fps on an M1 Max."
+  },
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca",
+    "builder": {
+     "script": "games/wonder/scripts/build_wonder.py",
+     "cwd": "games/wonder",
+     "args": [
+      "--game",
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--update?",
+      "{update}",
+      "--work",
+      "{work}",
+      "--out",
+      "{app}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ],
+     "updates": [
+      "v327680"
+     ]
+    }
+   },
+   "shader_list": "shader_list-macnativegames.tsv",
+   "watch": [
+    "games/wonder"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its community Wonder port (early): 1.0.0, or 1.2.1 with its update (not 1.0.1); an .nsp needs your firmware for the system fonts. Its own runtime: no switch2mac overlay."
+  }
+ ],
+ "choose": [
+  {
+   "build": "nxnative",
+   "why": "nxnative's profile is tested and plays at 60 fps; MacNativeGames' Wonder port is early."
+  }
+ ]
 }

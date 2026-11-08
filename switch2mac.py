@@ -586,12 +586,35 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         base, upd, dlc = s1_parts(DUMP_S1, tid)
         fonts = (['--firmware', Path(a.firmware).expanduser().resolve()] if getattr(a, 'firmware', None) else
                  ['--shared-fonts', Path(a.shared_fonts).expanduser().resolve()] if getattr(a, 'shared_fonts', None) else [])
-        if not fonts and (base.suffix.lower() in ('.nsp', '.nsz') or tid == '01007EF00011E000'):
+        if not fonts and not eng.get('builder') and (base.suffix.lower() in ('.nsp', '.nsz') or tid == '01007EF00011E000'):
             print('  NOTE: from an .nsp, and always for Breath of the Wild, MacNativeGames needs the Switch\'s system fonts: --firmware <your firmware dump> or --shared-fonts <a TotK build\'s fonts>')
         print(f'  base {base.name}' + (f', update {upd.name}' if upd else '') + (f', {len(dlc)} DLC' if dlc else ''))
         P.plan(1); P.stage('build', 'MacNativeGames\' builder: the game files, its runtime, shaders and the app')
-        run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
-            + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d)
+        b = eng.get('builder')
+        if b:   # a community port with its own builder script (games/<port>/...): game.json names it and its arguments, as that port's README gives them
+            m = re.search(r'v(\d{5,})', upd.name) if upd and b.get('updates') else None
+            if m and f'v{m[1]}' not in b['updates']:   # an update the port cannot run (Wonder's port: 1.2.1 only): built without it
+                print(f'  NOTE: this port takes only update {", ".join(b["updates"])}; {upd.name} is left out (the base game is built)'); upd = None
+            vals = {'base': base, 'update': upd, 'keys': Path(a.keys).expanduser().resolve(), 'app': app, 'work': w / tid,
+                    'firmware': Path(a.firmware).expanduser().resolve() if getattr(a, 'firmware', None) else None,
+                    'shared_fonts': Path(a.shared_fonts).expanduser().resolve() if getattr(a, 'shared_fonts', None) else None}
+            for need in b.get('needs', []):
+                if not vals.get(need) and not (need == 'firmware' and vals['shared_fonts']): sys.exit(f'{g["name"]}: MacNativeGames\' port needs ' + {'update': 'the game\'s update file (' + b.get('update_note', 'see its README') + ') next to the base game',
+                                                                                              'firmware': 'the Switch\'s system fonts: --firmware <your unpacked firmware dump> or --shared-fonts <a TotK build\'s fonts>'}.get(need, need))
+            cmd, args = [], list(b['args'])
+            while args:   # "--flag?" "{value}": the pair only when the value is there; "{value}" alone: required
+                x = args.pop(0)
+                if x.endswith('?'):
+                    v = vals.get(args.pop(0)[1:-1])
+                    if v: cmd += [x[:-1], v]
+                elif x.startswith('{') and x.endswith('}'): cmd.append(vals[x[1:-1]])
+                else: cmd.append(x)
+            if 'dlc' in b and dlc: cmd += [z for f in dlc for z in (b['dlc'], f)]
+            print(f'  MacNativeGames port: {b["script"]}')
+            run([py314, d / b['script']] + cmd + eng.get('args', []), env=e, cwd=d / b.get('cwd', ''))
+        else:
+            run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
+                + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d)
     elif DUMP_S1: sys.exit(f'{g["name"]}: {KINDS[eng["kind"]]} builds Switch 2 games only')
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
