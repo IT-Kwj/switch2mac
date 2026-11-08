@@ -1,0 +1,24 @@
+{
+ "title_id": "01009320084A4000",
+ "name": "SteamWorld Dig",
+ "version": "1.12.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v65536"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "594eeddeb1feacdff37ed5300adeae757c496f3a"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.12.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

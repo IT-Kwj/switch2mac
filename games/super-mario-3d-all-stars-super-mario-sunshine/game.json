@@ -1,0 +1,24 @@
+{
+ "title_id": "010049900F546002",
+ "name": "Super Mario 3D All-Stars: Super Mario Sunshine",
+ "version": "1.1.4",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "0b8e0dc1dd0de162d901c8b69a507427da75c6fe"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.4) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

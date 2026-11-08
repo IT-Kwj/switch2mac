@@ -41,7 +41,27 @@
     "games/ssbu"
    ],
    "about": "ly05010419's MacNativeGames (MIT), its ssbu port: Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v2031616"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "c8aff38767ff854f9e0cbbac05626634f4933d1d"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "about": "nxnative's profile (13.0.5) with switch2mac's overlay and key-2 settings."
   }
  ],
- "disk_gb": 30
+ "disk_gb": 30,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is made for this game."
+  }
+ ]
 }

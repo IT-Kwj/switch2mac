@@ -1,0 +1,24 @@
+{
+ "title_id": "01004AB00A260000",
+ "name": "DARK SOULS: REMASTERED",
+ "version": "1.0.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v196608"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "aea257b990db4443f861baf357b4020eb31ba74a"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

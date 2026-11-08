@@ -37,7 +37,27 @@
     "games/ot0"
    ],
    "about": "ly05010419's MacNativeGames (MIT), its ot0 port: Community port, work in progress. Base game card image (.xci; a trimmed image works) and update 1.0.3, 1.0.4 or 1.0.5 (required). Up to 120 fps (the Switch version holds 30)."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v327680"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "9c2fb0c9671d40c578a7e1b1c89df66f084d7b4b"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "about": "nxnative's profile (1.0.5) with switch2mac's overlay and key-2 settings."
   }
  ],
- "disk_gb": 30
+ "disk_gb": 30,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is made for this game."
+  }
+ ]
 }

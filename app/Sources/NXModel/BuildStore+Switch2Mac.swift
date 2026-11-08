@@ -223,3 +223,36 @@ extension BuildStore {
         } catch { fail(String(format: t("msg.launchFailed"), error.localizedDescription)) }
     }
 }
+
+// MARK: Storage (Settings → Storage)
+
+/// One thing building left behind (`switch2mac.py storage --json`): a game's build folder or an engine copy no build uses.
+package struct StorageItem: Identifiable, Equatable {
+    package var id: String { path }
+    package let kind: String   // "build" or "engine"
+    package let name: String
+    package let path: String
+    package let bytes: Int64
+}
+
+extension BuildStore {
+    /// What building left behind, or (clean) removes it: `switch2mac.py storage --json [--clean]`, in the background. The answer comes on the main
+    /// thread: the items (what was there before a clean) and the bytes freed, or nil when the script could not run. Refused while a build runs.
+    package func storage(clean: Bool, done: @escaping ([StorageItem]?, Int64) -> Void) {
+        guard !(clean && running) else { done(nil, 0); return }
+        let launch = ProcessLaunch(executable: buildPython, arguments: [switch2macScript, "storage", "--json"] + (clean ? ["--clean"] : []),
+                                   environment: buildEnvironment, directory: repo.path)
+        let runner = runner
+        DispatchQueue.global(qos: .utility).async {
+            let r = runner.capture(launch)
+            let line = r.out.split(separator: "\n").last.map(String.init) ?? ""
+            let o = (try? JSONSerialization.jsonObject(with: Data(line.utf8))) as? [String: Any]
+            let items = (o?["items"] as? [[String: Any]])?.map { i in
+                StorageItem(kind: i["kind"] as? String ?? "", name: i["name"] as? String ?? "", path: i["path"] as? String ?? "",
+                            bytes: (i["bytes"] as? NSNumber)?.int64Value ?? 0)
+            }
+            let freed = (o?["freed"] as? NSNumber)?.int64Value ?? 0
+            DispatchQueue.main.async { done(items, freed) }
+        }
+    }
+}

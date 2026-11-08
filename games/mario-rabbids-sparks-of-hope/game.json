@@ -1,0 +1,24 @@
+{
+ "title_id": "0100317013770000",
+ "name": "Mario + Rabbids® Sparks of Hope",
+ "version": "1.6.2225577",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "eae1d0a0290c5cff5f99ec5d177495baede8f031"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.6.2225577) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

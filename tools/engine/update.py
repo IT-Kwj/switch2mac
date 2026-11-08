@@ -19,7 +19,7 @@
 A game's build is: for switch2mac-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
 of that repository. The newest such commit on the default branch is the one taken. Uses gh (signed in) or GitHub's public API.
 """
-import json, os, re, shutil, subprocess, sys, urllib.request
+import time, json, os, re, shutil, subprocess, sys, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -135,7 +135,9 @@ def bump(g, sha):   # the repository's files name the new commit
 NX_REPO = 'https://github.com/seedds/nxnative'
 
 
-def slug(name): return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+def slug(name):   # a folder name: letters and digits, accents dropped ("Pokémon" → pokemon), words joined by -
+    import unicodedata
+    return re.sub(r'[^a-z0-9]+', '-', unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().lower()).strip('-')
 
 
 def new_games():   # [(title ID, name, version, newest commit of its profile)]: nxnative's Switch 2 profiles switch2mac has no folder for
@@ -143,13 +145,13 @@ def new_games():   # [(title ID, name, version, newest commit of its profile)]: 
     out = []
     for item in api('repos/seedds/nxnative/contents/dm/games?ref=main'):
         tid = item['name']
-        if item['type'] != 'dir' or not re.fullmatch(r'04[0-9A-F]{14}', tid) or tid in have: continue
+        if item['type'] != 'dir' or not re.fullmatch(r'0[14][0-9A-F]{14}', tid) or tid in have: continue   # Switch 2 (04...) and Switch (01...) games
         import base64
         tsv = base64.b64decode(api(f'repos/seedds/nxnative/contents/dm/games/{tid}/game.tsv?ref=main')['content']).decode('utf-8', 'replace')
         name = next((l.split('\t', 1)[1].strip() for l in tsv.splitlines() if l.startswith('name\t')), tid)
         build = next((l.split('\t') for l in tsv.splitlines() if l.startswith('build\t')), ['build', 'v0'])
         c = api(f'repos/seedds/nxnative/commits?per_page=1&path=dm/games/{tid}')[0]
-        out.append((tid, name, build[1], c['sha'], c['commit']['message'].split('\n')[0]))
+        out.append((tid, name, build[1] if tid.startswith('04') else versions_of(tsv), c['sha'], c['commit']['message'].split('\n')[0]))
     return out
 
 
@@ -204,6 +206,52 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
     return d
 
 
+def versions_of(tsv):   # a Switch profile's versions: [(version id, display version)] from its "build" lines ("build  v262144  1.2.2  main=..."), in order
+    return [(l.split('\t')[1], l.split('\t')[2] if len(l.split('\t')) > 2 else '') for l in tsv.splitlines() if l.startswith('build\t')]
+
+
+def add_switch1_game(tid, name, versions, sha):
+    """A Switch game nxnative has a profile for: game.json (checked once a day: Switch games are many and their profiles move rarely), a page pointing at nxnative's
+    notes (nothing copied from them), an empty shared shader list and reports table. Built from the player's own .nsp / .xci with their own prod.keys"""
+    d = ROOT / 'games' / slug(name)
+    if d.exists(): d = ROOT / 'games' / f'{slug(name)}-{tid.lower()}'
+    d.mkdir(parents=True)
+    shown = ', '.join(v or vid for vid, v in versions) or 'see its profile'
+    (d / 'game.json').write_text(json.dumps({'title_id': tid, 'name': name, 'version': shown, 'console': 'switch', 'check': 'daily',
+        'builds': [{'id': 'nxnative', 'name': "nxnative's engine", 'versions': [vid for vid, _ in versions], 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
+                    'shader_list': 'shader_list.tsv', 'about': f"nxnative's profile ({shown}) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."}],
+        'disk_gb': 30}, indent=1, ensure_ascii=False) + '\n')
+    (d / 'shader_list.tsv').write_text(f'# switch2mac shared shader list\tgame={tid}\tengine=nxnative-{sha[:12]}\n# {name}, built with nxnative at {sha[:12]}. Added to nxnative\'s own seed list '
+                                       '(its profile\'s pso_manifest.tsv) at build time.\n# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / '
+                                       'R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.\n')
+    (d / 'reports.tsv').write_text(f"# How {name} ran on players' Macs, by build. Only reports that name the Mac are kept.\n"
+                                   '# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)\n')
+    notes = f'{NX_REPO}/tree/{sha}/dm/games/{tid}'
+    (d / 'README.md').write_text(f"""# {name}
+
+Title ID `{tid}`. A **Switch** game: built from your own copy's `.xci` / `.nsp` files with your own `prod.keys` (see [LEGAL.md](../../LEGAL.md)). Versions: {shown}.
+
+Added automatically from [nxnative]({NX_REPO})'s profile: see [its notes]({notes}) for how far it plays and on which Mac. Built with nxnative's builder at the commit `game.json` names, with switch2mac's front end: the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
+
+## Shared shader list
+
+[`shader_list.tsv`](shader_list.tsv): shaders and pipelines players have met. When you close the game, the app offers to send what it built.
+
+## How it runs on players' Macs
+
+[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form.
+
+## Build
+
+In the switch2mac app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
+
+```bash
+./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+```
+""")
+    return d
+
+
 def main():
     apply_, compile_host, ci, check = '--apply' in sys.argv, '--compile' in sys.argv, '--ci' in sys.argv, '--check' in sys.argv
     if apply_ and not ci and git('-C', str(ROOT), 'branch', '--show-current') != 'dev': sys.exit('--apply works on the dev branch only (git switch dev)')
@@ -211,8 +259,10 @@ def main():
     if check: apply_ = False
     sign = '' if ci else '\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n'   # a commit made on GitHub is the workflow's own
     changed = 0
+    hour = time.gmtime().tm_hour
     for g in games():
         e = g['engine']
+        if g.get('check') == 'daily' and os.environ.get('GITHUB_ACTIONS') and int(g['title_id'][2:12], 16) % 24 != hour: continue   # checked in its own hour of the day on GitHub (the rate limit), every run here
         try: sha, date, subj = newest(g)
         except Exception as x: say(f'{g["name"]}: could not check {e["repo"]} ({x})'); continue
         if sha == e['commit']: say(f'{g["name"]}: up to date ({e["kind"]} {sha[:12]})'); continue
@@ -239,7 +289,7 @@ def main():
             g = {'name': name, 'title_id': tid, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha}}
             try: prepare(g, sha, compile_host)
             except RuntimeError as x: say(f'  NOT added: {x}'); continue
-            d = add_game(tid, name, version, sha)
+            d = add_switch1_game(tid, name, version, sha) if tid.startswith('01') else add_game(tid, name, version, sha)
             git('-C', str(ROOT), 'add', '-A', str(d), 'README.md')
             subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); switch2mac builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
                            env=dict(os.environ, TZ='UTC'), check=True)

@@ -23,7 +23,12 @@ final class OpenCaseControl {
     func close(_ done: @escaping () -> Void) {
         guard !closing else { return }
         closing = true
-        if let scene { scene.close(done) } else { done() }
+        // The animation ends in an SCNAction run block, which never comes if SceneKit stops drawing (window hidden, GPU busy with a game):
+        // then the view stayed "closing" and ignored every click, Esc and Back. A timer finishes the close in that case.
+        var finished = false
+        let finish = { if !finished { finished = true; done() } }
+        if let scene { scene.close(finish) } else { finish() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { finish() }
     }
 }
 

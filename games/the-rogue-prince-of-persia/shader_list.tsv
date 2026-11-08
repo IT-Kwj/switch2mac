@@ -1,0 +1,3 @@
+# switch2mac shared shader list	game=01008D9022462000	engine=nxnative-62f6a52c4fa9
+# The Rogue Prince of Persia, built with nxnative at 62f6a52c4fa9. Added to nxnative's own seed list (its profile's pso_manifest.tsv) at build time.
+# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.

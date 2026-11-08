@@ -1,0 +1,24 @@
+{
+ "title_id": "0100B04011742000",
+ "name": "Monster Hunter Rise",
+ "version": "16.0.2",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v2228224"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "5a07ff2ce1ee63082f93f91a5fb1df0dd86b21d0"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (16.0.2) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

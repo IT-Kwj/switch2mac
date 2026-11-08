@@ -1,0 +1,24 @@
+{
+ "title_id": "0100EC9010258000",
+ "name": "Streets of Rage 4",
+ "version": "1.0.9",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v458752"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "cd62e5ed0c554a07fd05a15c65e765fff6c6dbf1"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.9) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

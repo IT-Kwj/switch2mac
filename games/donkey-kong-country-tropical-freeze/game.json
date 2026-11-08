@@ -1,0 +1,24 @@
+{
+ "title_id": "0100C1F0051B6000",
+ "name": "Donkey Kong Country: Tropical Freeze",
+ "version": "1.0.2",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v131072"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "4db4c69f0b9da126e61b236a6f1ed4ac25144404"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.2) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

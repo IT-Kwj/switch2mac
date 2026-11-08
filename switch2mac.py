@@ -618,6 +618,66 @@ def engine_dir(g):   # the game's engine at its pinned commit (game.json "engine
     return d
 
 
+def unused_engines():   # engine copies no game's build pins any more (each 0.5-0.7 GB; a new one comes with most updates) and downloads cut short. A copy whose checkout is
+    # not the commit its name says (one moved by hand, a maintainer's test engine) is left alone; the next build of a game fetches its pin again
+    pins = set()
+    for p in (ROOT / 'games').glob('*/game.json'):
+        try: g = json.loads(p.read_text())
+        except ValueError: continue
+        for e in [g.get('engine')] + [b.get('engine') for b in g.get('builds', [])] + list((g.get('wip') or {}).values()):
+            if isinstance(e, dict) and e.get('kind') and e.get('commit'): pins.add(f'{e["kind"]}-{e["commit"][:12]}')
+    out = []
+    for d in sorted(ENGINES.glob('*-*')) if ENGINES.is_dir() else []:
+        if d.name.endswith('.part'):
+            if time.time() - d.stat().st_mtime > 86400: out.append(d)   # a download stopped more than a day ago (a running one is fresh)
+            continue
+        if d.name in pins or not (d / '.git').is_dir(): continue
+        head = subprocess.run(['git', '-C', d, 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+        if head and d.name.endswith(head[:12]): out.append(d)
+    return out
+
+
+def disk_bytes(path):   # bytes the folder takes on disk (allocated blocks; APFS clones shared with an installed app count in both, so freeing can give less)
+    total = 0
+    for root, dirs, files in os.walk(path):
+        for f in files + dirs:
+            try: total += os.lstat(os.path.join(root, f)).st_blocks * 512
+            except OSError: pass
+    return total
+
+
+def prune_engines():   # after a build
+    freed = 0
+    for d in unused_engines(): freed += disk_bytes(d); shutil.rmtree(d, ignore_errors=True)
+    if freed: print(f'  removed engine copies no build uses any more: {freed / 1e9:.1f} GB freed')
+
+
+BUILDS = Path.home() / 'Library/Application Support/switch2mac/builds'   # where the app builds each game (BuildStore+Switch2Mac.swift: builds/<title ID>)
+
+
+def storage(a):   # what building leaves behind, and --clean removes it: each game's build folder (a built app is whole without it: a rebuild only takes longer)
+    # and engine copies no build uses. Never: the games, their saves and settings, the shader caches the games keep themselves, the dumps and keys
+    items = []
+    for d in sorted(Path(x).expanduser() for x in (a.builds or [str(BUILDS)])):
+        for w in sorted(d.iterdir()) if d.is_dir() else []:
+            if not w.is_dir(): continue
+            tid = w.name.upper(); name = GAMES[tid]['name'] if tid in GAMES else (w / 'title.txt').read_text().strip() if (w / 'title.txt').exists() else w.name
+            items.append({'kind': 'build', 'id': tid, 'name': name, 'path': str(w), 'bytes': disk_bytes(w)})
+    for d in unused_engines():
+        items.append({'kind': 'engine', 'id': d.name, 'name': d.name, 'path': str(d), 'bytes': disk_bytes(d)})
+    if a.clean:
+        freed = 0
+        for i in items:
+            shutil.rmtree(i['path'], ignore_errors=True)
+            if not Path(i['path']).exists(): freed += i['bytes']; i['removed'] = True
+        if a.json: print(json.dumps({'items': items, 'freed': freed}))
+        else: print(f'removed {sum(1 for i in items if i.get("removed"))} of {len(items)}: {freed / 1e9:.1f} GB freed')
+        return
+    if a.json: print(json.dumps({'items': items, 'total': sum(i['bytes'] for i in items)})); return
+    for i in items: print(f'{i["bytes"] / 1e9:7.1f} GB  {"build files" if i["kind"] == "build" else "unused engine"}: {i["name"]}  ({i["path"]})')
+    print(f'{sum(i["bytes"] for i in items) / 1e9:7.1f} GB in all; ./switch2mac.py storage --clean removes it')
+
+
 # Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
@@ -1088,6 +1148,7 @@ def main():
     rp = sub.add_parser('refresh'); rp.add_argument('--force', action='store_true', help='rebuild even with no new shaders')
     for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the switch2mac app')
     ip = sub.add_parser('install'); ip.add_argument('--to', default='/Applications', help='the folder the app goes to (default /Applications)')
+    stp = sub.add_parser('storage'); stp.add_argument('--clean', action='store_true'); stp.add_argument('--json', action='store_true'); stp.add_argument('--builds', action='append', help='a folder of build folders (default: the app\'s)')
     dp = sub.add_parser('identify'); dp.add_argument('dump')
     bp.add_argument('--firmware', help='MacNativeGames builds from an .nsp (and Breath of the Wild): your unpacked firmware dump, for the system fonts')
     bp.add_argument('--shared-fonts', help='MacNativeGames: the six shared fonts an earlier Tears of the Kingdom build extracted, instead of --firmware')
@@ -1099,10 +1160,11 @@ def main():
     a = ap.parse_args()
     global S1_PICK, S1_EXTRA
     S1_PICK = getattr(a, 'title_id', None); S1_EXTRA = [Path(x).expanduser().resolve() for x in getattr(a, 'add', None) or []]
-    if a.cmd not in ('setup', 'identify', 'builds') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
+    if a.cmd not in ('setup', 'identify', 'builds', 'storage') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
         os.execv(py(), [str(py()), __file__] + sys.argv[1:])
     try:
-        {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd}[a.cmd](a)
+        {'setup': setup, 'build': build, 'refresh': refresh, 'install': install, 'run': run_game, 'identify': identify, 'builds': builds_cmd, 'storage': storage}[a.cmd](a)
+        if a.cmd == 'build': prune_engines()
     except (KeyboardInterrupt, SystemExit): raise
     except Exception as x:   # the details go to the log, the last line says what to do
         import traceback; traceback.print_exc()

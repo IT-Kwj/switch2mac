@@ -1,0 +1,24 @@
+{
+ "title_id": "0100429011144000",
+ "name": "Subnautica",
+ "version": "1.23.83358",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v458752"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "7ef2aaf54ad63747623ae044f2963e310a031f11"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.23.83358) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

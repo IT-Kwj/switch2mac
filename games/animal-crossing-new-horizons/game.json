@@ -1,0 +1,24 @@
+{
+ "title_id": "01006F8002326000",
+ "name": "Animal Crossing: New Horizons",
+ "version": "3.0.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v2228224"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "8f8b9d5a36b4648d5d2c6b028775b6b5dae90724"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (3.0.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

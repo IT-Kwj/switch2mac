@@ -1,0 +1,24 @@
+{
+ "title_id": "01008BC024FDE000",
+ "name": "STEINS;GATE RE:BOOT",
+ "version": "1.0.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v131072"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "ed0360b2da0373b2c6e3998348147eeea4bc3f29"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

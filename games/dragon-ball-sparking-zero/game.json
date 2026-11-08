@@ -1,0 +1,24 @@
+{
+ "title_id": "010035F022078000",
+ "name": "DRAGON BALL: Sparking! ZERO",
+ "version": "2.0.76",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v327680"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "f5f6d4b547d3a796b99cb54f3c0e61751a77db32"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (2.0.76) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}
