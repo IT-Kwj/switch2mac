@@ -236,10 +236,11 @@ def has_packages():   # the build's Python packages are importable here (the swi
     return sys.version_info >= (3, 12) and all(importlib.util.find_spec(m) for m in ('capstone', 'lz4', 'fontTools', 'zstandard'))
 
 
-def py():
+def py():   # the Python the build's tools run under: .venv (Terminal setup), else this one when it has the packages (the switch2mac app's own Python, which never makes a .venv)
     p = VENV / 'bin/python'
-    if not p.exists(): sys.exit('run ./switch2mac.py setup first')
-    return p
+    if p.exists(): return p
+    if has_packages(): return Path(sys.executable)
+    sys.exit('run ./switch2mac.py setup first')
 
 
 def env():
