@@ -36,7 +36,7 @@ package struct DumpInfo: Equatable {
     /// A Switch game: the files that go to the builder (its base game, update and DLC, by name), and the games a cartridge holds when it holds several.
     package var parts: S1Parts?
     package var gamesInFiles: [S1Game]
-    package struct S1Parts: Equatable { package var base: String; package var update: String; package var dlc: [String] }
+    package struct S1Parts: Equatable { package var base: String; package var update: String; package var dlc: [String]; package var note: String = "" }   // note: more inside a file than it names (a card image's untitled package, a NUP's standalone update)
     package struct S1Game: Equatable { package var titleID: String; package var name: String }
 
     package struct BuildOption: Equatable { package var id, name, engine, commit, about: String }
@@ -57,7 +57,7 @@ package struct DumpInfo: Equatable {
         recommended = o["recommended"] as? String ?? ""; why = o["why"] as? String ?? ""
         dumpForm = o["dump_form"] as? String ?? "folder"; needsKeys = o["needs_keys"] as? Bool ?? false
         keysOK = o["keys_ok"] as? Bool; keysNote = o["keys_note"] as? String ?? ""
-        parts = (o["parts"] as? [String: Any]).map { S1Parts(base: $0["base"] as? String ?? "", update: $0["update"] as? String ?? "", dlc: $0["dlc"] as? [String] ?? []) }
+        parts = (o["parts"] as? [String: Any]).map { S1Parts(base: $0["base"] as? String ?? "", update: $0["update"] as? String ?? "", dlc: $0["dlc"] as? [String] ?? [], note: $0["note"] as? String ?? "") }
         gamesInFiles = (o["games_in_files"] as? [[String: Any]] ?? []).map { S1Game(titleID: $0["title_id"] as? String ?? "", name: $0["name"] as? String ?? "") }
         reports = (o["reports"] as? [[String: String]] ?? []).map { r in
             MacReport(mac: r["mac"] ?? "", chip: r["chip"] ?? "", memoryGB: r["memory_gb"] ?? "", macOS: r["macos"] ?? "", build: r["build"] ?? "", fps: r["fps"] ?? "",

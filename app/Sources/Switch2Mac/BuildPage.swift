@@ -23,7 +23,7 @@ struct BuildPage: View {
         SetupHintCard(repo: repo, dependencies: dependencies, onOpenSettings: onOpenSettings)
         YourMacCard()
         DumpCard(build: build)
-        if let info = build.dumpInfo, info.ok, info.dumpForm == "switch1" { SwitchFilesCard(build: build, info: info) }
+        if let info = build.dumpInfo, info.ok, info.dumpForm == "switch1" || info.parts != nil { SwitchFilesCard(build: build, info: info) }
         if build.dumpInfo?.needsKeys == true { KeysCard(build: build) }
         if let info = build.dumpInfo, info.ok, info.allBuilds.count > 1 { GameBuildCard(build: build, info: info) }
         LogCard(log: build.log, devices: devices, isOpen: $logOpen,
@@ -86,7 +86,10 @@ struct SwitchFilesCard: View {
     let info: DumpInfo
 
     var body: some View {
-        CardGroup("Update and DLC", footnote: "Found beside the game by its title ID, or added here from your own Switch. They are built into the game; the newest update sets its version.") {
+        let switch1 = info.dumpForm == "switch1"
+        CardGroup("Update and DLC", footnote: switch1 ? "Found inside the game's file or beside it by its title ID, or added here from your own Switch. They are built into the game; the newest update sets its version."
+                                                       : info.dumpForm == "nup" ? "Read from the .nup itself: everything in it is built into the game; the newest update sets its version."
+                                                       : "Read from your dump folder: the newest update in updates/ sets the game's version.") {
             if info.gamesInFiles.count > 1 {
                 CardRow("This cartridge holds \(info.gamesInFiles.count) games", detail: "One is built at a time. Build the other afterwards the same way.") {
                     Picker("", selection: Binding(get: { info.titleID }, set: { build.pickSwitchGame($0) })) {
@@ -98,20 +101,27 @@ struct SwitchFilesCard: View {
                 }
                 CardDivider()
             }
-            CardRow("Update", detail: (info.parts?.update ?? "").isEmpty ? "None: the game builds as \(info.version.isEmpty ? "its first version" : info.version)" : info.parts!.update,
+            CardRow("Update", detail: !(info.parts?.update ?? "").isEmpty ? info.parts!.update
+                    : !(info.parts?.note ?? "").isEmpty ? "None as a separate file (see Also inside)" : "None: the game builds as \(info.version.isEmpty ? "its first version" : info.version)",
                     dot: (info.parts?.update ?? "").isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
             CardDivider()
             CardRow("DLC", detail: (info.parts?.dlc ?? []).isEmpty ? "None" : (info.parts?.dlc ?? []).joined(separator: "\n"),
                     dot: (info.parts?.dlc ?? []).isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
+            if let note = info.parts?.note, !note.isEmpty {
+                CardDivider()
+                CardRow("Also inside", detail: note, dot: LauncherPalette.ready) { EmptyView() }
+            }
             ForEach(build.s1Extra, id: \.self) { f in
                 CardDivider()
                 CardRow((f as NSString).lastPathComponent, detail: "Added by you", help: f) {
                     Button("Remove") { build.removeSwitchFile(f) }.disabled(build.running)
                 }
             }
-            CardDivider()
-            CardRow("Add an update or DLC", detail: "An .nsp, .nsz, .xci or .xcz file of this game") {
-                Button("Add files…") { build.addSwitchFiles(build.chooseSwitchFiles()) }.disabled(build.running || build.identifying)
+            if switch1 {
+                CardDivider()
+                CardRow("Add an update or DLC", detail: "An .nsp, .nsz, .xci or .xcz file of this game") {
+                    Button("Add files…") { build.addSwitchFiles(build.chooseSwitchFiles()) }.disabled(build.running || build.identifying)
+                }
             }
         }
     }

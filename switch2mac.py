@@ -39,7 +39,20 @@ def builds(g):   # a game's tested builds (game.json "builds"); a game with one 
 
 def unknown_game(tid):   # a game switch2mac has no folder for: it can still be tried with the untested builds (a Switch 1 game: nxnative's, which knows most of them)
     s1 = tid.startswith('01')
-    return {'title_id': tid, 'name': engine_game_name(tid) or f'Switch {1 if s1 else 2} game {tid}', 'version': '', 'builds': [], 'dir': None, 'switch1': s1}
+    return {'title_id': tid, 'name': engine_game_name(tid) or listed_name(tid) or file_game_name(tid) or f'Switch {1 if s1 else 2} game {tid}', 'version': '', 'builds': [], 'dir': None, 'switch1': s1}
+
+
+def file_game_name(tid):   # an unlisted Switch game's name from its own file name, tags and version left out ("Red Dead Redemption v0 (01007820196A6000).nsp" → "Red Dead Redemption"); '' without one
+    for p in DUMP_S1:
+        if any(int(t, 16) & ~0x1FFF == int(tid, 16) for t in s1_ids(p)):
+            n = re.sub(r'\s+', ' ', re.sub(r'\[[^\]]*\]|\([^)]*\)|\bv\d+(\.\d+)*\b', ' ', p.stem)).strip(' -_.')
+            if n: return n
+    return ''
+
+
+def listed_name(tid):   # the game's name in games/titles.tsv (nxnative's profiles), '' when it has none
+    t = ROOT / 'games/titles.tsv'
+    return next((l.rstrip('\n').split('\t')[1] for l in t.open(encoding='utf-8') if l.upper().startswith(tid + '\t')), '') if t.exists() else ''
 
 
 def engine_game_name(tid):   # the game's name in the nxnative profile at the pin switch2mac keeps (dm/games/<title ID>/game.tsv "name"), '' when that engine is not fetched or has none
@@ -428,9 +441,55 @@ def pfs0_names(p):   # the file names inside an NSP / NSZ (a PFS0 container: its
     except (OSError, ValueError, struct.error): return []
 
 
-def s1_ids(p):   # the Switch 1 title IDs a file names: in its file name (any brackets) and its NSP tickets
-    return {t.upper() for t in re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)} | \
-           {n[:16].upper() for n in pfs0_names(p) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}
+def hfs0_names(f, off):   # [(name, offset from the data start)] of an HFS0 table of contents (a card image's partitions), and where its data starts
+    f.seek(off); h = f.read(0x10)
+    if len(h) < 0x10 or h[:4] != b'HFS0': return [], 0
+    n, ssize = struct.unpack_from('<II', h, 4)
+    if not 0 < n <= 4096 or ssize > 1 << 20: return [], 0
+    ents, strs = f.read(n * 0x40), f.read(ssize)
+    return [(strs[no:strs.index(b'\0', no)].decode('utf-8', 'replace'), o) for o, _, no in (struct.unpack_from('<QQI', ents, i * 0x40) for i in range(n))], off + 0x10 + n * 0x40 + ssize
+
+
+def xci_names(p):   # the file names in a card image's secure partition (XCI / XCZ: plain HFS0 tables of contents; nothing is decrypted), [] for anything else
+    try:
+        with p.open('rb') as f:
+            f.seek(0x100); h = f.read(0x40)
+            if h[:4] != b'HEAD': return []
+            root, start = hfs0_names(f, struct.unpack_from('<Q', h, 0x30)[0])
+            sec = next((o for n, o in root if n == 'secure'), None)
+            return [] if sec is None else [n for n, _ in hfs0_names(f, start + sec)[0]]
+    except (OSError, ValueError, struct.error): return []
+
+
+def inner_names(p):   # the names inside a Switch 1 game file: an NSP's / NSZ's PFS0, or a card image's secure partition
+    return pfs0_names(p) or (xci_names(p) if p.suffix.lower() in ('.xci', '.xcz') else [])
+
+
+def packages_in(p):   # how many titles (game, update, DLC) a file holds: its content meta NCAs (<hash>.cnmt.nca), 0 when unknown
+    return sum(1 for n in inner_names(p) if n.lower().endswith('.cnmt.nca'))
+
+
+def norm_title(s):   # a game name or file name as words: no brackets, tags, accents, punctuation or case ("Pokémon Legends: Arceus [v0] (US)" → "pokemon legends arceus")
+    import unicodedata
+    s = unicodedata.normalize('NFKD', re.sub(r'\[[^\]]*\]|\([^)]*\)', ' ', s)).encode('ascii', 'ignore').decode().lower().replace('&', ' and ')
+    return ' '.join(w for w in re.sub(r'[^a-z0-9]+', ' ', s).split() if w not in ('the', 'nsp', 'xci', 'nsz', 'xcz', 'base', 'game') and not re.fullmatch(r'v\d+', w))
+
+
+def title_by_name(p):   # a Switch 1 game file named only after its game ("Metroid Dread.xci"): its title ID from games/titles.tsv and the games here, by name (the longest that fits)
+    stem = norm_title(p.stem)
+    if not stem: return None
+    names = {g['title_id']: g['name'] for g in GAMES.values() if g['title_id'].startswith('01')}
+    t = ROOT / 'games/titles.tsv'
+    if t.exists(): names.update(l.rstrip('\n').split('\t')[:2] for l in t.open(encoding='utf-8') if l.startswith('01') and '\t' in l)
+    hits = [(len(k), tid) for tid, name in names.items() if (k := norm_title(name)) and (stem == k or stem.startswith(k + ' '))]
+    return max(hits)[1] if hits else None
+
+
+def s1_ids(p):   # the Switch 1 title IDs a file names: in its file name (any brackets) and its tickets (NSP, card image); else the game its name is (title_by_name)
+    ids = {t.upper() for t in re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)} | \
+          {n[:16].upper() for n in inner_names(p) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}
+    if not ids and (t := title_by_name(p)): ids = {t}
+    return ids
 
 
 def s1_apps(files):   # the games (base title IDs) a set of Switch 1 files belongs to, in order
@@ -447,7 +506,7 @@ def s1_scan(files):   # (base game title ID or None, newest update version or 0,
     for p in files:
         tags = re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)   # a title ID anywhere in the name, whatever brackets a tool or a rename left round it
         v = re.findall(r'(?:^|[\[\(\s_-])v(\d+)(?=$|[\]\)\s_.-])', p.name)
-        found = {t.upper() for t in tags} | {n[:16].upper() for n in pfs0_names(p) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}
+        found = s1_ids(p)
         for t in found:
             if not t.startswith('01'): continue   # Switch 1 titles start 01
             ids.add(t)
@@ -469,8 +528,10 @@ def s1_title(d):   # the Switch 1 game a dump path is, or a stop that says what 
 
 def s1_parts(files, tid):   # (base game file, update file or None, DLC files) of one Switch game, by the title IDs in their names or tickets (s1_scan)
     base_id, upd_id = int(tid, 16), int(tid, 16) | 0x800
-    def ids(p): return {int(t, 16) for t in re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)} | {int(n[:16], 16) for n in pfs0_names(p) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}
-    base = [p for p in files if base_id in ids(p)]; upd = [p for p in files if upd_id in ids(p) and p not in base]
+    def ids(p): return {int(t, 16) for t in s1_ids(p)}
+    base = [p for p in files if base_id in ids(p) or (p.suffix.lower() in ('.xci', '.xcz') and ids(p) and all(i & ~0x1FFF == base_id for i in ids(p)))]   # a card image's game needs no
+    # ticket: one that names only this game's titles (its update's ticket, say) is the base game
+    upd = [p for p in files if upd_id in ids(p) and p not in base]
     dlc = [p for p in files if p not in base and p not in upd and (not ids(p) or any(base_id + 0x1000 <= i < base_id + 0x2000 for i in ids(p)))]   # this game's DLC (another game's files on a cartridge stay out)
     if not base: sys.exit(f'no base game file of {tid} among {", ".join(p.name for p in files)}: the base game must be there too')
     if len(base) > 1: base.sort(key=lambda p: p.suffix.lower() != '.xci')   # a card image first: it may carry its own update
@@ -487,6 +548,14 @@ def check_keys(path):   # a quick look at a prod.keys file by its key NAMES only
     masters = sorted(int(n[len('master_key_'):], 16) for n in names if re.fullmatch(r'master_key_[0-9a-f]{2}', n))
     if not masters: return False, f'{p.name} has no master keys: dump prod.keys from your Switch again'
     return True, f'prod.keys with master keys up to {masters[-1]:02x} (the builder checks they open this game when the build starts)'
+
+
+def version_name(g, v):   # an update version as players know it ("1.8.0") when a build of the game names it ("... (update 1.8.0)" with versions v<v>), else v<number>
+    for b in builds(g) if g else []:
+        if f'v{v}' in b.get('versions', []):
+            m = re.search(r'update (\d+(?:\.\d+)+)', b.get('name', ''))
+            if m: return m[1]
+    return f'v{v}'
 
 
 def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), "v0" with no update, None when it cannot tell
@@ -885,9 +954,28 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
         try:
             base, upd, dlc = s1_parts(DUMP_S1, tid)
             out['parts'] = {'base': base.name, 'update': upd.name if upd else '', 'dlc': [p.name for p in dlc]}
+            inside = {int(n[:16], 16) for n in inner_names(base) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}   # titles whose tickets the base game's own file carries
+            if not upd and int(tid, 16) | 0x800 in inside: out['parts']['update'] = f'Inside {base.name}'
+            known = {int(t, 16) for t in s1_ids(base)} | {int(tid, 16)}   # the titles its name and tickets already name (a cartridge's other game and its update too)
+            extra = packages_in(base) - len(known)   # more titles in it than those: an update or DLC without a ticket
+            if extra > 0: out['parts']['note'] = f'{base.name} also holds {extra} more package{"s" if extra > 1 else ""} (an update or DLC). The builder uses {"them" if extra > 1 else "it"} with the game.'
         except SystemExit: pass
         apps = s1_apps(DUMP_S1)
         if len(apps) > 1: out['games_in_files'] = [{'title_id': t, 'name': GAMES[t]['name'] if t in GAMES else ''} for t in apps]
+    elif DUMP_NUP:   # what the .nup holds, from its table of contents
+        sys.path.insert(0, str(ROOT / 'tools')); import nup
+        try:
+            with nup.Nup(DUMP_NUP) as n:
+                _, base, vers, dlc = nup.scan(n)
+                newest = max(vers) if vers else 0
+                out['parts'] = {'base': 'Base game' if base else '', 'update': f'Update {version_name(g, newest)}, inside {DUMP_NUP.name}' if newest else '',
+                                'dlc': [f'DLC {t:016X}, inside {DUMP_NUP.name}' for t in sorted(dlc)]}
+                if not base and newest: out['parts']['note'] = (f'No separate base game in {DUMP_NUP.name}: its update {version_name(g, newest)} holds the whole game. '
+                                                                'switch2mac unpacks it for builds that need a base game.')
+        except nup.Error: pass
+    else:   # a Switch 2 dump folder: its updates/<version> folders
+        u = update_dirs(Path(a.dump).expanduser().resolve())
+        if u: out['parts'] = {'base': 'base/', 'update': f'Update {version_name(g, int(u[0].parent.name))}, in updates/{u[0].parent.name}' if u[0].parent.name.isdigit() else '', 'dlc': []}
     print(json.dumps(out, ensure_ascii=False))
 
 
