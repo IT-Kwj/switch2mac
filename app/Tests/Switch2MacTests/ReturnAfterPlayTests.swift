@@ -45,7 +45,7 @@ import XCTest
 
     /// switch2mac is English only (l10n/en.json).
     func testTheSettingHasItsEnglishText() {
-        for key in ["settings.whilePlaying", "settings.whilePlaying.back", "settings.whilePlaying.backNote"] {
+        for key in ["settings.whilePlaying", "settings.whilePlaying.note"] {
             XCTAssertNotEqual(L10n.string(key, .en), key)
         }
     }
@@ -60,7 +60,7 @@ import XCTest
     /// The in-game offer counts the Mac busy only past its cores; the sounds and the offer have their texts and are on (sounds) / quiet (offer) by default.
     func testPlayLoadAndInterfaceSounds() {
         XCTAssertFalse(PlayLoadWatcher.isBusy(7.5, cores: 10)); XCTAssertTrue(PlayLoadWatcher.isBusy(10.5, cores: 10)); XCTAssertFalse(PlayLoadWatcher.isBusy(0.5, cores: 0))
-        for key in ["settings.interfaceSounds", "settings.interfaceSoundsNote", "settings.whilePlaying", "settings.whilePlaying.close", "settings.whilePlaying.closeNote", "settings.whilePlaying.stayNote", "settings.whilePlaying.backNote"] { XCTAssertNotEqual(L10n.string(key, .en), key) }
+        for key in ["settings.interfaceSounds", "settings.interfaceSoundsNote", "settings.whilePlaying", "settings.whilePlaying.note"] { XCTAssertNotEqual(L10n.string(key, .en), key) }
     }
 
     /// The interface sounds are made in code: each is a valid WAV of the right length that macOS can play, and the three ticks differ.

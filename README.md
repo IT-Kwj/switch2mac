@@ -12,10 +12,10 @@ A Mac app that builds your games for you: choose your game, press **Build**, and
 - **Several builds per game:** nxnative, switch2mac's own engine, MacNativeGames and community ports. The app picks the one that runs best on **Your Mac** (chip, memory, macOS), from how each build ran on players' Macs.
 - **Switch and Switch 2:** Switch 2 dumps need no keys; Switch games are built with your own `prod.keys`, with their update and DLC.
 - **What's New, Performance and updates:** game fixes arrive by themselves; every play session's frame rate and memory is kept, and can be shared as a report.
-- **Light while you play:** switch2mac lets go of its pictures while a game runs, or closes and opens again after (Settings › While you play).
+- **Light while you play:** switch2mac lets go of its pictures while a game runs, or closes and opens again after (Settings › Close switch2mac while playing).
 
-1. **Download** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to your Applications folder.
-2. **Open it.** The first time, macOS says it cannot verify the app (it is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
+1. **Download** `switch2mac-<version>.pkg` from [Releases](https://github.com/azmasm/switch2mac/releases/latest) and open it.
+2. **Allow it once.** macOS says it could not verify the installer (switch2mac is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. The installer puts **switch2mac** in your Applications folder, and it opens normally from then on. You only do this once: the app updates itself after that.
 3. **Follow the setup.** It checks your Mac and tells you what to install: **Xcode** (free, App Store) with its **Metal Toolchain**, and the **.NET 10 SDK** ([dot.net](https://dot.net)). Python and the other build tools are inside the app.
 4. **Build a game.** Press **+ Build game** and choose your game (a dump folder, a `.nup`, or a Switch game's `.nsp` / `.xci`). The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
 5. **Play** from the app's **Library** or from Applications. The very first start waits 1-3 minutes with no window while macOS checks the new app: wait, don't open it twice. In the game, **1** shows the performance overlay and **2** the settings.
@@ -122,7 +122,8 @@ Controllers map by position (right button = A, bottom = B, top = X, left = Y; Ni
 
 | What you see | What to do |
 |---|---|
-| "Apple could not verify switch2mac" (or a game) | **System Settings → Privacy & Security** → scroll down → **Open Anyway**. Only needed the first time. |
+| "Apple could not verify switch2mac-….pkg" (or a game) | **System Settings → Privacy & Security** → scroll down → **Open Anyway**. Only needed the first time. |
+| "switch2mac is damaged and can't be opened" | You opened the zip instead of the installer: delete that copy and use `switch2mac-<version>.pkg` from Releases. |
 | The app's setup says something is missing | Install what it names (Xcode, its Metal Toolchain, .NET 10), then open the app again. |
 | "not enough free disk space" | Free up the space it names (empty the Trash too), then try again. |
 | "cut short or damaged", or the build stops while reading the game's files | The dump was damaged while copying. Copy it off the console again in **binary** mode, and check the folder is the right one ([Your dump folder](#your-dump-folder)). |

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-08 (1): switch2mac app 0.4.1
+
+- **Downloads open again:** the app now comes as an installer, `switch2mac-0.4.1.pkg`. macOS called the downloaded 0.4.0 (and 0.3.4) app "damaged" with no way to open it: switch2mac has no paid Apple Developer ID, and the zip's signature was also broken by files written into it after signing. The installer gets the usual **Open Anyway** in Privacy & Security once, and the app opens normally after that. The zip stays for the app's own updates, and its signature is checked before every release.
+- **Settings:** "While you play" is now one switch, **Close switch2mac while playing**: on, it closes when a game starts and opens again when you quit; off, it stays open and comes back to the front.
+- **Setup:** the first-start pages talk about Switch and Switch 2 games and what switch2mac needs them for (no iPhone or iOS SDK talk, Switch games' own prod.keys mentioned, + Build game instead of the old Builds page).
+
 ## 2026-11-07 (1): switch2mac app 0.4.0
 
 - **Switch games:** build your Nintendo Switch games too, from their `.nsp` / `.xci` files and your own `prod.keys` (passed to the builder only, never copied, kept or uploaded: see LEGAL.md). Their update and DLC are found beside them by title ID, or added on the Build page; a cartridge with two games builds the one you pick. Super Mario Bros. Wonder built and played at 60 fps on an M1 Max.

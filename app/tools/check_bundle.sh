@@ -9,6 +9,7 @@ fail=0
 ok()  { echo "ok    $*"; }
 bad() { echo "FAIL  $*"; fail=1; }
 clean() { env -i PATH=/usr/bin:/bin HOME="${TMPDIR:-/tmp}" "$@"; }   # no PATH entry but the system's, and the tool by its full path
+# Python runs with -B: no compiled caches (-I ignores PYTHONDONTWRITEBYTECODE); a file written into the signed app breaks its seal, and macOS then calls the downloaded app damaged
 
 T="$RES/tools/bin"
 v=$(clean "$T/zstd" --version 2>&1) && ok "zstd: $v" || bad "zstd --version: $v"
@@ -20,9 +21,9 @@ for t in zstd glslangValidator spirv-cross xcodegen; do
     p=$(env -i PATH="$T:/usr/bin:/bin" /usr/bin/which "$t") && [ "$p" = "$T/$t" ] && ok "PATH finds $t in the bundle" || bad "PATH finds $t at '$p'"
 done
 PY="$RES/python/bin/python3"
-v=$(clean "$PY" -I -c "import sys, lz4.block, capstone, fontTools, zbic, zstandard; from compression import zstd" 2>&1 \
-    || clean "$PY" -I -c "import lz4.block, capstone, fontTools, zbic, zstandard; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, zstandard, zstd (switch2mac: no nsz)" || bad "python imports: $v"
-v=$(clean "$PY" -I -c "import sys; print(sys.version.split()[0], sys.prefix)" 2>&1); echo "$v" | grep -q "$RES/python" && ok "python runs from the bundle: $v" || bad "python prefix is not the bundle: $v"
+v=$(clean "$PY" -I -B -c "import sys, lz4.block, capstone, fontTools, zbic, zstandard; from compression import zstd" 2>&1 \
+    || clean "$PY" -I -B -c "import lz4.block, capstone, fontTools, zbic, zstandard; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, zstandard, zstd (switch2mac: no nsz)" || bad "python imports: $v"
+v=$(clean "$PY" -I -B -c "import sys; print(sys.version.split()[0], sys.prefix)" 2>&1); echo "$v" | grep -q "$RES/python" && ok "python runs from the bundle: $v" || bad "python prefix is not the bundle: $v"
 
 # load paths: only the system's (a library's or extension's own install name is not a dependency)
 links=0
@@ -43,7 +44,7 @@ if [ -d "$APP/Contents" ]; then
     done
     # the launcher's texts (#388): Contents/Resources/l10n, one JSON file per language, each a JSON object with an English text of its own
     for c in en; do   # switch2mac: English only for now
-        v=$(clean "$PY" -I -c "import json, sys; d = json.load(open(sys.argv[1], encoding='utf-8')); assert isinstance(d, dict) and len(d) > 1 and '_language' in d" "$RES/l10n/$c.json" 2>&1) \
+        v=$(clean "$PY" -I -B -c "import json, sys; d = json.load(open(sys.argv[1], encoding='utf-8')); assert isinstance(d, dict) and len(d) > 1 and '_language' in d" "$RES/l10n/$c.json" 2>&1) \
             && ok "l10n/$c.json is in the bundle and reads as JSON" || bad "l10n/$c.json is missing or broken: $v"
     done
     for k in CFBundleIconFile; do
@@ -52,8 +53,10 @@ if [ -d "$APP/Contents" ]; then
     done
 fi
 
-if [ "${2:-}" = "--sign" ] && [ -d "$APP/Contents" ]; then
-    codesign --force --deep --sign - "$APP" 2>&1 | tail -3
-    codesign -v --deep --strict "$APP" 2>&1 && ok "codesign -v --deep --strict" || bad "codesign -v --deep --strict"
+if [ -d "$APP/Contents" ]; then
+    [ "${2:-}" = "--sign" ] && codesign --force --deep --sign - "$APP" 2>&1 | tail -3
+    n=$(find "$APP" -name __pycache__ | wc -l | tr -d ' ')
+    [ "$n" = 0 ] && ok "no __pycache__ folders in the app" || bad "$n __pycache__ folders in the app (written after signing?)"
+    v=$(codesign -v --deep --strict "$APP" 2>&1) && ok "codesign -v --deep --strict: the seal holds" || bad "codesign -v --deep --strict: $(echo "$v" | head -3)"
 fi
 exit $fail

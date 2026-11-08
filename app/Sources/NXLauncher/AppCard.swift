@@ -41,16 +41,11 @@ package struct AppCard: View {
         code.isEmpty ? loc.t("settings.language.system") : (Lang.find(code)?.name ?? code)
     }
 
-    package static let whilePlayingChoices = ["stay", "back", "close"]
-    /// The two stored switches as the one choice.
-    private var whilePlaying: String { closeWhilePlaying.wrappedValue ? "close" : returnAfterPlay.wrappedValue ? "back" : "stay" }
-    private func setWhilePlaying(_ v: String) {
-        closeWhilePlaying.wrappedValue = v == "close"
-        returnAfterPlay.wrappedValue = v != "stay"
-    }
-    private func stepWhilePlaying(_ by: Int) {
-        let all = Self.whilePlayingChoices, at = all.firstIndex(of: whilePlaying) ?? 1
-        setWhilePlaying(all[min(max(at + by, 0), all.count - 1)])
+    /// One switch, as in the League client's "Close client during game": on, switch2mac closes while a game it started runs and opens again when
+    /// the game quits; off, it stays open and comes to the front when the game quits (returnAfterPlay, on by default).
+    private func setCloseWhilePlaying(_ on: Bool) {
+        closeWhilePlaying.wrappedValue = on
+        returnAfterPlay.wrappedValue = true
     }
 
     package var body: some View {
@@ -82,12 +77,11 @@ package struct AppCard: View {
                 }
                 CardDivider()
             }
-            // What switch2mac does while a game it started runs, one choice (ReturnAfterPlay.swift): stay where it is, come to the front when the game
-            // quits, or close and open again when the game quits (closing implies coming back)
-            CardRow(loc.t("settings.whilePlaying"), detail: loc.t("settings.whilePlaying." + whilePlaying + "Note")) {
-                LauncherDropdown(options: Self.whilePlayingChoices.map { (value: $0, label: loc.t("settings.whilePlaying." + $0)) },
-                                 selection: whilePlaying, label: loc.t("settings.whilePlaying"), style: .button) { setWhilePlaying($0) }
-                    .padTarget("set.whilePlaying", scope: "main", activate: { stepWhilePlaying(1) }, adjust: { stepWhilePlaying($0) })
+            // Close switch2mac while a game it started runs, and open it again when the game quits (ReturnAfterPlay.swift)
+            CardRow(loc.t("settings.whilePlaying"), detail: loc.t("settings.whilePlaying.note")) {
+                Toggle("", isOn: Binding(get: { closeWhilePlaying.wrappedValue }, set: { setCloseWhilePlaying($0) }))
+                    .toggleStyle(LauncherSwitchStyle()).labelsHidden()
+                    .padTarget("set.whilePlaying", scope: "main") { setCloseWhilePlaying(!closeWhilePlaying.wrappedValue) }
             }
             CardDivider()
             // the Library's small sounds (InterfaceSound.swift)
