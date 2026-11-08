@@ -504,7 +504,6 @@ def s1_cart(files):   # whether one file carries several games (a cartridge like
 def s1_scan(files):   # (base game title ID or None, newest update version or 0, every title ID seen) of a set of Switch 1 files, from the names a dump tool gives them
     ids, vers = set(), {}
     for p in files:
-        tags = re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)   # a title ID anywhere in the name, whatever brackets a tool or a rename left round it
         v = re.findall(r'(?:^|[\[\(\s_-])v(\d+)(?=$|[\]\)\s_.-])', p.name)
         found = s1_ids(p)
         for t in found:
