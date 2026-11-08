@@ -354,7 +354,7 @@ def update_dirs(d):   # the newest update's exefs and romfs when it holds both (
     return (found[0] / 'exefs', found[0] / 'romfs') if found else None
 
 
-DUMP_NUP = None   # the .nup the dump path names (read_dump), or None for a dump folder
+DUMP_NUP = None; NUP_BASE = True   # the .nup the dump path names (read_dump), or None for a dump folder
 
 
 def nup_file(d):   # the NUP container a dump path names: the .nup file itself, or the one .nup in a folder holding no exefs/ or base/; None for a dump folder
@@ -372,7 +372,8 @@ def nup_scan(p):   # (title ID, newest update version or 0) of a NUP: its table 
     sys.path.insert(0, str(ROOT / 'tools')); import nup
     try:
         with nup.Nup(p) as n:
-            app, _, vers, _ = nup.scan(n)
+            app, base, vers, _ = nup.scan(n)
+            global NUP_BASE; NUP_BASE = base is not None   # a NUP of standalone updates has none: builds marked "nup_needs_base" cannot take it
             return f'{app:016X}', max(vers) if vers else 0
     except nup.Error as x: sys.exit(f'{x}. Copy the .nup again, or extract it to a dump folder.')
 
@@ -784,6 +785,9 @@ def build(a):
         ver = dump_version(a.dump); GAMES[tid] = with_build(GAMES[tid], a.engine, ver); chosen = GAMES[tid]['build']   # not `b`: that is the build folder
         print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
         if not fits(chosen, ver) and not (DUMP_NUP and chosen['engine']['kind'] == 'switch2mac'): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
+        if DUMP_NUP and not NUP_BASE and chosen.get('nup_needs_base'):   # its builder predates NUPs without a base game (nxnative 777a5f6c): it would stop later, inside the engine's builder
+            sys.exit(f'This .nup holds only the update ({ver}), not the base game, and {chosen["name"]} needs both in one file: pack the base game and its update into one NUP with your dump tool, '
+                     f'or extract them to a folder (base/ and updates/{ver[1:]}/) and choose that folder')
         free_space(w, GAMES[tid])
     if not own_engine(GAMES[tid]): return engine_build(a, tid, w, e)
     if DUMP_NUP: sys.exit(f'{GAMES[tid]["build"]["name"]} builds from a dump folder (exefs/ and romfs/), not a .nup: choose another build of this game, or extract the .nup to a folder first')

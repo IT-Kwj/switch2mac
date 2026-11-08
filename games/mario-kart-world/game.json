@@ -48,7 +48,8 @@
    "watch": [
     ""
    ],
-   "about": "MenAtCafe's nxnative port tuned to fit 8 GB (MIT): a race holds about 4 GB, 40-58 fps on a MacBook Neo, every course played. The build for Macs with 16 GB or less and for fanless MacBook Airs."
+   "about": "MenAtCafe's nxnative port tuned to fit 8 GB (MIT): a race holds about 4 GB, 40-58 fps on a MacBook Neo, every course played. The build for Macs with 16 GB or less and for fanless MacBook Airs.",
+   "nup_needs_base": true
   },
   {
    "id": "nxnative-mkw",
@@ -65,7 +66,8 @@
    "watch": [
     ""
    ],
-   "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update."
+   "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update.",
+   "nup_needs_base": true
   }
  ],
  "choose": [
