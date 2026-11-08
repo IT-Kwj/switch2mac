@@ -51,7 +51,7 @@ def main():
         if k not in s: sys.exit(f'{hn}: no present_crop')
         hn.write_text(s.replace(k, 'static _Atomic int g_game_w, g_game_h;   // (switch2mac) the size of the frame the game presents last (the overlay)\n'
                                    'void nvn_game_size(int *w, int *h) { *w = atomic_load(&g_game_w); *h = atomic_load(&g_game_h); }\n' + k, 1))
-        edit(hn, 'nvn_cap_present(t, crop);', '        atomic_store(&g_game_w, (int)t->d.width); atomic_store(&g_game_h, (int)t->d.height);   // (switch2mac)\n', 'nvn_game_size')
+        edit(hn, 'const int *crop = present_crop(o->crop, (int)t->d.width, (int)t->d.height, lc);', '        atomic_store(&g_game_w, (int)t->d.width); atomic_store(&g_game_h, (int)t->d.height);   // (switch2mac)\n', 'nvn_game_size')
     st = nx / 'dm/games/settings.py'
     s = st.read_text(); w = "    Path(sys.argv[4]).write_text(json.dumps(d,"
     if w not in s: sys.exit(f'{st}: no line with {w!r}')
