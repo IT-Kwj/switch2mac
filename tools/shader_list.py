@@ -23,7 +23,7 @@ in the game's data folder), the others the first. collect sends each contributio
 <game> is a games/ folder name (mario-kart-world) or a title ID. A contribution's header names its game and engine; rows whose shader keys are not the game's
 (checked where the game's shader table is at hand: Mario Kart World and Donkey Kong Bananza once their engine is fetched) refuse the file unless --drop-unknown.
 """
-import json, re, subprocess, sys, urllib.request
+import time, json, re, subprocess, sys, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,11 +111,12 @@ def check(g, text, drop_unknown):   # (rows to add, problems): problems refuse t
     # (pipeline rows included) is in this build's map. Another kind (or no map to check against) is refused: switch2mac's engine and nxnative key shaders differently
     other = h and h[1] != g['engine_id']
     same_kind = other and g['engine_id'] != 'switch2mac' and h[1].rsplit('-', 1)[0] == g['engine_id'].rsplit('-', 1)[0]
-    if other and not (same_kind and keys is not None and not unknown):
-        bad.append(f'it was recorded with engine {h[1]}; {label(g)}\'s list is for {g["engine_id"]}: keys differ between engines'
-                   + (f' ({len(unknown)} of its rows name shaders this build\'s map lacks)' if same_kind and unknown else ''))
+    if other and not (same_kind and keys is not None):
+        bad.append(f'it was recorded with engine {h[1]}; {label(g)}\'s list is for {g["engine_id"]}: keys differ between engines')
+    # A list recorded on an older (or newer) commit of the same engine names a few shaders that commit's map has and this one's lacks: those rows are dropped, the rest taken
+    # (players' engines always lag the newest pin a little). Unknown rows from the build's own commit still refuse the file: another game or version
     if keys is not None:
-        if unknown and not drop_unknown: bad.append(f'{len(unknown)} of its {len(got)} rows name shaders {g["name"]} does not have (another game or version?): --drop-unknown drops them')
+        if unknown and not drop_unknown and not same_kind: bad.append(f'{len(unknown)} of its {len(got)} rows name shaders {g["name"]} does not have (another game or version?): --drop-unknown drops them')
         got = [r for r in got if r not in unknown]
     return got, bad, unknown
 
@@ -149,8 +150,14 @@ def repo():
 
 def fetch(url):   # an issue attachment: text only, 32 MB at most (#20's list was 2.7 MB: a 2 MB cap cut it mid-row)
     cap = 32 << 20
-    with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'switch2mac'}), timeout=60) as r:
-        data = r.read(cap + 1)
+    for attempt in range(4):   # GitHub's attachment host sometimes answers 502/503/504 for a moment (#28's comment run): try again before giving up
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'switch2mac'}), timeout=60) as r:
+                data = r.read(cap + 1)
+            break
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+            if attempt == 3 or (isinstance(e, urllib.error.HTTPError) and e.code < 500): raise
+            time.sleep(5 * (attempt + 1))
     if len(data) > cap: data = data[:data.rfind(b'\n', 0, cap) + 1]   # cut at the cap: never keep a half-read last row
     return data.decode('utf-8', 'replace')
 
