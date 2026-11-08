@@ -538,6 +538,20 @@ def s1_parts(files, tid):   # (base game file, update file or None, DLC files) o
     return base[0], (upd[0] if upd else None), dlc
 
 
+def find_firmware(keys):   # the player's unpacked firmware kept near their prod.keys ("Keys/prod.keys" beside "Firmware/", 50 or more .nca files), for builders that need the system fonts;
+    # only its path goes to the builder, as with the keys. None when there is none
+    if not keys: return None
+    k = Path(keys).expanduser().resolve()
+    for root in (k.parent, k.parent.parent):
+        try: dirs = [root] + [d for d in root.iterdir() if d.is_dir()]
+        except OSError: continue
+        for d in sorted(dirs, key=lambda d: 'firmware' not in d.name.lower()):
+            try:
+                if sum(1 for f in d.iterdir() if f.name.lower().endswith('.nca')) >= 50: return d
+            except OSError: pass
+    return None
+
+
 def check_keys(path):   # a quick look at a prod.keys file by its key NAMES only (no value is used): (ok, what to tell the player). The builder makes the real check when it opens the game
     p = Path(path).expanduser()
     try: text = p.read_text(errors='replace')
@@ -652,10 +666,17 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         py314 = shutil.which('python3.14') or next((p for p in ('/opt/homebrew/bin/python3.14', '/usr/local/bin/python3.14') if Path(p).exists()), None)
         miss = [] if py314 else ['python@3.14']
         miss += [f for f in ('opus', 'libvpx') if not any(Path(r, 'opt', f).exists() for r in ('/opt/homebrew', '/usr/local'))]
-        if miss: sys.exit(f'MacNativeGames needs Homebrew\'s {", ".join(miss)}: brew install {" ".join(miss)}')
+        if miss:   # installed here when Homebrew is there (the player pressed Build for this game): no Terminal needed
+            brew = shutil.which('brew') or next((b for b in ('/opt/homebrew/bin/brew', '/usr/local/bin/brew') if Path(b).exists()), None)
+            if not brew: sys.exit(f'MacNativeGames\' builds need {", ".join(miss)} from Homebrew, and Homebrew is not installed: install it from https://brew.sh (it asks for your password once), then press Build again')
+            P.step(f'installing what MacNativeGames\' builder needs, with Homebrew: {", ".join(miss)} (once, a few minutes)')
+            run([brew, 'install'] + miss, env=dict(e, HOMEBREW_NO_AUTO_UPDATE='1', HOMEBREW_NO_INSTALL_CLEANUP='1', NONINTERACTIVE='1'))
+            py314 = shutil.which('python3.14') or next((p for p in ('/opt/homebrew/bin/python3.14', '/usr/local/bin/python3.14') if Path(p).exists()), None)
+            if not py314: sys.exit('Homebrew installed python@3.14, but python3.14 is not where it should be: open Terminal and run brew doctor')
         base, upd, dlc = s1_parts(DUMP_S1, tid)
-        fonts = (['--firmware', Path(a.firmware).expanduser().resolve()] if getattr(a, 'firmware', None) else
-                 ['--shared-fonts', Path(a.shared_fonts).expanduser().resolve()] if getattr(a, 'shared_fonts', None) else [])
+        fw = Path(a.firmware).expanduser().resolve() if getattr(a, 'firmware', None) else None if getattr(a, 'shared_fonts', None) else find_firmware(a.keys)
+        if fw and not getattr(a, 'firmware', None): print(f'  using the firmware beside your prod.keys for the system fonts: {fw.name}'); HIDE[str(fw)] = '<your firmware>'
+        fonts = (['--firmware', fw] if fw else ['--shared-fonts', Path(a.shared_fonts).expanduser().resolve()] if getattr(a, 'shared_fonts', None) else [])
         if not fonts and not eng.get('builder') and (base.suffix.lower() in ('.nsp', '.nsz') or tid == '01007EF00011E000'):
             print('  NOTE: from an .nsp, and always for Breath of the Wild, MacNativeGames needs the Switch\'s system fonts: --firmware <your firmware dump> or --shared-fonts <a TotK build\'s fonts>')
         print(f'  base {base.name}' + (f', update {upd.name}' if upd else '') + (f', {len(dlc)} DLC' if dlc else ''))
@@ -666,8 +687,9 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
             if m and f'v{m[1]}' not in b['updates']:   # an update the port cannot run (Wonder's port: 1.2.1 only): built without it
                 print(f'  NOTE: this port takes only update {", ".join(b["updates"])}; {upd.name} is left out (the base game is built)'); upd = None
             vals = {'base': base, 'update': upd, 'keys': Path(a.keys).expanduser().resolve(), 'app': app, 'work': w / tid,
-                    'firmware': Path(a.firmware).expanduser().resolve() if getattr(a, 'firmware', None) else None,
+                    'firmware': Path(a.firmware).expanduser().resolve() if getattr(a, 'firmware', None) else find_firmware(a.keys),
                     'shared_fonts': Path(a.shared_fonts).expanduser().resolve() if getattr(a, 'shared_fonts', None) else None}
+            if vals['firmware']: HIDE[str(vals['firmware'])] = '<your firmware>'
             for need in b.get('needs', []):
                 if not vals.get(need) and not (need == 'firmware' and vals['shared_fonts']): sys.exit(f'{g["name"]}: MacNativeGames\' port needs ' + {'update': 'the game\'s update file (' + b.get('update_note', 'see its README') + ') next to the base game',
                                                                                               'firmware': 'the Switch\'s system fonts: --firmware <your unpacked firmware dump> or --shared-fonts <a TotK build\'s fonts>'}.get(need, need))
