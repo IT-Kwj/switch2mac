@@ -1,0 +1,21 @@
+# Hides console keys, keys files and links to game-download sites from issues and comments (tools/issue_guard.py; LEGAL.md).
+name: Issue guard
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+permissions:
+  issues: write
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/issue_guard.py
+          sparse-checkout-cone-mode: false
+      - run: python3 tools/issue_guard.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -39,6 +39,9 @@ done < <(find "$RES/tools" "$RES/python" -type f -print0)
 
 # the icon: Assets.car (macOS 26 and later) and AppIcon.icns (13 to 25), and the two Info.plist keys that point at them
 if [ -d "$APP/Contents" ]; then
+    for f in LICENSE LICENSE-NX2Apple NOTICE-NX2Apple Manrope-OFL.txt NOTICE.md LEGAL.md; do   # licences that must travel with every copy (make_app.sh)
+        [ -s "$RES/licenses/switch2mac/$f" ] && ok "licenses/switch2mac/$f is in the bundle" || bad "licenses/switch2mac/$f is missing"
+    done
     for f in AppIcon.icns; do   # switch2mac: the icon is an .icns (tools/make_app.sh), no asset catalog
         [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"
     done

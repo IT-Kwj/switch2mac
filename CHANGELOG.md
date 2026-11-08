@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-08 (2)
+
+- **Legal and housekeeping:** clearer LEGAL.md (what switch2mac is for, what it never does or helps with), licences shipped inside the app, an automatic guard against keys and game links in issues, a Problem form, and an up-to-date README and credits.
+
 ## 2026-11-08 (1): switch2mac app 0.4.1
 
 - **Downloads open again:** the app now comes as an installer, `switch2mac-0.4.1.pkg`. macOS called the downloaded 0.4.0 (and 0.3.4) app "damaged" with no way to open it: switch2mac has no paid Apple Developer ID, and the zip's signature was also broken by files written into it after signing. The installer gets the usual **Open Anyway** in Privacy & Security once, and the app opens normally after that. The zip stays for the app's own updates, and its signature is checked before every release.

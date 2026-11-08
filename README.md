@@ -2,7 +2,9 @@
 
 **Play your Nintendo Switch and Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose your game, press Build, play.
 
-It is not an emulator. The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
+It is not an emulator, and it contains no game, key or Nintendo artwork: you bring your own copy, and what it builds stays on your Mac. switch2mac is an independent, non-commercial fan project, not affiliated with Nintendo ([LEGAL.md](LEGAL.md)).
+
+The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
 
 ## The switch2mac app
 
@@ -137,7 +139,7 @@ Still stuck? Open an issue on this page with a screenshot and the game's log: in
 
 The runtime loads the game's modules into memory, rewrites their system calls and SDK functions into calls to native code (file system, audio, input, threads, time), and implements NVN2, the Switch 2 graphics API, on Metal. Switch 2 shaders (NVIDIA Ampere code) are translated into Metal Shading Language ahead of time and compiled into Metal libraries.
 
-Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A daily check moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
+Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A check several times a day moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
 
 ## Repository layout
 
@@ -148,9 +150,14 @@ Each game is built with the engine its port was made with, pinned in its `game.j
 | `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game and build, for the engine its app is built with (a second build's: `shader_list-<build>.tsv`) |
 | `app/` | the switch2mac app (SwiftPM; `app/tools/make_app.sh` makes `app/build/switch2mac.app`, `--bundle-tools` the download with Python and tools inside), adapted from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT) |
 | `tools/shader_list.py` | the shared shader lists: stats, merge, collect the lists players send, ship each build's list |
+| `tools/reports.py` | players' How it ran reports: reads a report issue into the game's `reports.tsv` |
+| `tools/nup.py` | reads a `.nup` dump (which game, which versions) before anything is built |
+| `tools/issue_guard.py` | hides issues and comments that contain keys, game files or links to sites that hand them out ([LEGAL.md](LEGAL.md)) |
 | `tools/engine/` | switch2mac's front end for the games built with another engine: the overlay and settings panel (`s2m_ui.m`), the script that adds it to that engine (`patch.py`) and the one that moves those games to their build's newest commit (`update.py`) |
 | `tools/porting/` | helpers for bringing up a game: run-time shader finder, NSO disassembly helper, pass tracer, performance summary |
 | `docs/` | [porting.md](docs/porting.md) (bringing up a game), [mario-kart-world.md](docs/mario-kart-world.md) (how the first port was made) |
+| `.github/` | the issue forms (How it ran, Shader list, Problem) and the workflows that read them, guard them and keep the builds up to date |
+| `LEGAL.md`, `NOTICE.md`, `LICENSE` | what switch2mac does and does not do, every project it builds on, its MIT licence |
 | `AGENTS.md` | notes for AI coding assistants |
 | `CHANGELOG.md` | what changed, release by release |
 

@@ -48,6 +48,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 if [ "$TOOLS" = 1 ]; then tools/bundle_tools.sh "$APP/Contents/Resources"; fi
+# the licences and credits that must travel with every copy: switch2mac's own (MIT), NX2Apple's it began from (MIT), the Manrope font (OFL), and
+# NOTICE.md (every other project it builds on, nxnative's code in tools/nup.py among them) and LEGAL.md
+L="$APP/Contents/Resources/licenses/switch2mac"; mkdir -p "$L"
+cp ../LICENSE "$L/LICENSE"; cp LICENSE-NX2Apple NOTICE-NX2Apple "$L/"; cp fonts/Manrope-OFL.txt "$L/"; cp ../NOTICE.md ../LEGAL.md "$L/"
 find "$APP" -name __pycache__ -type d -prune -exec rm -rf {} +   # compiled Python caches name the folder they were made in
 if grep -rlaq "$HOME" "$APP"; then echo "stopped: the app holds this Mac's home folder path:"; grep -rla "$HOME" "$APP"; exit 1; fi
 codesign --force --deep --sign - "$APP"

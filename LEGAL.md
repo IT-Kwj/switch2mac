@@ -1,6 +1,10 @@
 # Legal
 
-switch2mac is an independent fan project, made in good faith for people who own their games. This page says what it does and does not do. It is not legal advice.
+switch2mac is an independent, non-commercial fan project, made in good faith for people who own their games. This page says what it does and does not do. It is not legal advice.
+
+## What it is for
+
+switch2mac exists so that you can play **games you bought, from your own console, on your own Mac**: it turns your own copy into a Mac app that runs on your own computer. That is interoperability (making software you own work on another computer), the kind of use courts have recognised, for example in *Sega v. Accolade* (1992) and *Sony v. Connectix* (2000). switch2mac does not copy, sell, share or hand out any game, and it takes no money: no donations, no paid features, no ads.
 
 ## Games and keys
 
@@ -8,7 +12,8 @@ switch2mac is an independent fan project, made in good faith for people who own 
 - To build an app you need **your own dump** of a game you own, made from your own console. switch2mac itself decrypts nothing and contains no decryption code.
   - **Switch 2 games** need no keys: switch2mac reads an already extracted dump (folders, or a `.nup` file), as dump tools produce it.
   - **Switch games** come as their encrypted `.nsp` / `.xci` files. The builder you choose (nxnative's or MacNativeGames') opens them with **your own `prod.keys`, dumped from your own Switch**. switch2mac only passes the file's path to that builder while it builds: it keeps where the file is, never a copy or what is in it, never uploads it, and writes `<your prod.keys>` in place of its path in build logs, diagnostics, reports and shader lists. Settings → Forget my keys file drops even the path. Which game the files are is read from their names, as dump tools write them, not from their contents.
-- No help with console exploits, getting keys, getting games or decryption is given here, and no keys or game files are ever accepted in issues: never attach or paste `prod.keys`.
+- switch2mac never obtains, bundles, downloads, shares or checks the contents of keys: it only reads the key *names* in the file you choose, to tell you if it is the wrong file. It never contains or downloads firmware, system files or game files either.
+- **What is never helped with here:** console exploits or hacking a console, getting or sharing keys or firmware, getting or sharing games (no links, no "where to find"), cheating in online play, or anything that takes away from what you can do with your own copy. Issues and comments that contain keys, game files or links to sites that hand out games are hidden automatically and removed (`.github/workflows/issue-guard.yml`). Never attach or paste `prod.keys`.
 
 ## What you build
 
@@ -37,7 +42,7 @@ No account, no tracking, no analytics. The app connects only to:
 
 ## Licences and credits
 
-switch2mac is MIT licensed ([LICENSE](LICENSE)); the app began from NX2Apple (MIT, `app/LICENSE-NX2Apple`). Every other project it builds on, with its licence, is in [NOTICE.md](NOTICE.md). The engines are not copied here: each build fetches its engine from that engine's own repository, under that engine's licence. One tool of switch2mac-engine, `nx2_lower` (from Eglantine), is GPL-3.0-or-later; it runs while building and is not part of the apps it builds.
+switch2mac is MIT licensed ([LICENSE](LICENSE)); the app began from NX2Apple (MIT, `app/LICENSE-NX2Apple`). The app carries these licences, the font's (OFL) and NOTICE.md inside it (`Contents/Resources/licenses`), with the licences of the tools it bundles. Every other project it builds on, with its licence, is in [NOTICE.md](NOTICE.md). The engines are not copied here: each build fetches its engine from that engine's own repository, under that engine's licence. One tool of switch2mac-engine, `nx2_lower` (from Eglantine), is GPL-3.0-or-later; it runs while building and is not part of the apps it builds.
 
 ## Trademarks
 
@@ -45,4 +50,4 @@ Nintendo, Nintendo Switch, Nintendo Switch 2 and the names of the games are trad
 
 ## No warranty, and removal requests
 
-switch2mac comes as it is, with no warranty (see [LICENSE](LICENSE)): keep a copy of your saves. If you hold rights to anything in this repository and want it changed or removed, open an issue or contact the maintainer through GitHub, and it will be dealt with promptly.
+switch2mac comes as it is, with no warranty (see [LICENSE](LICENSE)): keep a copy of your saves. If you hold rights to anything in this repository and want it changed or removed, open an issue or contact the maintainer through GitHub (or send GitHub a notice through its [DMCA process](https://docs.github.com/en/site-policy/content-removal-policies/dmca-takedown-policy)), and it will be dealt with promptly and in good faith.
