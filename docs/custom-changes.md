@@ -195,3 +195,19 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 ### 恢复
 
 这些改动在 switch2mac 仓库的 git 里；合并上游后保留 `game.json` 的 `language` 字段和 `switch2mac.py` 里把 `language` 传给 `--language` 的代码即可。
+
+## 6. 构建历史
+
+### 2026-11-09 重新构建（nxnative 7d8dcdf824a6）
+
+- 引擎版本：nxnative `7d8dcdf824a6`（从 `1ed28ed0981f` 升级）
+- 构建时间：约 26 分钟（10:52 - 11:19）
+- Shader 数量：11,560 个（全部重新编译，0 个缓存命中）
+- Shader 编译时间：16 分 23 秒
+- 最终 App 大小：23.1 GB
+- 构建产物占用：27 GB（从 29 GB 减少）
+- 应用自定义修改：
+  - 中文界面（s2m_ui.m）
+  - poll 修复（hle_net.c: 100ms 上限）
+  - 中文语言设置（settings.tsv, nacp.py）
+
