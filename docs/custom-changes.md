@@ -211,3 +211,14 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
   - poll 修复（hle_net.c: 100ms 上限）
   - 中文语言设置（settings.tsv, nacp.py）
 
+
+## 7. 构建后自动安装
+
+用户偏好：构建完成后直接安装到 `/Applications`，不再保留 `work/` 里的副本。
+
+流程：
+1. 构建完成（app 在 `work/Mario Kart World.app`）
+2. 删除 `/Applications` 里的旧 app（如果有）
+3. 移动新 app 到 `/Applications`
+4. 存档位置不变：`~/Library/Application Support/nxnative/<title ID>/`
+
