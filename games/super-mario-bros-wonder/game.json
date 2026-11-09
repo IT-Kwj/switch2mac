@@ -11,7 +11,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "581f9c1dbcee690b24f4e2a376ca51e2f4fa07b1"
+    "commit": "36e6e4aec4c78516e2bca6a2eabe6110587712d5"
    },
    "shader_list": "shader_list.tsv",
    "about": "nxnative's tested profile with switch2mac's overlay and key-2 settings: 1.0.0, 1.0.1 or 1.2.1. 60 fps on an M1 Max."
