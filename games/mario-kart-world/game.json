@@ -11,7 +11,7 @@
    "engine": {
     "kind": "switch2mac",
     "repo": "https://github.com/azmasm/switch2mac-engine",
-    "commit": "236adf514ebe9a184abe7283e4c0045b486a39e8"
+    "commit": "e3653e994e7d6e6dc8949927a4a2114add8e51e9"
    },
    "shader_list": "shader_list.tsv",
    "about": "switch2mac's own engine: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far.",
@@ -25,7 +25,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "1ed28ed0981f50f3371db9b2f7475b99ebbe1a35"
+    "commit": "7d8dcdf824a6d67a76892840baf0877bc1c34e70"
    },
    "shader_list": "shader_list-nxnative.tsv",
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: its own Switch 2 shader translator and shared terrain tiles (less memory). Suits M3 and newer.",
@@ -39,7 +39,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/MenAtCafe/mkw-neo",
-    "commit": "2b74b5762e84d5839933cfbcb8ad3ecd4c17b860"
+    "commit": "a44c64009e74fae6f907107866afda2224484575"
    },
    "versions": [
     "v0"
@@ -48,11 +48,12 @@
    "watch": [
     ""
    ],
-   "about": "MenAtCafe's nxnative port tuned to fit 8 GB (MIT): a race holds about 4 GB, 40-58 fps on a MacBook Neo, every course played. The build for Macs with 16 GB or less and for fanless MacBook Airs."
+   "about": "MenAtCafe's nxnative port tuned to fit 8 GB (MIT): a race holds about 4 GB, 40-58 fps on a MacBook Neo, every course played. The build for Macs with 16 GB or less and for fanless MacBook Airs.",
+   "nup_needs_base": true
   },
   {
    "id": "nxnative-mkw",
-   "name": "nxnative-mkw (update 1.8.0)",
+   "name": "Thijs2004's 1.8.0 version",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/Thijs2004/nxnative-mkw",
@@ -65,7 +66,8 @@
    "watch": [
     ""
    ],
-   "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update."
+   "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update.",
+   "nup_needs_base": true
   }
  ],
  "choose": [

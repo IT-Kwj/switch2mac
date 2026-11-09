@@ -109,6 +109,11 @@ final class BuildNotifier: NSObject, ObservableObject, UNUserNotificationCenterD
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.content.categoryIdentifier == PlayLoadWatcher.category {   // the in-game offer (PlayLoad.swift): the game stays in front
+            let action = response.actionIdentifier
+            DispatchQueue.main.async { MainActor.assumeIsolated { PlayLoadWatcher.shared.answered(action) }; completionHandler() }
+            return
+        }
         let info = response.notification.request.content.userInfo
         let page = LauncherPage(rawValue: info["page"] as? String ?? "") ?? .library
         let game = (info["game"] as? String).flatMap(UUID.init(uuidString:))

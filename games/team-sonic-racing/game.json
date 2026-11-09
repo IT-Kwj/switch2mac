@@ -1,0 +1,24 @@
+{
+ "title_id": "010092B0091D0000",
+ "name": "Team Sonic Racing",
+ "version": "1.0.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v131072"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "fa475bb1a76b7d2c8d15d0bab5527967094b1724"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-11-08 (3): switch2mac app 0.4.2
+
+- **Storage:** a new **Settings › Storage** card shows what building leaves on your Mac (each game's build files and engine copies no build uses), with their sizes, and one **Clean up** button. Your games, saves, settings, the games' own shader caches, your dumps and keys always stay; a later rebuild only takes longer. Engine copies no build uses are now also removed after each build.
+- **The Build page shows what's in your file:** the update or DLC inside an `.nsp`, a card image or a `.nup`, or a dump folder's update, read from the file's plain table of contents (nothing is decrypted). A `.nup` a build can't read directly is unpacked for it.
+- **133 more Switch games:** every Switch game nxnative has a profile for gets a page with its tested build, shared shader list and reports, and the update bot checks them once a day. Smash Bros. Ultimate, Octopath Traveler 0, Metroid Dread, Kirby and the Forgotten Land and Mario vs. Donkey Kong offer nxnative's build beside MacNativeGames'.
+- **Fixed:** an opened game case could get stuck and ignore every click while a game ran; app builds stopped with "run switch2mac setup first".
+
+## 2026-11-08 (2)
+
+- **Legal and housekeeping:** clearer LEGAL.md (what switch2mac is for, what it never does or helps with), licences shipped inside the app, an automatic guard against keys and game links in issues, a Problem form, and an up-to-date README and credits.
+
+## 2026-11-08 (1): switch2mac app 0.4.1
+
+- **Downloads open again:** the app now comes as an installer, `switch2mac-0.4.1.pkg`. macOS called the downloaded 0.4.0 (and 0.3.4) app "damaged" with no way to open it: switch2mac has no paid Apple Developer ID, and the zip's signature was also broken by files written into it after signing. The installer gets the usual **Open Anyway** in Privacy & Security once, and the app opens normally after that. The zip stays for the app's own updates, and its signature is checked before every release.
+- **Settings:** "While you play" is now one switch, **Close switch2mac while playing**: on, it closes when a game starts and opens again when you quit; off, it stays open and comes back to the front.
+- **Setup:** the first-start pages talk about Switch and Switch 2 games and what switch2mac needs them for (no iPhone or iOS SDK talk, Switch games' own prod.keys mentioned, + Build game instead of the old Builds page).
+
+## 2026-11-07 (1): switch2mac app 0.4.0
+
+- **Switch games:** build your Nintendo Switch games too, from their `.nsp` / `.xci` files and your own `prod.keys` (passed to the builder only, never copied, kept or uploaded: see LEGAL.md). Their update and DLC are found beside them by title ID, or added on the Build page; a cartridge with two games builds the one you pick. Super Mario Bros. Wonder built and played at 60 fps on an M1 Max.
+- **More builds per game:** [MacNativeGames](https://github.com/ly05010419/MacNativeGames) (MIT, credited in NOTICE.md) is a new builder, recommended for **Tears of the Kingdom** and **Breath of the Wild** (new game pages, not built here yet), with nxnative's builder beside it.
+- **A new Library:** your games as 3D game cases in a **Carousel**, a **Flipbook** or a **Stack**, or as **Covers**, or the **Row**. Click a case to open it (the booklet and cartridge slide out), click it again to play; drag, scroll, the arrow keys or a controller browse. Retail box fronts from GameTDB and the LaunchBox Games Database are downloaded onto your Mac (Settings › Box art turns them off). After [PyroCade](https://github.com/Pyrodrifter/PyroCade)'s look (MIT; idea only, no code or assets).
+- **Sounds:** a soft glass tick as you move through your games, a lighter one on hover; the speaker in the Library's bar mutes them.
+- **Controllers:** the 3D views, the open case, the view and console switches all work with a controller.
+- **Light while you play:** switch2mac lets go of its pictures while a game runs. **Settings › While you play** chooses whether it stays open, comes back when the game quits, or closes and opens again after; if your Mac runs short of memory during a game, it offers to close.
+- **Lighter overall:** pictures read at the size they're shown, one loader for all of them (a long build could push the app past a gigabyte), and the 3D views draw only while something moves.
+- **New icon:** the same laptop between its green and red grips, now with a warm gold glow and no "2" on the screen.
+- **Fixed:** a game from the Library opened the Build page as an iPhone build; the app no longer asks for the iOS SDK; Build updates in What's New show five, then Show more.
+
 ## 2026-11-06 (9): switch2mac app 0.3.4
 
 - **`.nup` files in the app:** the Build page's **Choose folder or .nup…** takes a `.nup` file as well as a dump folder, and the app says so where you choose your dumps (one folder or `.nup` file per game).

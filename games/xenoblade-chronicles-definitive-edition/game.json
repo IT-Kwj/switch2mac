@@ -1,0 +1,24 @@
+{
+ "title_id": "0100FF500E34A000",
+ "name": "Xenoblade Chronicles: Definitive Edition",
+ "version": "1.1.2",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v196608"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "6ba3adc21d62e162b67eae75c8504e3d303e2a9a"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.2) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

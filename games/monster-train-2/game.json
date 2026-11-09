@@ -1,0 +1,24 @@
+{
+ "title_id": "010051701FB46000",
+ "name": "Monster Train 2",
+ "version": "1.1.1",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v131072"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "ee6648cb2bb46c19255c1d04f88e9c40d36ef6b4"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

@@ -1,0 +1,45 @@
+{
+ "title_id": "01007EF00011E000",
+ "name": "The Legend of Zelda: Breath of the Wild",
+ "version": "nxnative: 1.9.0 (update v1114112); MacNativeGames: see its build",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' runtime",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca"
+   },
+   "shader_list": "shader_list-macnativegames.tsv",
+   "watch": [
+    "games/totk",
+    "build_app.py",
+    "tools/builder"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Breath of the Wild 1.6.0 or 1.9.0, up to native 4K, on the same runtime as Tears of the Kingdom. Needs Homebrew's python@3.14, opus and libvpx."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v1114112"
+   ],
+   "shader_list": "shader_list.tsv",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "7d8dcdf824a6d67a76892840baf0877bc1c34e70"
+   },
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.9.0."
+  }
+ ],
+ "disk_gb": 35,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is the most polished way to play this game on a Mac (up to native 4K)."
+  }
+ ]
+}

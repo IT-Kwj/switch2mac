@@ -1,0 +1,24 @@
+{
+ "title_id": "0100C49025D3E000",
+ "name": "EA SPORTS FC 27",
+ "version": "1.8d.310c",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "cc60a0c1d749dadfdf6fb052db1b48194f2b95af"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.8d.310c) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

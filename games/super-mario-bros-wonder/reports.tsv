@@ -1,0 +1,3 @@
+# How Super Mario Bros. Wonder ran on players' Macs, by build. Only reports that name the Mac are kept.
+# Columns: Mac, chip, memory (GB), macOS, build (game.json build id, with its commit when known), fps, peak memory (GB), notes, source, date (when known; tools/reports.py adds it)
+MacBook Pro	M1 Max	64	26.6	nxnative	60		1.0.0 + 1.0.1; frame time p50 16.7 ms	maintainer	2026-11-07

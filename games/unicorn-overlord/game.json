@@ -1,0 +1,24 @@
+{
+ "title_id": "010069401ADB8000",
+ "name": "Unicorn Overlord",
+ "version": "1.05",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v262144"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "40b643bbe68861d171cb1a2733a953aa739f9ac1"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.05) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

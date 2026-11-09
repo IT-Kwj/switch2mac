@@ -1,22 +1,30 @@
 # switch2mac
 
-**Play your Nintendo Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose the dump folder, press Build, play.
+**Play your Nintendo Switch and Switch 2 games natively on your Mac.** switch2mac is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose your game, press Build, play.
 
-It is not an emulator. The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
+It is not an emulator, and it contains no game, key or Nintendo artwork: you bring your own copy, and what it builds stays on your Mac. switch2mac is an independent, non-commercial fan project, not affiliated with Nintendo ([LEGAL.md](LEGAL.md)).
+
+The game's own Arm code runs directly on Apple silicon, its system calls go to a native runtime, and its graphics are translated to Metal ahead of time. switch2mac picks the best build of each game for your Mac (chip and memory), based on how each build ran on players' Macs.
 
 ## The switch2mac app
 
-A Mac app that builds your games for you: choose a dump folder, press **Build**, and the game lands in Applications. It keeps a **Library** of your games with their eShop banners (downloaded onto your Mac when it runs; none are stored here), shows **Your Mac** (chip, memory, macOS) and the build of each game that suits it, with how that build ran on other players' Macs.
+A Mac app that builds your games for you: choose your game, press **Build**, and it lands in Applications.
 
-1. **Download** `switch2mac-macOS-arm64.zip` from [Releases](https://github.com/azmasm/switch2mac/releases/latest). Unzip it and move **switch2mac** to your Applications folder.
-2. **Open it.** The first time, macOS says it cannot verify the app (it is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
+- **Library:** your games as 3D game cases (Carousel, Flipbook or Stack), as covers or as a row of banners. Click a case to open it (its cartridge and booklet slide out), click again to play. Drag, scroll, use the arrow keys or a controller. Box fronts and eShop banners are downloaded onto your Mac when the app runs (see [LEGAL.md](LEGAL.md)); none are stored here.
+- **Several builds per game:** nxnative, switch2mac's own engine, MacNativeGames and community ports. The app picks the one that runs best on **Your Mac** (chip, memory, macOS), from how each build ran on players' Macs.
+- **Switch and Switch 2:** Switch 2 dumps need no keys; Switch games are built with your own `prod.keys`, with their update and DLC.
+- **What's New, Performance and updates:** game fixes arrive by themselves; every play session's frame rate and memory is kept, and can be shared as a report.
+- **Light while you play:** switch2mac lets go of its pictures while a game runs, or closes and opens again after (Settings › Close switch2mac while playing).
+
+1. **Download** `switch2mac-<version>.pkg` from [Releases](https://github.com/azmasm/switch2mac/releases/latest) and open it.
+2. **Allow it once.** macOS says it could not verify the installer (switch2mac is not signed with a paid Apple Developer ID): click **Done**, open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. The installer puts **switch2mac** in your Applications folder, and it opens normally from then on. You only do this once: the app updates itself after that.
 3. **Follow the setup.** It checks your Mac and tells you what to install: **Xcode** (free, App Store) with its **Metal Toolchain**, and the **.NET 10 SDK** ([dot.net](https://dot.net)). Python and the other build tools are inside the app.
-4. **Build a game.** On the **Builds** page, choose your game's dump folder. The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
+4. **Build a game.** Press **+ Build game** and choose your game (a dump folder, a `.nup`, or a Switch game's `.nsp` / `.xci`). The app names the game, shows **Your Mac** and the build it recommends, and how that build ran on other Macs. Press **Build**. It takes 20 minutes to a few hours the first time, depending on the game, and needs 20-250 GB free while it builds (each game's page says).
 5. **Play** from the app's **Library** or from Applications. The very first start waits 1-3 minutes with no window while macOS checks the new app: wait, don't open it twice. In the game, **1** shows the performance overlay and **2** the settings.
 
 The app keeps itself and its game list up to date: new games and fixes arrive when you open it.
 
-> **You need:** a Mac with Apple silicon and **macOS 26 or later**, and a dump of a game you own. switch2mac needs no keys and decrypts nothing. This repository holds no game content, and what the build makes must not be shared. See [LEGAL.md](LEGAL.md).
+> **You need:** a Mac with Apple silicon and **macOS 26 or later**, and a dump of a game you own. Switch 2 games need no keys; Switch 1 games are built with your own `prod.keys`, which switch2mac only passes to the builder (see [LEGAL.md](LEGAL.md)). switch2mac itself decrypts nothing. This repository holds no game content, and what the build makes must not be shared. See [LEGAL.md](LEGAL.md).
 
 ## Games
 
@@ -33,6 +41,17 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Star Fox | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | nxnative reports: plays on an **M4 Pro (48 GB)** through the title, the prologue and the tutorial flight at **56-60 fps**. About 2,900 shaders, a short build. | [games/star-fox](games/star-fox) |
 | Kirby Air Riders | update v458752 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/8feddfeeb6268923d66b64a6e15efeb9b2901cf9/dm/games/040077201BE50000). | [games/kirby-air-riders](games/kirby-air-riders) |
 | The Legend of Zelda: Ocarina of Time | update v131072 | [nxnative](https://github.com/seedds/nxnative)'s builder | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/6121fd75312cb4d1af404a01921d437741fea91e/dm/games/0400486024DEC000). | [games/the-legend-of-zelda-ocarina-of-time](games/the-legend-of-zelda-ocarina-of-time) |
+| Super Mario 3D World + Bowser's Fury (Switch) | 1.2.2 (update v262144) | [nxnative](https://github.com/seedds/nxnative)'s builder | From nxnative's profile. Built with your own `prod.keys`. | [games/super-mario-3d-world-bowsers-fury](games/super-mario-3d-world-bowsers-fury) |
+| Super Mario Bros. Wonder (Switch) | 1.0.0, 1.0.1 or 1.2.1 | [nxnative](https://github.com/seedds/nxnative)'s builder (default), or [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Plays at 60 fps on an M1 Max. Built with your own `prod.keys`. | [games/super-mario-bros-wonder](games/super-mario-bros-wonder) |
+| Super Smash Bros. Ultimate (Switch) | 1.0.0 with update 13.0.2 or 13.0.5 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port. Built with your own `prod.keys`. | [games/super-smash-bros-ultimate](games/super-smash-bros-ultimate) |
+| Ori and the Blind Forest: Definitive Edition (Switch) | 1.0.1 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port. Built with your own `prod.keys`. | [games/ori-and-the-blind-forest-definitive-edition](games/ori-and-the-blind-forest-definitive-edition) |
+| Octopath Traveler 0 (Switch) | 1.0.3, 1.0.4 or 1.0.5 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port, work in progress; up to 120 fps. Built with your own `prod.keys`. | [games/octopath-traveler-0](games/octopath-traveler-0) |
+| Metroid Dread (Switch) | 1.0.0 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port, early. Built with your own `prod.keys`. | [games/metroid-dread](games/metroid-dread) |
+| Kirby and the Forgotten Land (Switch) | 1.0.0 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port, early. Built with your own `prod.keys`. | [games/kirby-and-the-forgotten-land](games/kirby-and-the-forgotten-land) |
+| Mario vs. Donkey Kong (Switch) | 1.0.1 | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419's port | Community port, early. Built with your own `prod.keys`. | [games/mario-vs-donkey-kong](games/mario-vs-donkey-kong) |
+| The Legend of Zelda: Tears of the Kingdom (Switch) | 1.4.3 (update v720896) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (default), or nxnative's builder | New in switch2mac, **not built here yet**: MacNativeGames reports it runs well on Apple silicon. Built with your own `prod.keys`. | [games/the-legend-of-zelda-tears-of-the-kingdom](games/the-legend-of-zelda-tears-of-the-kingdom) |
+| The Legend of Zelda: Breath of the Wild (Switch) | 1.9.0 (update v1114112) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) (default), or nxnative's builder | New in switch2mac, **not built here yet**. Built with your own `prod.keys`. | [games/the-legend-of-zelda-breath-of-the-wild](games/the-legend-of-zelda-breath-of-the-wild) |
+| Every other Switch game nxnative has a profile for (133 more) | its profile's versions | nxnative's builder | Added from nxnative's profiles and kept up to date automatically (checked daily): each page links nxnative's notes on how far it plays. A game with no profile can still be tried with an untested build, guessed from its files. | [games/](games) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -56,6 +75,8 @@ The files your dump tool wrote, for example:
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 
 **A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; switch2mac's own engine (Mario Kart World's `switch2mac` build) needs a dump folder, so the app recommends another build for a `.nup`.
+
+**Switch games:** choose the game's `.nsp` or `.xci` file, or the folder with its base game, update and DLC, then your own `prod.keys` when the app asks. The app recognises the game from the file names dump tools write (`Game [0100F2C0115B6000][v0].nsp`); nxnative's builder opens the files. Tested builds for Switch 1 games, and more of them, are coming.
 
 Copied off your console over FTP? Use **binary** transfer mode, or the files get damaged. A damaged dump is named in the app before you build.
 
@@ -111,7 +132,8 @@ Controllers map by position (right button = A, bottom = B, top = X, left = Y; Ni
 
 | What you see | What to do |
 |---|---|
-| "Apple could not verify switch2mac" (or a game) | **System Settings → Privacy & Security** → scroll down → **Open Anyway**. Only needed the first time. |
+| "Apple could not verify switch2mac-….pkg" (or a game) | **System Settings → Privacy & Security** → scroll down → **Open Anyway**. Only needed the first time. |
+| "switch2mac is damaged and can't be opened" | You opened the zip instead of the installer: delete that copy and use `switch2mac-<version>.pkg` from Releases. |
 | The app's setup says something is missing | Install what it names (Xcode, its Metal Toolchain, .NET 10), then open the app again. |
 | "not enough free disk space" | Free up the space it names (empty the Trash too), then try again. |
 | "cut short or damaged", or the build stops while reading the game's files | The dump was damaged while copying. Copy it off the console again in **binary** mode, and check the folder is the right one ([Your dump folder](#your-dump-folder)). |
@@ -125,7 +147,7 @@ Still stuck? Open an issue on this page with a screenshot and the game's log: in
 
 The runtime loads the game's modules into memory, rewrites their system calls and SDK functions into calls to native code (file system, audio, input, threads, time), and implements NVN2, the Switch 2 graphics API, on Metal. Switch 2 shaders (NVIDIA Ampere code) are translated into Metal Shading Language ahead of time and compiled into Metal libraries.
 
-Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A daily check moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
+Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A check several times a day moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
 
 ## Repository layout
 
@@ -136,9 +158,14 @@ Each game is built with the engine its port was made with, pinned in its `game.j
 | `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game and build, for the engine its app is built with (a second build's: `shader_list-<build>.tsv`) |
 | `app/` | the switch2mac app (SwiftPM; `app/tools/make_app.sh` makes `app/build/switch2mac.app`, `--bundle-tools` the download with Python and tools inside), adapted from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT) |
 | `tools/shader_list.py` | the shared shader lists: stats, merge, collect the lists players send, ship each build's list |
+| `tools/reports.py` | players' How it ran reports: reads a report issue into the game's `reports.tsv` |
+| `tools/nup.py` | reads a `.nup` dump (which game, which versions) before anything is built |
+| `tools/issue_guard.py` | hides issues and comments that contain keys, game files or links to sites that hand them out ([LEGAL.md](LEGAL.md)) |
 | `tools/engine/` | switch2mac's front end for the games built with another engine: the overlay and settings panel (`s2m_ui.m`), the script that adds it to that engine (`patch.py`) and the one that moves those games to their build's newest commit (`update.py`) |
 | `tools/porting/` | helpers for bringing up a game: run-time shader finder, NSO disassembly helper, pass tracer, performance summary |
 | `docs/` | [porting.md](docs/porting.md) (bringing up a game), [mario-kart-world.md](docs/mario-kart-world.md) (how the first port was made) |
+| `.github/` | the issue forms (How it ran, Shader list, Problem) and the workflows that read them, guard them and keep the builds up to date |
+| `LEGAL.md`, `NOTICE.md`, `LICENSE` | what switch2mac does and does not do, every project it builds on, its MIT licence |
 | `AGENTS.md` | notes for AI coding assistants |
 | `CHANGELOG.md` | what changed, release by release |
 

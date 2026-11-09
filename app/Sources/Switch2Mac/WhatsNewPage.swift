@@ -12,6 +12,7 @@ struct WhatsNewPage: View {
     let artwork: [UUID: NSImage]
     let newBuild: () -> Void
     @State private var newsShown = WhatsNewPage.newsStep   // News shows its newest points; Show more adds the next few
+    @State private var updatesShown = WhatsNewPage.updatesStep   // Build updates: five lines, then Show more
 
     var body: some View {
         CardPageHeading("What's New", note: "What changed in switch2mac, and new builds and games, checked every few minutes. Your games' updates show in the Library.")
@@ -28,14 +29,7 @@ struct WhatsNewPage: View {
             }
         }
         if !days.isEmpty {
-            ForEach(days, id: \.day) { group in
-                CardGroup("Build updates · \(group.day)") {
-                    ForEach(Array(group.updates.enumerated()), id: \.element.id) { index, u in
-                        if index > 0 { CardDivider() }
-                        UpdateRow(update: u, multi: (store.pinned.values.first { $0.name == u.game }?.builds.count ?? 1) > 1)
-                    }
-                }
-            }
+            buildUpdatesCard
         } else if store.failed {
             CardGroup("Build updates") {
                 Text("GitHub could not be reached just now. What's New tries again in a few minutes.")
@@ -44,8 +38,8 @@ struct WhatsNewPage: View {
             }
         }
         if !engineChanges.isEmpty {
-            CardGroup("nxnative's latest changes", footnote: "nxnative is the engine most games here are built with, and it changes many times a day. A change reaches a game when that game's build next moves (Build updates above); changes for every game come along with it.") {
-                ForEach(Array(engineChanges.enumerated()), id: \.element.id) { index, c in
+            CardGroup("nxnative's latest changes", footnote: "nxnative is the engine most games here are built with. A change reaches a game when that game's build next moves.") {
+                ForEach(Array(engineChanges.enumerated()), id: \.element.id) { index, c in   // in full (the player's choice): the last three days
                     if index > 0 { CardDivider() }
                     EngineChangeRow(change: c, games: store.engineTags[c.sha] ?? [], owned: owned)
                 }
@@ -54,6 +48,37 @@ struct WhatsNewPage: View {
     }
 
     static let newsStep = 5
+    static let updatesStep = 5
+
+    /// Every build update of the last week in one card, newest first, in full (the game, its build, the whole change message, when), the day as a small
+    /// heading over its first row: five, then Show more. Your games' updates come first within a day.
+    private var buildUpdatesCard: some View {
+        let rows = days.flatMap { d in d.updates.sorted { owned.contains($0.game) && !owned.contains($1.game) }.map { (day: d.day, update: $0) } }
+        let shown = Array(rows.prefix(updatesShown))
+        return CardGroup("Build updates") {
+            ForEach(Array(shown.enumerated()), id: \.element.update.id) { index, item in
+                if index > 0 { CardDivider() }
+                VStack(alignment: .leading, spacing: 4) {
+                    if index == 0 || shown[index - 1].day != item.day {
+                        Text(item.day).font(.manrope(12, .semibold)).foregroundStyle(LauncherPalette.unbuilt).padding(.horizontal, 18).padding(.top, 10)
+                    }
+                    UpdateRow(update: item.update, multi: (store.pinned.values.first { $0.name == item.update.game }?.builds.count ?? 1) > 1,
+                              yours: owned.contains(item.update.game), whole: true)
+                }
+            }
+            moreLess(shown: shown.count, total: rows.count, step: Self.updatesStep, value: $updatesShown)
+        }
+    }
+
+    @ViewBuilder private func moreLess(shown: Int, total: Int, step: Int, value: Binding<Int>) -> some View {
+        if total > step {
+            CardDivider()
+            HStack(spacing: 0) {
+                if shown < total { newsButton("Show more", up: false) { value.wrappedValue += step } }
+                if shown > step { newsButton("Show less", up: true) { value.wrappedValue = step } }
+            }
+        }
+    }
 
     /// The changelog's points, newest first, each with its day: the newest five, then five more each time Show more is pressed
     /// (all of them at once was a long scroll), and Show less back to five once more are shown.
@@ -111,9 +136,9 @@ struct WhatsNewPage: View {
         store.updates.filter { $0.newGame && Date().timeIntervalSince($0.date) < 30 * 86400 }
     }
 
-    /// The build updates of the last two weeks, by day; a game updated several times in a day shows once, its newest line.
+    /// The build updates of the last week, by day; a game updated several times in a day shows once, its newest line.
     private var days: [(day: String, updates: [WhatsNew.Update])] {
-        let recent = store.updates.filter { !$0.newGame && !$0.quiet && Date().timeIntervalSince($0.date) < 14 * 86400 }
+        let recent = store.updates.filter { !$0.newGame && !$0.quiet && Date().timeIntervalSince($0.date) < 7 * 86400 }
         var out: [(day: String, updates: [WhatsNew.Update])] = []
         for u in recent {
             let d = Self.day(u.date)
@@ -145,22 +170,55 @@ struct WhatsNewPage: View {
 struct UpdateRow: View {
     let update: WhatsNew.Update
     let multi: Bool
+    var yours = false   // a game in your library: its dot stands out
+    var compact = false   // one line
+    var whole = false   // the whole change message, however long (What's New's Build updates)
 
     var body: some View {
+        if compact { line } else { full }
+    }
+
+    private var note: String { update.note.isEmpty ? "Moved to \(update.engine) \(update.commit.prefix(8))." : Self.summary(update.note) }
+
+    private var line: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.ready.opacity(0.6)).frame(width: 7, height: 7)
+            Text(update.game).font(.manrope(14, .semibold)).lineLimit(1).layoutPriority(2)
+            Text(multi ? "\(update.build) build" : update.engine).font(.manrope(12)).foregroundStyle(.secondary).lineLimit(1).layoutPriority(1)
+            Text(note).font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
+            Spacer(minLength: 12)
+            Text(update.date.formatted(.relative(presentation: .named))).font(.manrope(11.5)).foregroundStyle(.tertiary).lineLimit(1).layoutPriority(2)
+        }
+        .padding(.horizontal, 18).padding(.vertical, 10)
+        .help(update.note.isEmpty ? note : update.note)
+    }
+
+    private var full: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Circle().fill(LauncherPalette.ready).frame(width: 7, height: 7)
+            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.ready.opacity(0.6)).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(update.game).font(.manrope(14, .semibold))
                     Text(multi ? "\(update.build) build" : update.engine).font(.manrope(12)).foregroundStyle(.secondary)
                 }
-                Text(update.note.isEmpty ? "Moved to \(update.engine) \(update.commit.prefix(8))." : update.note)
-                    .font(.manrope(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Text(update.note.isEmpty ? "Moved to \(update.engine) \(update.commit.prefix(8))." : whole ? update.note : Self.summary(update.note))
+                    .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(whole ? nil : 2).fixedSize(horizontal: false, vertical: whole).help(update.note)
             }
             Spacer(minLength: 12)
-            Text(update.commit.prefix(8)).font(.mono(11.5)).foregroundStyle(.tertiary)
+            VStack(alignment: .trailing, spacing: 3) {   // when, as nxnative's changes show it; the commit under it
+                Text(update.date.formatted(.relative(presentation: .named))).font(.manrope(11.5)).foregroundStyle(.tertiary)
+                Text(update.commit.prefix(8)).font(.mono(11)).foregroundStyle(.quaternary)
+            }
         }
         .padding(.horizontal, 18).padding(.vertical, 12)
+    }
+
+    /// A commit message as one short line: its first sentence or clause, without the bracketed references (chain, issue and PR numbers) engine commits end with.
+    static func summary(_ note: String) -> String {
+        var s = note.replacingOccurrences(of: #"\s*\((chain|issue|PR|pull|#)[^)]*\)"#, with: "", options: .regularExpression)
+        if let r = s.range(of: #"[.;](\s|$)"#, options: .regularExpression) { s = String(s[..<r.lowerBound]) }
+        s = s.trimmingCharacters(in: .whitespaces)
+        return s.isEmpty ? note : s + "."
     }
 }
 
@@ -174,7 +232,7 @@ struct EngineChangeRow: View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Circle().fill(games.contains(where: owned.contains) ? LauncherPalette.progress : LauncherPalette.unbuilt).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 6) {
-                Text(change.text).font(.manrope(13)).lineLimit(3).fixedSize(horizontal: false, vertical: true).help(change.text)
+                Text(UpdateRow.summary(change.text)).font(.manrope(13)).lineLimit(2).help(change.text)
                 HStack(spacing: 6) {
                     ForEach(games, id: \.self) { g in
                         Text(g).font(.manrope(11.5, .semibold))

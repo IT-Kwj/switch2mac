@@ -11,17 +11,21 @@ package struct AppCard: View {
     let notify: Binding<Bool>
     let notifyAvailable: Bool   // false without an app bundle, e.g. under swift run
     let returnAfterPlay: Binding<Bool>
+    let closeWhilePlaying: Binding<Bool>
+    let interfaceSounds: Binding<Bool>
     let onRunSetup: (() -> Void)?   // the guided first-run setup, again (nil where there is none)
     let uninstallPlan: () -> Uninstall.Plan
     @EnvironmentObject var loc: Localizer
 
     package init(updates: AppUpdateStore, buildRunning: Bool, notify: Binding<Bool>, notifyAvailable: Bool, returnAfterPlay: Binding<Bool>,
-                 onRunSetup: (() -> Void)?, uninstallPlan: @escaping () -> Uninstall.Plan) {
+                 closeWhilePlaying: Binding<Bool> = .constant(false), interfaceSounds: Binding<Bool> = .constant(true), onRunSetup: (() -> Void)?, uninstallPlan: @escaping () -> Uninstall.Plan) {
         self.updates = updates
         self.buildRunning = buildRunning
         self.notify = notify
         self.notifyAvailable = notifyAvailable
         self.returnAfterPlay = returnAfterPlay
+        self.closeWhilePlaying = closeWhilePlaying
+        self.interfaceSounds = interfaceSounds
         self.onRunSetup = onRunSetup
         self.uninstallPlan = uninstallPlan
     }
@@ -35,6 +39,13 @@ package struct AppCard: View {
     /// What the picker shows for a choice: "system" follows the UI language, a language shows its own name.
     private func languageLabel(_ code: String) -> String {
         code.isEmpty ? loc.t("settings.language.system") : (Lang.find(code)?.name ?? code)
+    }
+
+    /// One switch, as in the League client's "Close client during game": on, switch2mac closes while a game it started runs and opens again when
+    /// the game quits; off, it stays open and comes to the front when the game quits (returnAfterPlay, on by default).
+    private func setCloseWhilePlaying(_ on: Bool) {
+        closeWhilePlaying.wrappedValue = on
+        returnAfterPlay.wrappedValue = true
     }
 
     package var body: some View {
@@ -66,10 +77,17 @@ package struct AppCard: View {
                 }
                 CardDivider()
             }
-            // The launcher back in front when a game it started quits (ReturnAfterPlay.swift)
-            CardRow(loc.t("settings.returnAfterPlay"), detail: loc.t("settings.returnAfterPlayNote")) {
-                Toggle("", isOn: returnAfterPlay).toggleStyle(LauncherSwitchStyle()).labelsHidden()
-                    .padTarget("set.returnAfterPlay", scope: "main") { returnAfterPlay.wrappedValue.toggle() }
+            // Close switch2mac while a game it started runs, and open it again when the game quits (ReturnAfterPlay.swift)
+            CardRow(loc.t("settings.whilePlaying"), detail: loc.t("settings.whilePlaying.note")) {
+                Toggle("", isOn: Binding(get: { closeWhilePlaying.wrappedValue }, set: { setCloseWhilePlaying($0) }))
+                    .toggleStyle(LauncherSwitchStyle()).labelsHidden()
+                    .padTarget("set.whilePlaying", scope: "main") { setCloseWhilePlaying(!closeWhilePlaying.wrappedValue) }
+            }
+            CardDivider()
+            // the Library's small sounds (InterfaceSound.swift)
+            CardRow(loc.t("settings.interfaceSounds"), detail: loc.t("settings.interfaceSoundsNote")) {
+                Toggle("", isOn: interfaceSounds).toggleStyle(LauncherSwitchStyle()).labelsHidden()
+                    .padTarget("set.interfaceSounds", scope: "main") { interfaceSounds.wrappedValue.toggle() }
             }
             CardDivider()
             CardRow("switch2mac", detail: String(format: loc.t("app.version"), updates.version),

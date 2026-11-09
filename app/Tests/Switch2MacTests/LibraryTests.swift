@@ -49,6 +49,45 @@ import NXModel
         defaults.removePersistentDomain(forName: "nxnative-tests-filter-" + temporary.lastPathComponent)
     }
 
+    /// The console filter: Switch 1 games have title IDs 01…, Switch 2 games 04…; it is remembered, and offered only for a library with both.
+    func testConsoleFilterSplitsSwitch1AndSwitch2() throws {
+        let s1 = LibraryGame(titleID: "0100F2C0115B6000", name: "Tears"), s2 = LibraryGame(titleID: "0400486024DEC000", name: "Ocarina")
+        XCTAssertTrue(ConsoleFilter.switch1.includes(s1)); XCTAssertFalse(ConsoleFilter.switch1.includes(s2))
+        XCTAssertTrue(ConsoleFilter.switch2.includes(s2)); XCTAssertFalse(ConsoleFilter.switch2.includes(s1))
+        XCTAssertTrue(ConsoleFilter.all.includes(s1) && ConsoleFilter.all.includes(s2))
+        XCTAssertTrue(ConsoleFilter.mixed([s1, s2])); XCTAssertFalse(ConsoleFilter.mixed([s2]))
+        var edition = LibraryGame(titleID: "0100F43008C44000", name: "Legends Z-A Switch 2 Edition")   // a Switch 2 Edition keeps its Switch game's ID
+        edition.inputs = [GameLibrary.folderInput: ["/dumps/za"]]
+        XCTAssertEqual(ConsoleFilter.console(of: edition), .switch2, "a Switch 2 dump folder is a Switch 2 game")
+        XCTAssertEqual(ConsoleFilter.allCases, [.all, .switch1, .switch2], "All, Switch, Switch 2")
+        let suite = "nxnative-tests-console-" + temporary.lastPathComponent
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        XCTAssertEqual(ConsoleFilter.load(defaults), .all)
+        ConsoleFilter.switch1.save(defaults)
+        XCTAssertEqual(ConsoleFilter.load(defaults), .switch1)
+        defaults.removePersistentDomain(forName: suite)
+        // a hidden selection moves to a game the filters show
+        let after = LibraryFilter.reconcile(games: [s1, s2], selectedID: s2.id, focused: nil, shows: ConsoleFilter.switch1.includes)
+        XCTAssertEqual(after.selectedID, s1.id)
+    }
+
+    /// What's New: a build update's note is one short line, without the references engine commits end with.
+    func testUpdateNotesAreOneShortLine() {
+        XCTAssertEqual(UpdateRow.summary("An HMMA outside a chain no longer overwrites the accumulator a chain holds: Ocarina of Time's dotted rows are gone (chain d866f9700d78, issue #1537)"),
+                       "An HMMA outside a chain no longer overwrites the accumulator a chain holds: Ocarina of Time's dotted rows are gone.")
+        XCTAssertEqual(UpdateRow.summary("Terrain no longer opens in holes. The ground keeps its height maps (PR #1604)"), "Terrain no longer opens in holes.")
+    }
+
+    /// Covers are case-shaped (184:300) cuts of the 1920 x 1080 eShop banner at its own resolution, centred on the title and kept inside the picture.
+    func testCoverIsAPortraitCutOfTheBanner() throws {
+        let mid = try XCTUnwrap(CoverArt.rectangle(width: 1920, height: 1080, focusX: nil))
+        XCTAssertEqual(mid, CGRect(x: 629, y: 0, width: 662, height: 1080))
+        XCTAssertEqual(CoverArt.rectangle(width: 1920, height: 1080, focusX: 0.05)?.minX, 0, "a title near the edge: the cut stays inside")
+        XCTAssertEqual(CoverArt.rectangle(width: 1920, height: 1080, focusX: 0.98)?.maxX, 1920)
+        XCTAssertEqual(CoverArt.rectangle(width: 600, height: 1200, focusX: 0.5)?.size, CGSize(width: 600, height: 978), "a tall picture is cut in height")
+        XCTAssertEqual(LibraryLayout.load(UserDefaults(suiteName: "nxnative-tests-layout-\(UUID().uuidString)")!), .row, "the row stays the default")
+    }
+
     /// Built hides the games without a build. The selection moves to a game it shows, and a controller's focus on a hidden card
     /// is dropped, so A cannot start a game that is not on screen.
     func testBuiltFilterKeepsSelectionAndFocusOnShownGames() throws {

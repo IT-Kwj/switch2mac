@@ -1,0 +1,24 @@
+{
+ "title_id": "0100276009872000",
+ "name": "ŌKAMI HD",
+ "version": "1.0.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v0"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "b4318c7a4d0bcbd16e7873ce63f33d344d1acbfb"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

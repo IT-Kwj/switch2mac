@@ -1,0 +1,60 @@
+{
+ "title_id": "01004D300C5AE000",
+ "name": "Kirby and the Forgotten Land",
+ "version": "1.0.0",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "968daa99120e8029e94551ebb51b6d6e1c46e394",
+    "builder": {
+     "script": "games/kirby/scripts/build_kirby.py",
+     "args": [
+      "--game",
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--work",
+      "{work}",
+      "--out",
+      "{app}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ]
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/kirby"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its kirby port: Community port, early. Base game 1.0.0 (.nsp or .xci); an .nsp carries no system fonts, so add your firmware."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v65536"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "17f670a77e4faa3512c1441ebeedcbccb2deb3b3"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "about": "nxnative's profile (1.1.0) with switch2mac's overlay and key-2 settings."
+  }
+ ],
+ "disk_gb": 30,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is made for this game."
+  }
+ ]
+}

@@ -12,7 +12,7 @@ struct LibraryGame: Codable, Identifiable, Equatable {
     var appPath = ""
     var ipaPath = ""
     var archivePath = ""
-    var lastTarget = BuildTarget.ios
+    var lastTarget = BuildTarget.mac   // switch2mac: Mac apps only
     var inputs: [String: [String]] = [:]
     var outputDirectory = ""
     /// The folder this game's files were found in, which is what the Build page shows: the parent of a base package a
@@ -396,7 +396,9 @@ final class GameLibrary: ObservableObject {
                     }
                     continue
                 }
-                if e.level >= 4 || name.hasSuffix(".app") || name.hasSuffix("_build") || name.hasSuffix("-work") || name.hasSuffix("_survey") || ["romfs", "extract", "tools", "venv", "archive", "harness", "runs", "shader", "node_modules"].contains(name) { e.skipDescendants() }
+                // Six levels down at most: a ROMs folder for every system (ROMs/Switch/Games/<game>/…) still reaches its Switch games. Other systems' files
+                // are never read: only Switch 2 game folders, .nup files and Switch .nsp / .nsz / .xci / .xcz files are taken
+                if e.level >= 6 || name.hasSuffix(".app") || name.hasSuffix("_build") || name.hasSuffix("-work") || name.hasSuffix("_survey") || ["romfs", "extract", "tools", "venv", "archive", "harness", "runs", "shader", "node_modules"].contains(name) { e.skipDescendants() }
                 continue
             }
             // A NUP file is one game with its updates and DLC (GameFolder.readNUP): a folder that holds one was taken above
@@ -644,8 +646,19 @@ final class GameLibrary: ObservableObject {
     /// Prefer a user's own image, then the game's eShop key art (ArtworkStore), then an existing repository
     /// gameplay screenshot, then the app icon.
     static func artwork(for game: LibraryGame, repo: String, banners: URL = ArtworkStore.shared.directory) -> NSImage? {
-        if !game.artworkPath.isEmpty, let image = NSImage(contentsOfFile: game.artworkPath) { return image }
-        if let url = ArtworkStore.cachedBanner(game.titleID, in: banners), let image = NSImage(contentsOf: url) { return image }
+        artworkURL(for: game, repo: repo, banners: banners).flatMap { NSImage(contentsOf: $0) }
+    }
+
+    /// The Library's banner of a game read small (960 pixels across, about a quarter of the full 1920 × 1080 once opened): the cards, covers, glows
+    /// and lists never show more. The hero loads the full picture of its one game itself (`artworkURL`). Safe off the main thread.
+    nonisolated static func artworkThumbnail(for game: LibraryGame, repo: String) -> NSImage? {
+        artworkURL(for: game, repo: repo).flatMap { BoxArtStore.load($0, maxPixels: 960) }
+    }
+
+    /// Where a game's banner comes from, in the order `artwork` takes them.
+    nonisolated static func artworkURL(for game: LibraryGame, repo: String, banners: URL = ArtworkStore.shared.directory) -> URL? {
+        if !game.artworkPath.isEmpty, FileManager.default.fileExists(atPath: game.artworkPath) { return URL(fileURLWithPath: game.artworkPath) }
+        if let url = ArtworkStore.cachedBanner(game.titleID, in: banners) { return url }
         func normalized(_ s: String) -> String {
             s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
                 .filter { $0.isLetter || $0.isNumber }
@@ -656,8 +669,9 @@ final class GameLibrary: ObservableObject {
         let matches = files.filter {
             ["jpg", "jpeg", "png", "webp"].contains($0.pathExtension.lowercased()) && name.hasSuffix(normalized($0.deletingPathExtension().lastPathComponent))
         }.sorted { $0.lastPathComponent.count > $1.lastPathComponent.count }
-        if let url = matches.first, let image = NSImage(contentsOf: url) { return image }
-        if !game.appPath.isEmpty, let icon = NSImage(contentsOfFile: game.appPath + "/Contents/Resources/AppIcon.icns") { return icon }
+        if let url = matches.first { return url }
+        let icon = game.appPath + "/Contents/Resources/AppIcon.icns"
+        if !game.appPath.isEmpty, FileManager.default.fileExists(atPath: icon) { return URL(fileURLWithPath: icon) }
         // Extraction icons are small; they are a fallback, never presented as high-resolution artwork.
         return nil
     }

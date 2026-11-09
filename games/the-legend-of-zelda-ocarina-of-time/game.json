@@ -9,7 +9,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "5e344a87431ed3fd2c7cde5ab6e391ff60721a85"
+    "commit": "09dcb6276fc4e31683add0b1e060173ff637333a"
    },
    "shader_list": "shader_list.tsv",
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch.",
@@ -56,5 +56,16 @@
    "why": "Other Macs: nxnative's own Ocarina of Time build"
   }
  ],
- "disk_gb": 50
+ "disk_gb": 50,
+ "marker": "Event/Movie/Dm_StaffCredit_0000.webm",
+ "shader_env": {
+  "EDEN_NX2_TENSOR": "1"
+ },
+ "wip": {
+  "switch2mac": {
+   "kind": "switch2mac",
+   "repo": "https://github.com/azmasm/switch2mac-engine",
+   "commit": "0656fd1b326ba7d26ec1654d79009c50af8891da"
+  }
+ }
 }

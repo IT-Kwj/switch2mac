@@ -1,0 +1,24 @@
+name: A problem or a question
+description: Something went wrong while building or playing, or you have a question.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thanks for reporting!** The more you tell (what you did, what happened, what you expected), the faster it gets fixed. The app's **Settings › Copy diagnostics** gives the details of your Mac and the last build, with no paths or keys in it. Screenshots and logs are welcome. **Never** attach game files, saves, built apps, shader dumps or keys, and never link to where games or keys can be found: such issues are hidden automatically ([LEGAL.md](https://github.com/azmasm/switch2mac/blob/main/LEGAL.md)).
+  - type: input
+    id: game
+    attributes:
+      label: Game (if it is about one)
+      placeholder: Mario Kart World
+  - type: input
+    id: mac
+    attributes:
+      label: Your Mac and macOS
+      placeholder: "MacBook Pro M3 Pro, 18 GB, macOS 26.6"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you saw, what you expected. Paste the diagnostics or the end of the build log here.
+    validations:
+      required: true

@@ -1,4 +1,5 @@
 import AppKit
+import NXCore
 
 // The launcher comes back to the front when a game it started quits. Play opens the game's own app and the
 // launcher stayed wherever it was: after a session (often played with a controller) there was nothing in front to
@@ -12,6 +13,32 @@ enum ReturnAfterPlay {
 
     /// On unless switched off in Settings.
     static var enabled: Bool { UserDefaults.standard.object(forKey: defaultsKey) as? Bool ?? true }
+
+    /// "Close while you play" (Settings > App): switch2mac quits once a game it started is running, so the game has the whole Mac, and a tiny
+    /// waiter (a shell that checks every two seconds whether the game still runs) opens it again when the game closes. Off unless switched on.
+    static let closeKey = "closeWhilePlaying"
+    static var closeWhilePlaying: Bool { UserDefaults.standard.bool(forKey: closeKey) }
+
+    /// The waiter: `$1` the game's process ID, `$2` this app. Both arrive as arguments, never spliced into the script.
+    static let reopenScript = """
+        while kill -0 "$1" 2>/dev/null; do sleep 2; done
+        sleep 1
+        exec /usr/bin/open "$2"
+        """
+
+    /// Quits switch2mac until the game `pid` closes, then it opens again. Not while a build runs (the build would stop), and only from an app
+    /// bundle (under swift run there is nothing to reopen). Returns whether it is closing.
+    @discardableResult
+    static func closeUntilQuit(pid: Int32, bundle: URL = Bundle.main.bundleURL, buildRunning: Bool = ProcessGroups.buildProcessesAlive) -> Bool {
+        guard bundle.pathExtension == "app", !buildRunning else { return false }
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/sh")
+        p.arguments = ["-c", reopenScript, "sh", String(pid), bundle.path]
+        p.standardInput = FileHandle.nullDevice; p.standardOutput = FileHandle.nullDevice; p.standardError = FileHandle.nullDevice
+        guard (try? p.run()) != nil else { return false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { NSApp.terminate(nil) }   // the game is open by now; the waiter outlives this app
+        return true
+    }
 
     /// The launcher's windows forward: unhidden, active, its main window in front.
     static func bringForward() {
@@ -35,6 +62,8 @@ enum ReturnAfterPlay {
     /// Starting state there), run whether or not the launcher comes forward.
     func didStart(pid: Int32, onQuit: @escaping () -> Void = {}) {
         started[pid] = onQuit
+        if observesSystem, ReturnAfterPlay.closeWhilePlaying, ReturnAfterPlay.closeUntilQuit(pid: pid) { return }
+        if observesSystem { PlayLoadWatcher.shared.start(pid: pid); MemoryTrim.gameStarted() }   // PlayLoad.swift, MemoryTrim.swift   // offers to close if the Mac struggles while it runs (PlayLoad.swift)
         guard observesSystem, observer == nil else { return }
         observer = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didTerminateApplicationNotification,
                                                                      object: nil, queue: .main) { [weak self] note in
@@ -48,6 +77,7 @@ enum ReturnAfterPlay {
     @discardableResult
     func quit(pid: Int32, enabled: Bool = ReturnAfterPlay.enabled, bringForward: () -> Void = ReturnAfterPlay.bringForward) -> Bool {
         guard let onQuit = started.removeValue(forKey: pid) else { return false }
+        if observesSystem { PlayLoadWatcher.shared.stop() }
         onQuit()
         if enabled { bringForward() }
         return true

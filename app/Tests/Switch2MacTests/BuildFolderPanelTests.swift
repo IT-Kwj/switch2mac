@@ -19,4 +19,12 @@ import UniformTypeIdentifiers
         XCTAssertTrue(panel.canChooseFiles)
         XCTAssertTrue(panel.allowedContentTypes.contains { $0.preferredFilenameExtension == "nup" })
     }
+
+    /// A Switch 1 game: its .nsp / .nsz / .xci / .xcz files can be chosen too; the keys panel takes one file.
+    func testTheDumpPanelTakesSwitch1FilesAndTheKeysPanelOneFile() {
+        let exts = Set(LauncherStores.dumpPanel().allowedContentTypes.compactMap(\.preferredFilenameExtension))
+        for e in ["nsp", "xci"] { XCTAssertTrue(exts.contains(e), e) }
+        let keys = LauncherStores.keysPanel()
+        XCTAssertTrue(keys.canChooseFiles); XCTAssertFalse(keys.canChooseDirectories); XCTAssertFalse(keys.allowsMultipleSelection)
+    }
 }

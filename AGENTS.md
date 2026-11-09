@@ -4,7 +4,7 @@ These notes are for an AI coding assistant (Claude Code, Codex, Cursor and other
 
 ## What this project is
 
-switch2mac is a Mac app (`app/`, released as `switch2mac-macOS-arm64.zip`) that builds native Mac apps of Nintendo Switch 2 games from the user's own dump. Players use the app; the app runs `switch2mac.py` from its own copy of this repository, which it updates from `main` when it opens. So a change to `games/`, `switch2mac.py` or `tools/` reaches players with a push; a change to `app/` needs a new release. The game's Arm code runs natively; it is not an emulator.
+switch2mac is a Mac app (`app/`, released as `switch2mac-<version>.pkg` for new installs and `switch2mac-macOS-arm64.zip` for its own updater) that builds native Mac apps of Nintendo Switch and Switch 2 games from the user's own dump. Players use the app; the app runs `switch2mac.py` from its own copy of this repository, which it updates from `main` when it opens. So a change to `games/`, `switch2mac.py` or `tools/` reaches players with a push; a change to `app/` needs a new release. The game's Arm code runs natively; it is not an emulator.
 
 Each game in `games/<game>/` is built with the engine its port was made with, pinned to a commit in its `game.json`, and fetched into `engines/<kind>-<commit>/` by `build`:
 
@@ -17,6 +17,8 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 ## Rules
 
 - **Never commit or upload game content**: RomFS / ExeFS files, shader dumps (`*.ctl`, `*.code`), Metal libraries, saves, built apps, or screenshots and logs with the user's paths or personal data. `work/` and `.venv/` are ignored; keep it that way.
+- **No keys or decryption here.** switch2mac contains no decryption code and never reads key values, copies, stores or uploads keys (`check_keys` reads only the key names, to tell a wrong file). A Switch 1 game's files are opened by its builder with the player's own `prod.keys`, whose path only is passed to it (`switch2mac.py build --keys`); the path is hidden in every output (`HIDE` in switch2mac.py, `BuildStore.hidingKeys` in the app). Never add code that decrypts game files, even a header check: identify reads only the file names and NSP ticket names.
+- **Never help anyone get games, keys or firmware**, in code, docs, issues or replies: no links, no names of sites, no "where to find". No console exploits, no online cheats. switch2mac is non-commercial: no donation or payment links. See LEGAL.md; `tools/issue_guard.py` hides issues and comments that break this.
 - **Ask before launching the game.** It takes the screen and plays sound. Never send it scripted inputs unless the user asks for that.
 - **Ask before anything slow or large**: a build takes 20 minutes to hours (some games have over 100,000 shaders) and tens of GB of disk.
 - **Reports name the Mac.** `reports.tsv` keeps only reports that name the Mac (model, chip, memory), with their source; never a player's name or anything personal.

@@ -1,0 +1,24 @@
+{
+ "title_id": "01007300020FA000",
+ "name": "ASTRAL CHAIN",
+ "version": "1.0.1",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v65536"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "7d8dcdf824a6d67a76892840baf0877bc1c34e70"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

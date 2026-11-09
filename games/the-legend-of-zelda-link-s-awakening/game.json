@@ -1,0 +1,24 @@
+{
+ "title_id": "01006BB00C6F0000",
+ "name": "The Legend of Zelda: Link's Awakening",
+ "version": "1.1.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v131072"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "abd7014b93a5591bb3decca0853eb9bf9bdb8c54"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

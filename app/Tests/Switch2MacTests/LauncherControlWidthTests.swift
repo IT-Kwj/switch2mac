@@ -49,6 +49,19 @@ import NXModel
         }
     }
 
+    /// The console switch (All / Switch 2 / Switch 1) is 1.3 LauncherControls wide: each label fits its third in bold.
+    func testConsoleFilterLabelsFitTheirSegment() throws {
+        let room = (LauncherControl.width * 1.3 - 2 * 3 - 2) / 3 - 2 * 12
+        for filter in ConsoleFilter.allCases {
+            for lang in Lang.all {
+                let text = L10n.string(filter.labelKey, lang)
+                let font = try XCTUnwrap(Typography.manropeFont(size: 12.5, weight: .bold))
+                let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [.font: font]))
+                XCTAssertLessThanOrEqual(CTLineGetTypographicBounds(line, nil, nil, nil), room, "\(lang) \(filter.labelKey): \(text)")
+            }
+        }
+    }
+
     // MARK: Real pages
 
     private final class Samples { var all: [LauncherControlSample] = [] }

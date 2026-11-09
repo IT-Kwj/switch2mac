@@ -299,7 +299,8 @@ extension LauncherStores {
     func diagnostics(game: LibraryGame? = nil, _ done: @escaping (String) -> Void) {
         let repo = self.repo.isRepo ? self.repo.path : "", python = dependencies.pythonPath.isEmpty ? Toolchain.findPython().path : dependencies.pythonPath, dotnet = dependencies.dotnetPath
         let checked = dependencies.checked, rows = checked ? dependencies.deps.map(Diagnostics.dependency) : []
-        let command = build.lastBuildCommand, log = build.logTail, xcrun = deviceStore.xcrun
+        let keys = build.keysPath   // a Switch 1 game's prod.keys: its path never goes into a report (the build already writes a placeholder; this catches anything else)
+        let command = build.hidingKeys(build.lastBuildCommand), log = keys.isEmpty ? build.logTail : build.logTail.replacingOccurrences(of: keys, with: BuildStore.keysPlaceholder), xcrun = deviceStore.xcrun
         let (sel, usesEngineStore) = (engineSync.selection, engineSync.usesEngineStore)
         let engine = usesEngineStore && !sel.engineID.isEmpty ? "\(sel.channel.rawValue) \(sel.version) (\(sel.engineID))" : nil
         DispatchQueue.global(qos: .userInitiated).async {

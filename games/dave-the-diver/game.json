@@ -1,0 +1,24 @@
+{
+ "title_id": "010097F018538000",
+ "name": "DAVE THE DIVER",
+ "version": "v1.0.6.1267",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v3080192"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "4a0551e4b9abc75ea736006e4dbd30fcac0d03a4"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (v1.0.6.1267) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

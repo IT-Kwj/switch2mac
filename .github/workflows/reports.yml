@@ -43,7 +43,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           GAME=$(python3 -c 'import json; print(json.load(open("result.json"))["game"])')
-          ROW=$(python3 -c 'import json; r=json.load(open("result.json"))["row"]; print(f"{r[0]}, {r[1]}, {r[2]} GB: {r[4]}, {r[5] or \"?\"} fps")')
+          ROW=$(python3 -c 'import json; r=json.load(open("result.json"))["row"]; print("%s, %s, %s GB: %s, %s fps" % (r[0], r[1], r[2], r[4], r[5] or "?"))')
           BRANCH="report/issue-$NUMBER"
           rm result.json
           git switch -c "$BRANCH"

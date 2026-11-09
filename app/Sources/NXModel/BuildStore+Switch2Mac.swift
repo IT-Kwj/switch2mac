@@ -27,6 +27,17 @@ package struct DumpInfo: Equatable {
     package var recommended: String
     package var why: String
     package var reports: [MacReport]
+    /// The dump's form: "folder" (a Switch 2 dump folder), "nup" (one .nup file) or "switch1" (a Switch 1 game's NSP / XCI files, which need the player's own prod.keys).
+    package var dumpForm: String
+    package var needsKeys: Bool
+    /// What switch2mac.py made of the chosen prod.keys by its key names (nil when no keys file went with identify); the builder checks them properly when it opens the game.
+    package var keysOK: Bool?
+    package var keysNote: String
+    /// A Switch game: the files that go to the builder (its base game, update and DLC, by name), and the games a cartridge holds when it holds several.
+    package var parts: S1Parts?
+    package var gamesInFiles: [S1Game]
+    package struct S1Parts: Equatable { package var base: String; package var update: String; package var dlc: [String]; package var note: String = "" }   // note: more inside a file than it names (a card image's untitled package, a NUP's standalone update)
+    package struct S1Game: Equatable { package var titleID: String; package var name: String }
 
     package struct BuildOption: Equatable { package var id, name, engine, commit, about: String }
     package struct MacReport: Equatable { package var mac, chip, memoryGB, macOS, build, fps, peakGB, notes, source: String }
@@ -44,6 +55,10 @@ package struct DumpInfo: Equatable {
             BuildOption(id: b["id"] as? String ?? "", name: b["name"] as? String ?? "", engine: b["engine"] as? String ?? "", commit: b["commit"] as? String ?? "", about: b["about"] as? String ?? "")
         }
         recommended = o["recommended"] as? String ?? ""; why = o["why"] as? String ?? ""
+        dumpForm = o["dump_form"] as? String ?? "folder"; needsKeys = o["needs_keys"] as? Bool ?? false
+        keysOK = o["keys_ok"] as? Bool; keysNote = o["keys_note"] as? String ?? ""
+        parts = (o["parts"] as? [String: Any]).map { S1Parts(base: $0["base"] as? String ?? "", update: $0["update"] as? String ?? "", dlc: $0["dlc"] as? [String] ?? [], note: $0["note"] as? String ?? "") }
+        gamesInFiles = (o["games_in_files"] as? [[String: Any]] ?? []).map { S1Game(titleID: $0["title_id"] as? String ?? "", name: $0["name"] as? String ?? "") }
         reports = (o["reports"] as? [[String: String]] ?? []).map { r in
             MacReport(mac: r["mac"] ?? "", chip: r["chip"] ?? "", memoryGB: r["memory_gb"] ?? "", macOS: r["macos"] ?? "", build: r["build"] ?? "", fps: r["fps"] ?? "",
                       peakGB: r["peak_gb"] ?? "", notes: r["notes"] ?? "", source: r["source"] ?? "")
@@ -86,10 +101,40 @@ extension BuildStore {
         return env
     }
 
+    // A Switch 1 game's files are encrypted: the builder opens them with the player's own prod.keys. The app keeps only where that file is (never its
+    // contents), passes the path to switch2mac.py identify and build alone, and writes "<your prod.keys>" for it wherever a command is shown or kept.
+    nonisolated package static let keysPathKey = "s2m.keysPath"
+    nonisolated package static let keysExplainedKey = "s2m.keysExplained"
+    nonisolated package static let keysPlaceholder = "<your prod.keys>"
+    /// The prod.keys the player chose, "" for none (or a file that is gone).
+    package var keysPath: String {
+        let p = UserDefaults.standard.string(forKey: Self.keysPathKey) ?? ""
+        return !p.isEmpty && FileManager.default.fileExists(atPath: p) ? p : ""
+    }
+    /// The player chose a prod.keys file: kept as a path, and the chosen game read again so the card shows what the file holds.
+    package func setKeys(_ path: String) {
+        UserDefaults.standard.set(path, forKey: Self.keysPathKey); objectWillChange.send()
+        if !gameDir.isEmpty, dumpInfo?.needsKeys == true { chooseDump(gameDir) }
+    }
+    /// Settings → Forget my keys file: switch2mac no longer knows where it is.
+    package func forgetKeys() {
+        UserDefaults.standard.removeObject(forKey: Self.keysPathKey); objectWillChange.send()
+        if !gameDir.isEmpty, dumpInfo?.needsKeys == true { chooseDump(gameDir) }
+    }
+    /// Whether the chosen game can go to the builder as far as keys go: a Switch 2 dump needs none; a Switch 1 game needs a keys file that looks right.
+    package var keysReady: Bool { dumpInfo?.needsKeys != true || (!keysPath.isEmpty && dumpInfo?.keysOK != false) }
+    /// A command line as it may be shown or kept: the keys file's path replaced.
+    package func hidingKeys(_ args: [String]) -> [String] {
+        let k = keysPath
+        return k.isEmpty ? args : args.map { $0.replacingOccurrences(of: k, with: Self.keysPlaceholder) }
+    }
+
     /// The dump folder the player chose: switch2mac.py says which game it is (in the background), and the card shows it.
     package func chooseDump(_ folder: String) {
         gameDir = folder; dumpInfo = nil; identifying = true; done = false; doneNote = ""; failure = nil
-        let launch = ProcessLaunch(executable: buildPython, arguments: [switch2macScript, "identify", folder], environment: buildEnvironment, directory: repo.path)
+        let keys = keysPath
+        let launch = ProcessLaunch(executable: buildPython, arguments: [switch2macScript, "identify", folder] + (keys.isEmpty ? [] : ["--keys", keys]) + switchChoices,
+                                   environment: buildEnvironment, directory: repo.path)
         let runner = runner
         DispatchQueue.global(qos: .userInitiated).async {
             let r = runner.capture(launch)
@@ -113,16 +158,30 @@ extension BuildStore {
         }
     }
 
+    /// A Switch game's choices for switch2mac.py: which game of a cartridge, and the update and DLC files the player added.
+    package var switchChoices: [String] { (s1Pick.isEmpty ? [] : ["--title-id", s1Pick]) + s1Extra.flatMap { ["--add", $0] } }
+    /// The player added update or DLC files (Build page): kept with this game and read again.
+    package func addSwitchFiles(_ files: [String]) {
+        let new = files.filter { !s1Extra.contains($0) && $0 != gameDir }
+        guard !new.isEmpty, !gameDir.isEmpty else { return }
+        s1Extra += new; chooseDump(gameDir)
+    }
+    package func removeSwitchFile(_ file: String) { s1Extra.removeAll { $0 == file }; if !gameDir.isEmpty { chooseDump(gameDir) } }
+    /// A cartridge with several games: build this one.
+    package func pickSwitchGame(_ titleID: String) { guard s1Pick != titleID, !gameDir.isEmpty else { return }; s1Pick = titleID; chooseDump(gameDir) }
+
     /// The build of the chosen dump: switch2mac.py build, then install into the library folder.
     package func startSwitch2MacBuild() {
         guard !running, let info = dumpInfo, info.ok else { return }
         guard FileManager.default.fileExists(atPath: switch2macScript) else { fail(String(format: t("msg.repoInvalid"), shortPath(repo.path))); return }
+        guard keysReady else { fail("This Switch game needs your own prod.keys: choose it under Your keys."); return }
         stopping = false
         running = true; done = false; doneNote = ""; stages = []; log.clear(); failure = nil; confirmingOverride = nil; macAppPath = ""
         let py = buildPython, work = switch2macWorkDir(info.titleID), lib = switch2macLibraryDir
         let args = [switch2macScript, "--work", work, "build", info.folder, "--progress", "json"] + (info.allBuilds.count > 1 ? ["--engine", buildChoice(info)] : [])
-        say(String(format: t("msg.running"), py) + " " + args.joined(separator: " "))
-        lastBuildCommand = [py] + args
+            + (info.needsKeys ? ["--keys", keysPath] + switchChoices : [])
+        say(String(format: t("msg.running"), py) + " " + hidingKeys(args).joined(separator: " "))
+        lastBuildCommand = hidingKeys([py] + args)
         let env = buildEnvironment
         let launch = ProcessLaunch(executable: py, arguments: args, environment: env, directory: repo.path, groupPython: py)
         let onExit: @Sendable (Int32) -> Void = { [weak self] status in
@@ -162,5 +221,38 @@ extension BuildStore {
                 hop { self?.ingest(s) }
             }, onExit: onExit)
         } catch { fail(String(format: t("msg.launchFailed"), error.localizedDescription)) }
+    }
+}
+
+// MARK: Storage (Settings → Storage)
+
+/// One thing building left behind (`switch2mac.py storage --json`): a game's build folder or an engine copy no build uses.
+package struct StorageItem: Identifiable, Equatable {
+    package var id: String { path }
+    package let kind: String   // "build" or "engine"
+    package let name: String
+    package let path: String
+    package let bytes: Int64
+}
+
+extension BuildStore {
+    /// What building left behind, or (clean) removes it: `switch2mac.py storage --json [--clean]`, in the background. The answer comes on the main
+    /// thread: the items (what was there before a clean) and the bytes freed, or nil when the script could not run. Refused while a build runs.
+    package func storage(clean: Bool, done: @escaping ([StorageItem]?, Int64) -> Void) {
+        guard !(clean && running) else { done(nil, 0); return }
+        let launch = ProcessLaunch(executable: buildPython, arguments: [switch2macScript, "storage", "--json"] + (clean ? ["--clean"] : []),
+                                   environment: buildEnvironment, directory: repo.path)
+        let runner = runner
+        DispatchQueue.global(qos: .utility).async {
+            let r = runner.capture(launch)
+            let line = r.out.split(separator: "\n").last.map(String.init) ?? ""
+            let o = (try? JSONSerialization.jsonObject(with: Data(line.utf8))) as? [String: Any]
+            let items = (o?["items"] as? [[String: Any]])?.map { i in
+                StorageItem(kind: i["kind"] as? String ?? "", name: i["name"] as? String ?? "", path: i["path"] as? String ?? "",
+                            bytes: (i["bytes"] as? NSNumber)?.int64Value ?? 0)
+            }
+            let freed = (o?["freed"] as? NSNumber)?.int64Value ?? 0
+            DispatchQueue.main.async { done(items, freed) }
+        }
     }
 }

@@ -1,0 +1,24 @@
+{
+ "title_id": "01007E3006DDA000",
+ "name": "Kirby Star Allies",
+ "version": "4.0.0a",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "a4d7bb7ba9f61286db6f704a9693f0aeac7f9ee4"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (4.0.0a) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

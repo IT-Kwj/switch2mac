@@ -1,0 +1,59 @@
+{
+ "title_id": "010093801237C000",
+ "name": "Metroid Dread",
+ "version": "1.0.0",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames' port",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "b05051d27f8b782c8973f5106c9a1409fc86177d",
+    "builder": {
+     "script": "games/dread/build.py",
+     "args": [
+      "{base}",
+      "--keys",
+      "{keys}",
+      "--out",
+      "{app}",
+      "--work",
+      "{work}",
+      "--firmware?",
+      "{firmware}",
+      "--shared-fonts?",
+      "{shared_fonts}"
+     ]
+    }
+   },
+   "shader_list": "shader_list.tsv",
+   "watch": [
+    "games/dread"
+   ],
+   "about": "ly05010419's MacNativeGames (MIT), its dread port: Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet."
+  },
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v327680"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "a342d6401af8b609ccf3709cf9f7ca27bb784ddc"
+   },
+   "shader_list": "shader_list-nxnative.tsv",
+   "about": "nxnative's profile (2.1.0) with switch2mac's overlay and key-2 settings."
+  }
+ ],
+ "disk_gb": 30,
+ "choose": [
+  {
+   "build": "macnativegames",
+   "why": "MacNativeGames' port is made for this game."
+  }
+ ]
+}

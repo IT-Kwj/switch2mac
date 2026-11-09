@@ -1,0 +1,24 @@
+{
+ "title_id": "0100F5D01DA3A000",
+ "name": "Brain Memory Training Academy",
+ "version": "1.0.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v0"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "3a993fa3feaa1071cece5677b4c1b752973b956e"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

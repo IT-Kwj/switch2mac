@@ -1,0 +1,24 @@
+{
+ "title_id": "0100FD8022DAA000",
+ "name": "Super Mario Galaxy 2",
+ "version": "1.4.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "2202d61037c635f6876b4980ea866749a03f8183"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.4.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

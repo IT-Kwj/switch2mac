@@ -1,0 +1,3 @@
+# switch2mac shared shader list	game=0100199023B2E000	engine=nxnative-6b0cffbb5e5c
+# Atelier Ryza: Ever Darkness & the Secret Hideout DX, built with nxnative at 6b0cffbb5e5c. Added to nxnative's own seed list (its profile's pso_manifest.tsv) at build time.
+# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.

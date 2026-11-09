@@ -3,4 +3,4 @@ zstandard==0.25.0
 lz4==4.4.5
 fonttools==4.68.0
 backports.zstd; python_version < "3.14"
-zbic
+zbic   # ZBIC-compressed NSO modules (system 22.0.0 on: Ocarina of Time)

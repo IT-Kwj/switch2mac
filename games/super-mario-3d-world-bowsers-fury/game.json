@@ -1,0 +1,23 @@
+{
+ "title_id": "010028600EBDA000",
+ "name": "Super Mario 3D World + Bowser's Fury",
+ "version": "update 1.2.2 (v262144)",
+ "console": "switch",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v262144"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "c692ba056c891e55381a1e443ac976210dc4d7e2"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile for version 1.2.2 (update v262144) with switch2mac's overlay and key-2 settings."
+  }
+ ],
+ "disk_gb": 15
+}

@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 @testable import Switch2Mac
 @testable import NXCore
@@ -44,8 +45,43 @@ import XCTest
 
     /// switch2mac is English only (l10n/en.json).
     func testTheSettingHasItsEnglishText() {
-        for key in ["settings.returnAfterPlay", "settings.returnAfterPlayNote"] {
+        for key in ["settings.whilePlaying", "settings.whilePlaying.note"] {
             XCTAssertNotEqual(L10n.string(key, .en), key)
         }
+    }
+
+    /// "Close while you play" never closes during a build (it would stop) or outside an app bundle (nothing to reopen), and is off by default.
+    func testCloseWhilePlayingOnlyFromAnAppAndNotDuringABuild() {
+        XCTAssertFalse(ReturnAfterPlay.closeUntilQuit(pid: 1, bundle: URL(fileURLWithPath: "/usr/bin"), buildRunning: false))
+        XCTAssertFalse(ReturnAfterPlay.closeUntilQuit(pid: 1, bundle: URL(fileURLWithPath: "/Applications/switch2mac.app"), buildRunning: true))
+        XCTAssertTrue(ReturnAfterPlay.reopenScript.contains("\"$1\"") && ReturnAfterPlay.reopenScript.contains("\"$2\""), "the paths arrive as arguments")
+    }
+
+    /// The in-game offer counts the Mac busy only past its cores; the sounds and the offer have their texts and are on (sounds) / quiet (offer) by default.
+    func testPlayLoadAndInterfaceSounds() {
+        XCTAssertFalse(PlayLoadWatcher.isBusy(7.5, cores: 10)); XCTAssertTrue(PlayLoadWatcher.isBusy(10.5, cores: 10)); XCTAssertFalse(PlayLoadWatcher.isBusy(0.5, cores: 0))
+        for key in ["settings.interfaceSounds", "settings.interfaceSoundsNote", "settings.whilePlaying", "settings.whilePlaying.note"] { XCTAssertNotEqual(L10n.string(key, .en), key) }
+    }
+
+    /// The interface sounds are made in code: each is a valid WAV of the right length that macOS can play, and the three ticks differ.
+    func testInterfaceSoundsAreValidAudio() throws {
+        for kind in [InterfaceSound.Kind.tick, .hover, .open] {
+            let r = InterfaceSound.recipe(kind, variant: 0), d = InterfaceSound.wav(r)
+            XCTAssertEqual(String(decoding: d.prefix(4), as: UTF8.self), "RIFF")
+            XCTAssertEqual(d.count, 44 + Int(r.length * 44_100) * 2)
+            let sound = try XCTUnwrap(NSSound(data: d)); XCTAssertEqual(sound.duration, r.length, accuracy: 0.005)
+        }
+        XCTAssertNotEqual(InterfaceSound.wav(InterfaceSound.recipe(.tick, variant: 0)), InterfaceSound.wav(InterfaceSound.recipe(.tick, variant: 1)))
+    }
+
+    /// While a game runs the Library lets its pictures go once, says so, and is marked to read them again when it comes back.
+    @MainActor func testMemoryTrimLetsGoOnceAndIsRestored() {
+        MemoryTrim.restored()   // another test's game start may have trimmed (the test runner is never in front)
+        var told = 0
+        let o = NotificationCenter.default.addObserver(forName: MemoryTrim.didTrim, object: nil, queue: nil) { _ in told += 1 }
+        defer { NotificationCenter.default.removeObserver(o); MemoryTrim.restored() }
+        MemoryTrim.trim(); MemoryTrim.trim()
+        XCTAssertTrue(MemoryTrim.trimmed); XCTAssertEqual(told, 1, "once until restored")
+        MemoryTrim.restored(); XCTAssertFalse(MemoryTrim.trimmed)
     }
 }

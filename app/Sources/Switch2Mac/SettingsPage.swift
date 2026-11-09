@@ -24,12 +24,17 @@ struct SettingsPage: View {
     @AppStorage(ConsolePrompt.startKey) private var startInConsole = false   // ConsoleCoordinator.swift (#336)
     @AppStorage(BuildNotice.defaultsKey) private var notifyBuilds = true   // BuildNotifications.swift
     @AppStorage(ReturnAfterPlay.defaultsKey) private var returnAfterPlay = true   // ReturnAfterPlay.swift
+    @AppStorage(ReturnAfterPlay.closeKey) private var closeWhilePlaying = false   // ReturnAfterPlay.swift
+    @AppStorage(InterfaceSound.defaultsKey) private var interfaceSounds = true   // InterfaceSound.swift
     @EnvironmentObject var loc: Localizer
 
     var body: some View {
         CardPageHeading(loc.t("settings.heading"), note: loc.t("settings.note"))
         LibraryCard(library: library, onChooseFolder: onChooseLibraryFolder)
         OutputCard(library: library)
+        KeysSettingsCard(build: build)
+        BoxArtSettingsCard()
+        StorageCard(build: build)
         ControlsCard(controlChanges: controlChanges, padMerge: padMerge, consolePrompt: $consolePromptOn,
                      startInConsole: $startInConsole, onOpenControls: onOpenControls, onOpenControllers: onOpenControllers,
                      onOpenHomeSettings: HomeButtonSettings.available ? { HomeButtonSettings.open() } : nil)   // HomeButtonSettings.swift (#336)
@@ -38,7 +43,7 @@ struct SettingsPage: View {
             DiagnosticsButton(report: diagnostics, game: library.selected)
         }
         AppCard(updates: updates, buildRunning: build.running, notify: $notifyBuilds, notifyAvailable: BuildNotice.hasBundleID,
-                returnAfterPlay: $returnAfterPlay, onRunSetup: onRunSetup, uninstallPlan: uninstallPlan)
+                returnAfterPlay: $returnAfterPlay, closeWhilePlaying: $closeWhilePlaying, interfaceSounds: $interfaceSounds, onRunSetup: onRunSetup, uninstallPlan: uninstallPlan)
     }
 
     private func uninstallPlan() -> Uninstall.Plan {
@@ -64,6 +69,46 @@ struct LibraryCard: View {
                 }
                 Button(loc.t("library.chooseFolder"), action: onChooseFolder)
                     .padTarget("set.folder", scope: "main") { onChooseFolder() }
+            }
+        }
+    }
+}
+
+/// Settings, "Switch 1 keys": the prod.keys file switch2mac passes to the builder for Switch 1 games (BuildStore.keysPath). Only its location is kept; Forget drops it.
+struct KeysSettingsCard: View {
+    @ObservedObject var build: BuildStore
+    @State private var explaining = false
+
+    var body: some View {
+        let path = build.keysPath
+        CardGroup("Switch keys", footnote: "Switch games are built with prod.keys from your own Switch. switch2mac keeps only where the file is, never what is in it, and never uploads or shares it.\n\nSwitch 2 games don't need keys.") {
+            CardRow(path.isEmpty ? "No prod.keys chosen" : "prod.keys chosen", detail: path.isEmpty ? "Needed to build Switch games: dump it from your own Switch." : RepoLayout.shortPath(path),
+                    dot: path.isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready, help: path) {
+                if !path.isEmpty { Button("Forget") { build.forgetKeys() }.disabled(build.running) }
+                Button(path.isEmpty ? "Choose prod.keys…" : "Change…") {
+                    if UserDefaults.standard.bool(forKey: BuildStore.keysExplainedKey) { pick() } else { explaining = true }
+                }
+                .disabled(build.running)
+            }
+        }
+        .alert("Your own keys", isPresented: $explaining) {
+            Button("Choose prod.keys…") { UserDefaults.standard.set(true, forKey: BuildStore.keysExplainedKey); pick() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Switch game files are encrypted. To build one, the builder needs prod.keys dumped from your own Switch. switch2mac passes the file to the builder while it builds and keeps only where it is: not a copy, not what is in it. It never goes into logs, reports or shader lists, and nothing is uploaded.")
+        }
+    }
+
+    private func pick() { if let f = build.chooseKeysFile() { build.setKeys(f) } }
+}
+/// Settings, "Box art": whether the case views download retail box fronts (BoxArt.swift) onto this Mac. Off: covers come from the eShop banners.
+struct BoxArtSettingsCard: View {
+    @AppStorage(BoxArtStore.enabledKey) private var on = true
+
+    var body: some View {
+        CardGroup("Box art", footnote: "Box fronts for the Carousel and Covers views come from GameTDB (Switch) and the LaunchBox Games Database (Switch 2 and the rest), matched by name and downloaded onto this Mac only: LaunchBox's list is a download of about 110 MB once a month. Off, covers are cut from the games' eShop banners.") {
+            CardRow("Download box fronts", detail: on ? "On" : "Off: covers from the eShop banners", dot: on ? LauncherPalette.ready : LauncherPalette.unbuilt) {
+                Toggle("", isOn: $on).toggleStyle(.switch).labelsHidden()
             }
         }
     }

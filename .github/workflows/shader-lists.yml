@@ -37,7 +37,8 @@ jobs:
         run: |
           python3 tools/shader_list.py collect --issue "$NUMBER" --apply --json > out.txt || true
           cat out.txt
-          grep '^JSON ' out.txt | sed 's/^JSON //' > result.json || echo '[]' > result.json
+          grep '^JSON ' out.txt | sed 's/^JSON //' > result.json || true
+          [ -s result.json ] || echo '[]' > result.json   # the tool stopped before its JSON line (a network error): the comment below says so
           python3 - <<'PY'
           import json, os
           r = (json.load(open('result.json')) or [{}])[0]

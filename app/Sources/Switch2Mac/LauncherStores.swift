@@ -106,6 +106,16 @@ import NXModel
             guard d.runModal() == .OK, let u = d.url else { return nil }
             return u.path
         }
+        build.chooseKeysFile = {
+            let d = Self.keysPanel()
+            guard d.runModal() == .OK, let u = d.url else { return nil }
+            return u.path
+        }
+        build.chooseSwitchFiles = {
+            let d = Self.switchFilesPanel()
+            guard d.runModal() == .OK else { return [] }
+            return d.urls.map(\.path)
+        }
         build.chooseSaveLocation = { title, name in
             let p = NSSavePanel()
             p.title = title
@@ -134,22 +144,42 @@ import NXModel
         return d
     }
 
-    /// The panel of the Build page's dump: a dump folder, or one .nup file (a NUP container, which switch2mac.py reads and the nxnative-based builds open).
+    /// The panel of the Build page's dump: a dump folder, one .nup file (a NUP container, which switch2mac.py reads and the nxnative-based builds open),
+    /// or a Switch 1 game: one of its .nsp / .nsz / .xci / .xcz files, or the folder holding its base game, update and DLC.
     static func dumpPanel() -> NSOpenPanel {
         let d = NSOpenPanel()
         d.canChooseDirectories = true; d.canChooseFiles = true
-        d.allowedContentTypes = [.folder] + [UTType(filenameExtension: "nup")].compactMap { $0 }
-        d.message = "Choose a dump folder, or a .nup file"
+        d.allowedContentTypes = [.folder] + switch1Extensions.union(["nup"]).sorted().compactMap { UTType(filenameExtension: $0) }
+        d.message = "Choose a dump folder or .nup file (Switch 2), or a Switch 1 game's .nsp / .xci file or its folder"
+        return d
+    }
+    /// A Switch 1 game's files, as dump tools write them (encrypted: the builder opens them with the player's own prod.keys).
+    nonisolated static let switch1Extensions: Set<String> = ["nsp", "nsz", "xci", "xcz"]
+
+    /// The panel of the Build page's Update and DLC: a Switch game's update and DLC files, several at once.
+    static func switchFilesPanel() -> NSOpenPanel {
+        let d = NSOpenPanel()
+        d.canChooseDirectories = false; d.canChooseFiles = true; d.allowsMultipleSelection = true
+        d.allowedContentTypes = switch1Extensions.sorted().compactMap { UTType(filenameExtension: $0) }
+        d.message = "Choose the game's update and DLC files (.nsp, .nsz, .xci or .xcz) from your own Switch"
+        d.prompt = "Add"
+        return d
+    }
+
+    /// The panel of the Build page's Your keys: one prod.keys file.
+    static func keysPanel() -> NSOpenPanel {
+        let d = NSOpenPanel()
+        d.canChooseDirectories = false; d.canChooseFiles = true; d.allowsMultipleSelection = false
+        d.message = "Choose the prod.keys you dumped from your own Switch"
+        d.prompt = "Use this file"
         return d
     }
 
     /// Whether the xcode row asks for the iOS SDK. Always, as before, unless the guided setup stored a Mac-only choice
     /// and builds are for the Mac: upstream no longer needs the iOS SDK for a Mac build (c464cb24).
-    nonisolated static func needsIOSPlatform(defaults: UserDefaults = .standard) -> Bool {
-        if OnboardingDefaults.sessionPlatform == "mac" { return false }   // a forced run's choice, not stored yet
-        guard defaults.string(forKey: OnboardingDefaults.platform) == "mac" else { return true }
-        return BuildTarget.normalized(defaults.string(forKey: "buildTarget")) != BuildTarget.mac
-    }
+    /// switch2mac builds Mac apps only, so never: the setup no longer asks for a platform, and the unset choice made this ask every player for the
+    /// iOS SDK (gigabytes) they will never use.
+    nonisolated static func needsIOSPlatform(defaults: UserDefaults = .standard) -> Bool { false }
 }
 
 /// A store that a closure reaches before it exists: the closures of the stores created first read it, the app fills it in last.

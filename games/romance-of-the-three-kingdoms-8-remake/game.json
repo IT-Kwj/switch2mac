@@ -1,0 +1,24 @@
+{
+ "title_id": "0100C2A01A730000",
+ "name": "ROMANCE OF THE THREE KINGDOMS 8 REMAKE",
+ "version": "1.1.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v851968"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "0b8e0dc1dd0de162d901c8b69a507427da75c6fe"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

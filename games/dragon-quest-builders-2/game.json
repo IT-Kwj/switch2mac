@@ -1,0 +1,24 @@
+{
+ "title_id": "010042000A986000",
+ "name": "DRAGON QUEST BUILDERS 2",
+ "version": "1.7.3d",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v393216"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "12aeebe9192eedf5af6824227b2d40f20441e574"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.7.3d) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

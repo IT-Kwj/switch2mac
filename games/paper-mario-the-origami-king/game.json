@@ -1,0 +1,24 @@
+{
+ "title_id": "0100A3900C3E2000",
+ "name": "Paper Mario: The Origami King",
+ "version": "1.0.1",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v65536"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "a861f1a03210d94948a2a40f0152912d01b039fb"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}
