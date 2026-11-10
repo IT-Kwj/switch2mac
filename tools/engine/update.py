@@ -102,8 +102,19 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
         host = nx / 'dm/host'; prof = d / 'profile'
         genv = dict(env, DM_GAMES_DIR=str(prof), DM_GAMES_FIRST='1', DM_GAME=g['title_id'])
     elif e['kind'] == 'macnativegames':   # its own runtime and builder (build_app.py), no switch2mac front end: the new commit must still have the builder and the game's runtime
-        for f in ([e['builder']['script']] if e.get('builder') else ['build_app.py', 'games/totk']):   # a community port: its own builder script
+        b = e.get('builder') or {}
+        if b.get('steps'):   # a port built in steps (Xenoblade 3): its scripts and its Makefile's targets must still be there
+            cwd = b.get('cwd', ''); files = [f'{cwd}/Makefile']; targets = set()
+            for s in b['steps']:
+                if s['cmd'][0] == 'make': targets |= {x for x in s['cmd'][1:] if '=' not in x}
+                files += [f'{cwd}/{x}' for x in s['cmd'] if x.endswith('.py') and '{' not in x]
+        else: files = [b['script']] if b else ['build_app.py', 'games/totk']   # a community port: its own builder script
+        for f in dict.fromkeys(files):
             if not (d / f).exists(): raise RuntimeError(f'the new commit has no {f}')
+        if b.get('steps'):
+            mk = (d / b.get('cwd', '') / 'Makefile').read_text()
+            gone = sorted(t for t in targets if not re.search(rf'^{re.escape(t)}\s*:', mk, re.M))
+            if gone: raise RuntimeError(f'the new commit\'s {b.get("cwd", "")}/Makefile has no target {", ".join(gone)}')
         return
     else: raise RuntimeError(f'engine kind {e["kind"]} unknown')
     if compile_host:

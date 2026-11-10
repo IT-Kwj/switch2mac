@@ -21,6 +21,168 @@
    "version_names": {
     "v720896": "2.2.1"
    }
+  },
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "bad89a8c82d1e1cd1e0bbd6e4308b2992c17d76c",
+    "builder": {
+     "cwd": "games/xc3",
+     "pip": [
+      "capstone==5.0.9",
+      "cryptography==50.0.2",
+      "lz4==4.4.5"
+     ],
+     "version_dirs": {
+      "": "v100",
+      "v720896": "v221"
+     },
+     "fresh": [
+      "{work}/XC3_build"
+     ],
+     "steps": [
+      {
+       "stage": "game code",
+       "what": "the base game's code",
+       "cmd": [
+        "{py}",
+        "scripts/extract_code.py",
+        "{base}",
+        "--keys",
+        "{keys}",
+        "--work",
+        "{work}/XC3_build"
+       ]
+      },
+      {
+       "stage": "game code",
+       "what": "the update's code",
+       "when": "update",
+       "cmd": [
+        "{py}",
+        "scripts/extract_code.py",
+        "{update}",
+        "--keys",
+        "{keys}",
+        "--work",
+        "{work}/XC3_build"
+       ]
+      },
+      {
+       "stage": "game code",
+       "what": "the code for Apple silicon",
+       "each": [
+        "sdk",
+        "subsdk0",
+        "main"
+       ],
+       "env": {
+        "DM_RULESET": "native",
+        "DM_PRIVATE_GATES": "0"
+       },
+       "cmd": [
+        "{py}",
+        "third_party/d2r/patch_nso.py",
+        "{work}/XC3_build/extracted/{version}/exefs/{item}",
+        "{work}/XC3_build/rewritten/{version}",
+        "{item}"
+       ]
+      },
+      {
+       "stage": "game data",
+       "what": "the game's data",
+       "cmd": [
+        "{py}",
+        "scripts/merge_romfs.py",
+        "{base}",
+        "{update}?",
+        "--keys",
+        "{keys}",
+        "--work",
+        "{work}/XC3_build"
+       ]
+      },
+      {
+       "stage": "game data",
+       "what": "the add-ons",
+       "when": "dlc",
+       "cmd": [
+        "{py}",
+        "scripts/extract_aoc.py",
+        "{dlc*}",
+        "--keys",
+        "{keys}",
+        "--work",
+        "{work}/XC3_build"
+       ]
+      },
+      {
+       "stage": "game data",
+       "what": "the Switch's system fonts",
+       "cmd": [
+        "{py}",
+        "scripts/extract_shared_fonts.py",
+        "--keys",
+        "{keys}",
+        "--firmware",
+        "{firmware}",
+        "--output",
+        "{work}/XC3_build/extracted/firmware/shared-fonts"
+       ]
+      },
+      {
+       "stage": "startup shaders",
+       "what": "the runtime and the game's shaders",
+       "cmd": [
+        "make",
+        "prepare",
+        "runtime",
+        "shader-tools",
+        "shader-prepare",
+        "shader-seed",
+        "VERSION={version}",
+        "PY={py}",
+        "WORK={work}/XC3_build"
+       ]
+      },
+      {
+       "stage": "the app",
+       "what": "Xenoblade Chronicles 3.app",
+       "cmd": [
+        "make",
+        "app",
+        "VERSION={version}",
+        "PY={py}",
+        "WORK={work}/XC3_build",
+        "APP={app}",
+        "GAME={base}",
+        "KEYS={keys}"
+       ]
+      }
+     ],
+     "needs": [
+      "firmware"
+     ]
+    }
+   },
+   "watch": [
+    "games/xc3"
+   ],
+   "about": "MacNativeGames' Xenoblade Chronicles 3 port (community, playable; MIT): its own runtime and a settings window (screen, window size, MetalFX, frame rate overlay). The base game and the four Expansion Pass add-ons start, play and save; a 2.5-hour session had no glitches (Apple M5, 32 GB). 30 fps, as on the Switch. Neither story played to the end yet. Not built through switch2mac yet.",
+   "plays": "the base game 1.0.0 (.nsp) alone, or with update 2.2.1 and its add-ons",
+   "update_versions": [
+    "2.2.1"
+   ],
+   "version_names": {
+    "v720896": "2.2.1"
+   },
+   "firmware": "always",
+   "app_ids": [
+    "org.macnativegames.xc3"
+   ]
   }
  ],
  "disk_gb": 30

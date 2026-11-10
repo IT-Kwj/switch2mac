@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-10 (4)
+
+- **Two more MacNativeGames builds:** Super Mario Odyssey (1.3.0 / 1.4.1; 60 fps at 2560x1440 on an M1 Max in its own tests, sessions end after 20 minutes as MacNativeGames ships it) and Xenoblade Chronicles 3 (1.0.0 / 2.2.1 with its add-ons; 2.5 hours without glitches in its own tests), next to nxnative's builds under **Build with…**. Both need your Switch's firmware for the system fonts. Not built through switch2mac yet: tell us how they go.
+
 ## 2026-11-10 (3): switch2mac app 0.4.4
 
 - **Games no longer start hidden:** with **Close switch2mac while playing** on, switch2mac now waits until the game is on screen before it closes. It closed half a second after starting the game, and a game that takes longer to go full screen (Tears of the Kingdom) was left running out of sight until its Dock icon was clicked. If a game hasn't shown after 45 seconds, switch2mac brings it to the front itself.

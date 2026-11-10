@@ -816,6 +816,30 @@ def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<k
     return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])] + g.get('build', {}).get('switches', []))
 
 
+def mng_args(args, vals):   # a MacNativeGames port's command line from game.json: "--flag?" "{value}" is the pair only when the value is there,
+    """"{value}" alone is required, and "{value}" inside a word ("VERSION={version}") is put in place. Values are paths or words; a missing one
+    stops the build with its name (a mistake in game.json, not the player's)."""
+    out, args = [], list(args)
+    while args:
+        x = args.pop(0)
+        if x.startswith('{') and x.endswith('*}'): out += list(vals.get(x[1:-2]) or [])   # "{dlc*}": every file of a list, none when empty
+        elif x.startswith('{') and x.endswith('}?'):   # "{update}?": a value given only when there is one
+            if vals.get(x[1:-2]): out.append(vals[x[1:-2]])
+        elif x.endswith('?'):
+            v = vals.get(args.pop(0)[1:-1])
+            if v: out += [x[:-1], v]
+        elif x.startswith('{') and x.endswith('}') and x.count('{') == 1:
+            if vals.get(x[1:-1]) is None: sys.exit(f'game.json: the port\'s command needs {x}, which this build has no value for')
+            out.append(vals[x[1:-1]])
+        elif '{' in x:
+            names = re.findall(r'\{(\w+)\}', x)
+            missing = [n for n in names if vals.get(n) is None]
+            if missing: sys.exit(f'game.json: the port\'s command needs {", ".join("{" + n + "}" for n in missing)}, which this build has no value for')
+            out.append(re.sub(r'\{(\w+)\}', lambda m: str(vals[m[1]]), x))
+        else: out.append(x)
+    return out
+
+
 def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fixes switch2mac adds to a MacNativeGames app after its builder, until MacNativeGames has them
     """Each fix names the game version it is for (its version folder and main's build ID), the bytes to find in that version's rewritten code and
     what they become. It is applied only where those bytes are found exactly once; bytes already as the fix makes them mean MacNativeGames fixed it
@@ -913,19 +937,45 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
                     'shared_fonts': Path(a.shared_fonts).expanduser().resolve() if getattr(a, 'shared_fonts', None) else None}
             if vals['firmware']: HIDE[str(vals['firmware'])] = '<your firmware>'
             for need in b.get('needs', []):
-                if not vals.get(need) and not (need == 'firmware' and vals['shared_fonts']): sys.exit(f'{g["name"]}: MacNativeGames\' port needs ' + {'update': 'the game\'s update file (' + b.get('update_note', 'see its README') + ') next to the base game',
-                                                                                              'firmware': 'the Switch\'s system fonts: --firmware <your unpacked firmware dump> or --shared-fonts <a TotK build\'s fonts>'}.get(need, need))
-            cmd, args = [], list(b['args'])
-            while args:   # "--flag?" "{value}": the pair only when the value is there; "{value}" alone: required
-                x = args.pop(0)
-                if x.endswith('?'):
-                    v = vals.get(args.pop(0)[1:-1])
-                    if v: cmd += [x[:-1], v]
-                elif x.startswith('{') and x.endswith('}'): cmd.append(vals[x[1:-1]])
-                else: cmd.append(x)
-            if 'dlc' in b and dlc: cmd += [z for f in dlc for z in (b['dlc'], f)]
-            print(f'  MacNativeGames port: {b["script"]}')
-            run([py314, d / b['script']] + cmd + eng.get('args', []), env=e, cwd=d / b.get('cwd', ''), watch=mng_watch)
+                if not vals.get(need) and not (need == 'firmware' and vals['shared_fonts'] and '{shared_fonts}' in json.dumps(b)): sys.exit(f'{g["name"]}: MacNativeGames\' port needs ' + {'update': 'the game\'s update file (' + b.get('update_note', 'see its README') + ') next to the base game',
+                                                                                              'firmware': 'the Switch\'s system fonts: --firmware <your unpacked firmware dump>' + (' or --shared-fonts <a TotK build\'s fonts>' if '{shared_fonts}' in json.dumps(b) else ' (in the app: Firmware on the Build page)')}.get(need, need))
+            runner = py314
+            if b.get('pip'):   # the port's own Python packages (its requirements.txt), in a Python 3.14 environment of this game's build folder
+                venv = w / tid / 'mng-venv'
+                if not (venv / 'bin/python').exists():
+                    P.step('a Python environment for MacNativeGames\' port (once)')
+                    (w / tid).mkdir(parents=True, exist_ok=True); run([py314, '-m', 'venv', venv])
+                run([venv / 'bin/python', '-m', 'pip', 'install', '-q', '--disable-pip-version-check'] + b['pip'])
+                runner = venv / 'bin/python'
+            vals['py'] = runner
+            if 'version_dirs' in b:   # the port's own name for the game version it builds (Xenoblade 3: v100, v221), by the update's number
+                m = re.search(r'v(\d{5,})', upd.name) if upd else None
+                key = f'v{m[1]}' if m else ('' if not upd else None)
+                if key not in b['version_dirs']: sys.exit(f'{g["name"]}: MacNativeGames\' port plays {plays_text(g["build"])}; {upd.name if upd else "the base game"} is not one of them')
+                vals['version'] = b['version_dirs'][key]
+            if b.get('script'):
+                cmd = mng_args(b['args'], vals)
+                if 'dlc' in b and dlc: cmd += [z for f in dlc for z in (b['dlc'], f)]
+                print(f'  MacNativeGames port: {b["script"]}')
+                run([runner, d / b['script']] + cmd + eng.get('args', []), env=e, cwd=d / b.get('cwd', ''), watch=mng_watch)
+            else:   # a port built in several steps (its README's commands, in order), each a command line with the same {values}
+                stages = list(dict.fromkeys(s['stage'] for s in b['steps']))
+                P.plan(P.k - 1 + len(stages)); P.order = stages
+                for x in b.get('fresh', []):   # folders the steps make and refuse to find already there: a rebuild starts them again
+                    p = Path(mng_args([x], vals)[0])
+                    if p.exists(): shutil.rmtree(p)
+                vals['dlc'] = dlc
+                for s in b['steps']:
+                    if {'update': not upd, 'no_update': bool(upd), 'dlc': not (upd and dlc)}.get(s.get('when'), False): continue
+                    if s['stage'] != P.name: P.stage(s['stage'], s.get('what', ''))
+                    for item in s.get('each', [None]):
+                        cmd = mng_args(s['cmd'], dict(vals, item=item))
+                        run(cmd, env=dict(e, **s.get('env', {})), cwd=d / b.get('cwd', ''))
+            if b.get('app_out'):   # where the port leaves its app, when it cannot be told where to put it
+                out = Path(mng_args([b['app_out']], vals)[0])
+                if not out.is_dir(): sys.exit(f'{g["name"]}: MacNativeGames\' port finished without making {out.name}')
+                if app.exists(): shutil.rmtree(app)
+                shutil.move(str(out), app)
         else:
             run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
                 + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d, watch=mng_watch)
