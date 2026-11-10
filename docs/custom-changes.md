@@ -2,7 +2,7 @@
 
 本文档记录在本机对 switch2mac 项目做的自定义修改。合并上游最新代码、或引擎被重新拉取后，按这里的说明恢复这些改动。
 
-更新时间：2026-11-08
+更新时间：2026-11-10
 
 ## 修改总览
 
@@ -11,7 +11,7 @@
 | 中文化 | `tools/engine/patch.py`、`tools/engine/s2m_ui.m` | 设置面板、通用设置、语言名中文 | 已提交 git；`build` 时 `patch.py` 幂等自动应用 |
 | 默认游戏语言 | `games/donkey-kong-bananza/game.json`、`switch2mac.py` | 打包时默认简体中文（`zh-Hans`） | `build` 自动应用；改 `game.json` 的 `language` 即可 |
 | poll 卡顿修复 | `tools/engine/patch.py`（`hle_net_poll()`） | 引擎 `hle_net.c` 的 poll 空等上限 100 ms | `build` 时 `patch.py` 自动应用 |
-| 游戏图标 | dump 里的 `Mario Kart World.png` → `work/<tid>/extract/v0/icon.jpg` | 自定义 App 图标 | 手动生成 `icon.jpg` |
+| 游戏图标（每次构建必做） | 源 logo → `builds/<游戏>/<tid>/extract/v<版本>/icon.jpg` | 自定义 App 图标，构建后必须验证非空白 | 构建前手动生成 `icon.jpg`，见 §3 |
 | 存档迁移 | 旧 `work/run/save/` → nxnative App 存档目录 | 恢复旧进度 | 手动复制 `account.sav` |
 
 ## 1. 中文化（中文界面）
@@ -53,19 +53,52 @@ static int sk_idle(int64_t ms) { if (ms > 100) ms = 100; dm_guest_sleep_ns((ms <
 
 之前在 switch2mac 引擎上试过同样的改动，出现过一次选完赛道后 SIGBUS（后来回滚）。本次在 nxnative 引擎上应用后需重点验证“进赛道 / 退出到首页”不崩溃。若复现崩溃，回滚 `patch.py` 里的 `hle_net_poll()`，再单独排查。
 
-## 3. 游戏图标
+## 3. 游戏图标（每次构建必做）
+
+> **规则：每次 `build` 都必须确认成品 App 带自定义 logo，不能是空白图标。** 构建日志里要出现 `app icon:`，且 `*.app/Contents/Resources/AppIcon.icns` 存在。
 
 ### 原因
 
-dump 没有 control data，构建脚本默认不生成图标。
+dump 文件夹（以及 NUP）没有 control data，nxnative 构建器默认拿不到图标，日志会打印 `no game icon: a dump folder has no control data; the app's icon will be blank`。构建器的图标查找顺序是：`--icon` 参数 → 工作目录 `extract/v<版本>/icon.jpg` → control data 自带图标。把 `icon.jpg` 放进 extract 目录即可被自动采用：`pack_app.py` 用 `sips` + `iconutil` 生成全套 `AppIcon.icns`，并在 `Info.plist` 写入 `CFBundleIconFile=AppIcon`。
 
-### 做法
+logo 属于游戏内容，**不要提交进 git**；源文件放在仓库外（如 Downloads），`icon.jpg` 只存在于 `work/`、`builds/` 这类被忽略的构建目录里。
 
-1. 把图标 PNG（1024×1024）用 `sips` 转成 256×256 JPEG，命名为 `icon.jpg`。
-2. 放到 `work/<title ID>/extract/v0/icon.jpg`（构建脚本会优先在这里找）。
-3. 重新 `build` 会自动生成 `AppIcon.icns` 并写入 `Info.plist` 的 `CFBundleIconFile`。
+### 大金刚（Donkey Kong Bananza，title ID `040074A01BF12000`）
 
-> dump 的 `base/` 目录是 root 所有，普通用户无法直接写，所以 `icon.jpg` 放在 work 的 extract 目录即可。
+源图：`/Users/amid031799/Downloads/QIGANG/logo.jpeg`（1268×951 横版）。横版图先居中裁成正方形，再缩到 1024×1024 的 JPEG：
+
+```bash
+TMP="$(mktemp -d)/square.png"
+sips -s format png -c 951 951 /Users/amid031799/Downloads/QIGANG/logo.jpeg --out "$TMP" >/dev/null
+sips -s format jpeg -z 1024 1024 "$TMP" --out builds/dk/040074A01BF12000/extract/v458752/icon.jpg >/dev/null
+```
+
+放置位置（版本号随 dump 的 update 版本变化，当前是 v458752）：
+
+```
+builds/dk/040074A01BF12000/extract/v458752/icon.jpg
+```
+
+### 马车世界（Mario Kart World）
+
+1. 把图标 PNG（1024×1024）用 `sips` 转成 JPEG，命名为 `icon.jpg`。
+2. 放到对应工作目录的 `extract/v0/icon.jpg`（默认 `work/0400C3F00006E000/extract/v0/`，独立目录则是 `builds/mkw/.../extract/v0/`）。
+
+### 缓存与失效
+
+- extract 阶段被复用时（日志 `reusing the extracted ...`），已放入的 `icon.jpg` 会保留，不需要重做。
+- 以下情况 `icon.jpg` 会丢失，**必须在 `build` 之前重新生成**：
+  - 删除或清空了 `builds/<游戏>/<title ID>/extract/`（换工作目录、磁盘清理）。
+  - 游戏升级到新 update 版本，extract 目录变成新的 `v<新版本>/`。
+  - 重新全量解包（`.partial` 交换替换整个 extract 目录）。
+- 构建后验证：
+
+```bash
+ls -l '/Applications/Donkey Kong Bananza.app/Contents/Resources/AppIcon.icns'
+/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' '/Applications/Donkey Kong Bananza.app/Contents/Info.plist'
+```
+
+> dump 的 `base/` 目录是 root 所有，普通用户无法直接写，所以 `icon.jpg` 放在构建工作目录的 extract 里即可，不要往 dump 里写。
 
 ## 4. 存档迁移
 
@@ -97,6 +130,13 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 `launcher.json` 中所有设置项的 label、note 均已中文，唯一保留英文的是 `MetalFX`（Apple 专有名词，和“Metal 4 管线”里的 Metal 一样保留原文）。
 
 ## 7. 打包与升级流程
+
+### 每次构建前检查清单
+
+1. `icon.jpg` 已在 `builds/<游戏>/<tid>/extract/v<版本>/` 里（见 §3）；extract 被清空或换版本后必须重新生成。
+2. `game.json` 的 `language` 仍是期望的默认语言（大金刚为 `zh-Hans`，见 §9）。
+3. 磁盘可用空间大于该游戏 `game.json` 的 `disk_gb`（大金刚 40 GB）。
+4. 构建日志出现 `game language: zh-Hans` 和 `app icon: .../icon.jpg` 才算成功带上中文和 logo。
 
 ### 打正式包
 
