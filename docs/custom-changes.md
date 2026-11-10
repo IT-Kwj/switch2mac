@@ -238,3 +238,13 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
   - 中文语言设置（settings.tsv, nacp.py）
 - 更新内容：Compute shared memory 修复（超过 32KB 的共享内存现在为每个 workgroup 分配独立的 slice）
 
+
+## 8. 游戏图标
+
+每次构建时必须添加游戏 logo 图标。
+
+### 马车世界 (Mario Kart World)
+
+- Logo 文件位置：`/Users/amid031799/Downloads/MKWROM/Mario Kart World.png`
+- 构建命令：`./switch2mac.py build "/Users/amid031799/Downloads/MKWROM" --engine nxnative --icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
+
