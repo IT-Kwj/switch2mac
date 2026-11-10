@@ -12,14 +12,15 @@ package struct Dep: Identifiable {
     package var fixHint = ""     // an L10n key: what to type or click, chosen from that line
     package var actionLabel = "" // an L10n key for the button when the action is not a plain install ("Fix")
     package var warning = false  // present, but with a caveat the row's error and hint lines explain (the Metal compiler is not the tested one)
+    package var optional = false // only some builds need it (MacNativeGames' Homebrew packages): a missing one does not stop other builds
     package let installCmd: [String]      // run via bash; empty = manual (Xcode from the App Store)
 
     package init(id: String, name: String, hint: String, present: Bool, installing: Bool = false, detail: String = "",
                  lastError: String = "", fixHint: String = "", actionLabel: String = "", warning: Bool = false,
-                 installCmd: [String]) {
+                 optional: Bool = false, installCmd: [String]) {
         self.id = id; self.name = name; self.hint = hint; self.present = present; self.installing = installing
         self.detail = detail; self.lastError = lastError; self.fixHint = fixHint; self.actionLabel = actionLabel
-        self.warning = warning; self.installCmd = installCmd
+        self.warning = warning; self.optional = optional; self.installCmd = installCmd
     }
 }
 
@@ -404,6 +405,25 @@ package enum Toolchain {
         return [Dep(id: "brew", name: "dep.brew", hint: "dep.brew.hint", present: brew != nil,
                     installCmd: ["/bin/bash", "-c",
                       "NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""])] + rows
+    }
+
+    /// What MacNativeGames' builder needs from Homebrew (its build_app.py: `brew install opus libvpx python@3.14`): Python 3.14 (it reads zstd with the
+    /// standard library) and the Opus and libvpx libraries (the game's audio and its movies). Only its builds need them, so the rows are optional; the build
+    /// also installs whatever is missing when one starts (switch2mac.py). `exists` looks for a file, `brew` is Homebrew's own command when it is there:
+    /// without it, the install puts Homebrew in first.
+    package static let mngDeps: [(formula: String, probe: [String], key: String)] = [
+        ("python@3.14", ["/opt/homebrew/bin/python3.14", "/usr/local/bin/python3.14"], "dep.mng.python"),
+        ("opus", ["/opt/homebrew/opt/opus/lib", "/usr/local/opt/opus/lib"], "dep.mng.opus"),
+        ("libvpx", ["/opt/homebrew/opt/libvpx/lib", "/usr/local/opt/libvpx/lib"], "dep.mng.libvpx"),
+    ]
+    package static let brewInstallScript = "NONINTERACTIVE=1 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+    package static func mngRows(brew: String?, exists: (String) -> Bool) -> [Dep] {
+        mngDeps.map { pkg, probe, key in
+            let path = probe.first(where: exists)
+            let install = brew.map { "\"\($0)\" install \(pkg)" } ?? "\(brewInstallScript) && /opt/homebrew/bin/brew install \(pkg)"
+            return Dep(id: "mng:" + pkg, name: key, hint: "dep.mng.hint", present: path != nil, detail: path ?? "dep.mng.hint",
+                       optional: true, installCmd: ["/bin/bash", "-c", "HOMEBREW_NO_AUTO_UPDATE=1 " + install])
+        }
     }
 
     /// First line of a tool's output (the Metal compiler's version line), nil when it does not run or says nothing.

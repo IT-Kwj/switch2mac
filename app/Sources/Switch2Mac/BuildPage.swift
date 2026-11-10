@@ -23,9 +23,10 @@ struct BuildPage: View {
         SetupHintCard(repo: repo, dependencies: dependencies, onOpenSettings: onOpenSettings)
         YourMacCard()
         DumpCard(build: build)
+        // the build right under the game: what it plays decides which update, DLC and firmware the cards below it want
+        if let info = build.dumpInfo, info.ok, !info.allBuilds.isEmpty { GameBuildCard(build: build, info: info) }
         if let info = build.dumpInfo, info.ok, info.dumpForm == "switch1" || info.parts != nil { SwitchFilesCard(build: build, info: info) }
         if build.dumpInfo?.needsKeys == true { KeysCard(build: build) }
-        if let info = build.dumpInfo, info.ok, info.allBuilds.count > 1 { GameBuildCard(build: build, info: info) }
         LogCard(log: build.log, devices: devices, isOpen: $logOpen,
                 showRequests: BuildNotifier.shared.$showLog.eraseToAnyPublisher(),   // a clicked notification of a failed build
                 didShow: { BuildNotifier.shared.showLog = false })
@@ -48,6 +49,10 @@ struct DumpCard: View {
         CardGroup("Your game", footnote: "Switch: the game's .nsp or .xci file, or the folder with its base game, update and DLC. Built with your own prod.keys.\n\nSwitch 2: the folder your dump tool wrote (exefs and romfs, or base and updates), or a .nup file. No keys needed.") {
             CardRow(title, detail: detail, detail2: build.gameDir.isEmpty ? "" : RepoLayout.shortPath(build.gameDir), dot: dot, help: build.gameDir) {
                 if build.identifying { ProgressView().controlSize(.small) }
+                if !build.gameDir.isEmpty {
+                    Button("Clear") { build.clearDump() }   // the game and the update, DLC and pick added for it
+                        .disabled(build.running).help("Start again with no game chosen")
+                }
                 Button(build.gameDir.isEmpty ? "Choose game…" : "Change…") {
                     if let f = build.chooseFolder() { build.chooseDump(f) }
                 }
@@ -69,9 +74,16 @@ struct DumpCard: View {
         guard let i = build.dumpInfo else { return "" }
         guard i.ok else { return i.problem }
         let chosen = i.allBuilds.first { $0.id == build.buildChoice(i) }
-        let engine = chosen?.name ?? (i.engine == "switch2mac" ? "switch2mac's engine" : i.engine)
-        return [i.dumpForm == "switch1" ? "Switch" : "", i.version, "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
+        let engine = chosen?.name ?? (i.engine == "switch2mac" ? "switch2mac" : i.engine)
+        return [i.dumpForm == "switch1" ? "Switch" : "", Self.versionText(i.dumpVersion, update: i.updateName, without: build.s1NoUpdate),
+                (i.parts?.dlc ?? []).isEmpty ? "" : "\((i.parts?.dlc ?? []).count) DLC", "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
             .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+    /// The dump's own version in words: the base game alone, or the update it has (the build's needs are in the Build card's line)
+    static func versionText(_ v: String, update: String = "", without: Bool = false) -> String {
+        if without { return "base game, update left out" }
+        if !update.isEmpty { return "with update \(update)" }
+        return v.isEmpty ? "" : v == "v0" ? "base game, no update" : "with update \(v)"
     }
     private var dot: Color {
         guard let i = build.dumpInfo else { return build.identifying ? LauncherPalette.building : LauncherPalette.unbuilt }
@@ -101,9 +113,14 @@ struct SwitchFilesCard: View {
                 }
                 CardDivider()
             }
-            CardRow("Update", detail: !(info.parts?.update ?? "").isEmpty ? info.parts!.update
-                    : !(info.parts?.note ?? "").isEmpty ? "None as a separate file (see Also inside)" : "None: the game builds as \(info.version.isEmpty ? "its first version" : info.version)",
-                    dot: (info.parts?.update ?? "").isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
+            CardRow("Update", detail: build.s1NoUpdate ? "Left out: the game builds as its first version (v0)"
+                    : !(info.parts?.update ?? "").isEmpty ? info.parts!.update + (info.updateName.isEmpty ? "" : " (version \(info.updateName))")
+                    : !(info.parts?.note ?? "").isEmpty ? "None as a separate file (see Also inside)" : "None found: the game builds as its first version (v0)",
+                    dot: build.s1NoUpdate || (info.parts?.update ?? "").isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) {
+                if switch1, build.s1NoUpdate || !(info.parts?.update ?? "").isEmpty {   // a version the chosen build does not play: build without it
+                    Button(build.s1NoUpdate ? "Use it" : "Leave out") { build.setNoUpdate(!build.s1NoUpdate) }.disabled(build.running || build.identifying)
+                }
+            }
             CardDivider()
             CardRow("DLC", detail: (info.parts?.dlc ?? []).isEmpty ? "None" : (info.parts?.dlc ?? []).joined(separator: "\n"),
                     dot: (info.parts?.dlc ?? []).isEmpty ? LauncherPalette.unbuilt : LauncherPalette.ready) { EmptyView() }
@@ -164,20 +181,61 @@ struct GameBuildCard: View {
     let info: DumpInfo
     @State private var specs = MacSpecs()
     @State private var askUntested: DumpInfo.BuildOption?   // an untested build picked from the menu: confirmed in a small popup first
+    @State private var askCustom = false   // "Your own build…": the link to the player's fork
+    @State private var customLink = ""
 
     var body: some View {
         let chosen = build.buildChoice(info), recommended = chosen == info.recommended
         let option = info.allBuilds.first { $0.id == chosen }, untested = info.isUntested(chosen)
-        CardGroup("Build", footnote: "Each build is the same game on a different engine. switch2mac picks the one that runs best on Macs like yours, from players' reports.") {
-            CardRow(option?.name ?? chosen, detail: option?.about ?? "",
-                    detail2: untested ? "Untested build: at your own risk. Stop ends it at any time."
-                        : recommended ? "Recommended for your Mac: " + info.why : "Not the one recommended for your Mac (\(name(info.recommended))): it may run slower here.",
-                    dot: recommended && !untested ? LauncherPalette.ready : LauncherPalette.building, detail2Bold: untested) {
-                LauncherDropdown(options: info.allBuilds.map { (value: $0.id, label: $0.name + ($0.id == info.recommended ? " (recommended)" : "")) },
+        CardGroup("Build", footnote: "Each build is the same game made by a different project (nxnative, switch2mac, community ports). switch2mac picks the one that runs best on Macs like yours, from players' reports.\n\nA first build takes from about 20 minutes to a few hours, most of it compiling the game's shaders, and keeps the Mac busy. Its working files stay (Settings › Storage), so building the same game again reuses them and is faster; after a big change to the build's code most shaders compile again, and it takes nearly as long.") {
+            let misfit = option.map { !$0.fits && !$0.note.isEmpty } ?? false
+            // the recommendation reads as prose (detail wraps); detail2, a single line, carries only a warning
+            CardRow(option?.name ?? chosen, detail: [option?.about ?? "", (option?.plays ?? "").isEmpty ? "" : "Plays " + option!.plays + ".",
+                                                     recommended && !untested && !misfit ? "Recommended for your Mac" + (info.why.isEmpty ? "." : ": " + info.why) : ""].filter { !$0.isEmpty }.joined(separator: "\n"),
+                    detail2: misfit ? "Not for your files: it " + option!.note + "." : untested ? "Untested build: at your own risk. Stop ends it at any time."
+                        : recommended ? "" : "Not the one recommended for your Mac (\(name(info.recommended))): it may run slower here.",
+                    dot: misfit ? .red : recommended && !untested ? LauncherPalette.ready : LauncherPalette.building, detail2Bold: untested || misfit) {
+                LauncherDropdown(options: info.allBuilds.map { (value: $0.id, label: $0.name + ($0.id == info.recommended ? " (recommended)" : !$0.fits ? " (not for your files)" : "")) }
+                                    + [(value: "#custom", label: build.customBuild.isEmpty ? "Your own build…" : "Change your own build…")],
                                  selection: chosen, label: "Build", style: .button) { id in
-                    if info.isUntested(id), id != chosen { askUntested = info.allBuilds.first { $0.id == id } } else { build.chooseBuild(id, for: info) }
+                    if id == "#custom" { customLink = build.customBuild; askCustom = true }
+                    else if info.isUntested(id), id != chosen { askUntested = info.allBuilds.first { $0.id == id } } else { build.chooseBuild(id, for: info) }
                 }
                     .disabled(build.running)
+            }
+            if !info.customProblem.isEmpty {
+                CardDivider()
+                CardRow("Your own build is not offered", detail: info.customProblem, dot: .red) {
+                    Button("Change…") { customLink = build.customBuild; askCustom = true }.disabled(build.running)
+                }
+            }
+            if let fwRule = option?.firmware, !fwRule.isEmpty, !info.needsFirmware(chosen) {
+                CardDivider()
+                CardRow("Firmware (the Switch's system fonts)", detail: "Not needed: your game is a card image (.\(info.baseExt)), which carries the fonts. \(option?.name ?? "This build") asks for your firmware folder only when the game is an .nsp.",
+                        dot: LauncherPalette.ready) { EmptyView() }
+            }
+            if info.needsFirmware(chosen) {
+                CardDivider()
+                CardRow("Firmware (the Switch's system fonts)", detail: info.firmware.isEmpty
+                            ? "Not found. \(option?.name ?? "This build") needs your own unpacked firmware folder (its .nca files) for the fonts\(info.baseExt == "nsp" ? " when the game is an .nsp" : ""). Keep it beside your prod.keys, or choose it here."
+                            : RepoLayout.shortPath(info.firmware) + (build.firmwarePath.isEmpty ? " (found beside your prod.keys)" : ""),
+                        dot: info.firmware.isEmpty ? .red : LauncherPalette.ready, help: info.firmware) {
+                    if !build.firmwarePath.isEmpty { Button("Forget") { build.setFirmware(nil) }.disabled(build.running) }
+                    Button(info.firmware.isEmpty ? "Choose folder…" : "Change…") {
+                        let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false; panel.prompt = "Choose"
+                        panel.message = "Choose your unpacked firmware folder (the .nca files from your own Switch)"
+                        if panel.runModal() == .OK, let url = panel.url { build.setFirmware(url.path) }
+                    }.disabled(build.running)
+                }
+            }
+            if option?.quick == true {
+                CardDivider()
+                CardRow("Quick try", detail: build.quickTry
+                            ? "On: only the shaders players have used so far, in about half the time. Places nobody has played yet may miss parts or stutter until you build again with Quick try off."
+                            : "Build only the shaders players have used so far, in about half the time, to see quickly how the game runs on your Mac. Build again with it off for the whole game.",
+                        dot: build.quickTry ? LauncherPalette.building : LauncherPalette.unbuilt) {
+                    Toggle("", isOn: $build.quickTry).labelsHidden().toggleStyle(LauncherSwitchStyle()).disabled(build.running)
+                }
             }
             let rs = info.reports(of: chosen)
             if rs.isEmpty {
@@ -192,6 +250,14 @@ struct GameBuildCard: View {
             }
         }
         .task { specs = await Task.detached { MacSpecs.read() }.value }
+        .alert("Your own build", isPresented: $askCustom) {
+            TextField("https://github.com/you/nxnative@branch", text: $customLink)
+            Button("Use it") { build.setCustomBuild(customLink, for: info) }
+            if !build.customBuild.isEmpty { Button("Remove it", role: .destructive) { build.setCustomBuild(nil, for: nil) } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("A fork of nxnative to build this game with: its GitHub link, then @ and the branch if it is not the main one. switch2mac builds it with nxnative's builder, for any game. It is untested: it may stop partway or not start.")
+        }
         .alert("Untested build", isPresented: Binding(get: { askUntested != nil }, set: { if !$0 { askUntested = nil } }), presenting: askUntested) { b in
             Button("Use untested build") { build.chooseBuild(b.id, for: info) }
             Button("Cancel", role: .cancel) {}

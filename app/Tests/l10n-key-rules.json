@@ -79,7 +79,6 @@
     {"key": "dep.llvm.done", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
     {"key": "dep.llvm.downloading", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
     {"key": "dep.llvm.hint", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
-    {"key": "dep.missingOptional", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
     {"key": "dep.onlyOptional", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
     {"key": "dep.optionalMissing", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},
     {"key": "dep.phase.download", "why": "switch2mac: used only by the original launcher's Windows (Qt) front end or by a feature switch2mac left out (keys, cheats, the iPhone build); the Mac app never looks it up"},

@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' runtime",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
@@ -18,11 +18,21 @@
     "build_app.py",
     "tools/builder"
    ],
-   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Tears of the Kingdom 1.0.0, 1.2.1 or 1.4.3 (1.4.3 recommended), up to native 4K (5K on Macs with 32 GB or more): its main game, the most polished port there. Needs Homebrew's python@3.14, opus and libvpx."
+   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Tears of the Kingdom 1.0.0, 1.2.1 or 1.4.3 (1.4.3 recommended), up to native 4K (5K on Macs with 32 GB or more): its main game, the most polished port there. Needs Homebrew's python@3.14, opus and libvpx.",
+   "plays": "the base game 1.0.0 alone, or with update 1.2.1 or 1.4.3 (1.4.3 recommended)",
+   "update_versions": [
+    "1.2.1",
+    "1.4.3"
+   ],
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.totk",
+    "org.macnativegames.totk-native"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v720896"
    ],
@@ -32,7 +42,11 @@
     "repo": "https://github.com/seedds/nxnative",
     "commit": "f02d0474cf1ed1de32ccee1313e1448d4f7da401"
    },
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3."
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3.",
+   "version_names": {
+    "v720896": "1.4.3"
+   },
+   "plays": "update 1.4.3"
   }
  ],
  "disk_gb": 55,

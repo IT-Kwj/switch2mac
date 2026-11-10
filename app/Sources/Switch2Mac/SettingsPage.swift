@@ -35,6 +35,7 @@ struct SettingsPage: View {
         KeysSettingsCard(build: build)
         BoxArtSettingsCard()
         StorageCard(build: build)
+        FilesCard(library: library, build: build)
         ControlsCard(controlChanges: controlChanges, padMerge: padMerge, consolePrompt: $consolePromptOn,
                      startInConsole: $startInConsole, onOpenControls: onOpenControls, onOpenControllers: onOpenControllers,
                      onOpenHomeSettings: HomeButtonSettings.available ? { HomeButtonSettings.open() } : nil)   // HomeButtonSettings.swift (#336)

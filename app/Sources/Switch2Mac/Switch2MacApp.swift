@@ -63,4 +63,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         !ProcessGroups.buildProcessesAlive
     }
+
+    /// A quit while a game builds asks first (QuitDuringBuild.swift).
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        QuitDuringBuild.reply(buildRunning: ProcessGroups.buildProcessesAlive) { QuitDuringBuild.ask() }
+    }
 }

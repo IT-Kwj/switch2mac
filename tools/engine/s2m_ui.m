@@ -18,7 +18,7 @@ uint64_t mtl_cur_frame(void); double mtl_gpu_ms(uint64_t f); int nvn_game_fps(vo
 #define OV_N 60   // graph samples: 30 s
 static int g_ov_mode = 1;   // 0 off, 1 compact, 2 detailed
 @interface DmOverlay : NSView
-@property(strong) NSTextField *label;
+@property(strong) NSTextField *label, *build;
 @end
 @implementation DmOverlay {
     float _fps[OV_N]; int _n; uint64_t _f0; double _t0, _cpu0; NSString *_lines; double _fpsNow, _gpu;
@@ -28,6 +28,7 @@ static int g_ov_mode = 1;   // 0 off, 1 compact, 2 detailed
     self.wantsLayer = YES; self.layer.backgroundColor = [NSColor colorWithWhite:0.04 alpha:0.72].CGColor; self.layer.cornerRadius = 7;
     self.layer.borderWidth = 1; self.layer.borderColor = [NSColor colorWithWhite:1 alpha:0.14].CGColor;
     self.label = [NSTextField labelWithString:@""]; self.label.maximumNumberOfLines = 0; [self addSubview:self.label];
+    self.build = [NSTextField labelWithString:@""]; [self addSubview:self.build];   // the build's name, at the right of the FPS line
     _t0 = CACurrentMediaTime(); _f0 = mtl_cur_frame(); _gpu = -1;
     __weak DmOverlay *w = self; [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer *t) { (void)t; [w tick]; }];
     return self;
@@ -68,10 +69,6 @@ static void engine_name(NSString **name, NSString **version) {
     NSString *eng, *engVer; engine_name(&eng, &engVer);
     NSString *fpsText = [NSString stringWithFormat:@"FPS %.0f", _fpsNow];
     line(fpsText, fc);
-    if (eng.length) {   // the engine, dimmed, at the right of the FPS line (the font is monospaced: pad to the hint line's width)
-        NSInteger pad = MAX(2, 21 - (NSInteger)fpsText.length - (NSInteger)eng.length);
-        line([[@"" stringByPaddingToLength:pad withString:@" " startingAtIndex:0] stringByAppendingString:eng], [NSColor colorWithWhite:0.6 alpha:1]);
-    }
     line(gw0 > 0 ? [NSString stringWithFormat:@"\n%dx%d", gw0, gh0] : @"\n--", green);
     if (g_ov_mode == 2) {
         line([NSString stringWithFormat:@"\nGPU %@", gpu], _gpu > 16.7 ? yellow : green);
@@ -85,10 +82,14 @@ static void engine_name(NSString **name, NSString **version) {
     line(g_ov_mode == 2 ? @"\n1: hide · 2: settings" : @"\n1: more · 2: settings", grey);
     self.label.attributedStringValue = a;
     NSSize z = [self.label sizeThatFits:NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX)];
-    CGFloat gw = g_ov_mode == 2 ? 220 : 0, gh = g_ov_mode == 2 ? 74 : 0, cw = fmax(ceil(z.width), gw), m = 10;
+    self.build.attributedStringValue = [[NSAttributedString alloc] initWithString:eng attributes:@{NSFontAttributeName: mono, NSForegroundColorAttributeName: [NSColor colorWithWhite:0.6 alpha:1]}];
+    self.build.hidden = !eng.length; NSSize bz = [self.build sizeThatFits:NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX)];
+    CGFloat fw = [[NSAttributedString alloc] initWithString:[fpsText stringByAppendingString:@"   "] attributes:@{NSFontAttributeName: mono}].size.width;   // the FPS figure and a gap before the build
+    CGFloat gw = g_ov_mode == 2 ? 220 : 0, gh = g_ov_mode == 2 ? 74 : 0, cw = fmax(fmax(ceil(z.width), gw), eng.length ? ceil(fw + bz.width) : 0), m = 10;
     CGFloat w = cw + 16, h = ceil(z.height) + gh + 10; NSSize b = self.superview.bounds.size;
     self.frame = NSMakeRect(floor(b.width - w - m), floor(b.height - h - m), w, h);
     self.label.frame = NSMakeRect(8, gh + 5, ceil(z.width), ceil(z.height));
+    self.build.frame = NSMakeRect(8 + cw - ceil(bz.width), gh + 5 + ceil(z.height) - ceil(bz.height), ceil(bz.width), ceil(bz.height));   // right-aligned with the box's text edge, on the first line
     [self setNeedsDisplay:YES];
 }
 - (void)drawRect:(NSRect)d {   // detailed mode: the frame rate of the last 30 s, with lines at 30 and 60
@@ -120,6 +121,11 @@ static NSUserDefaults *settings_store(void) {
     return [bid hasPrefix:@"org.nxnative."] ? NSUserDefaults.standardUserDefaults : nil;   // the host inside the app: its bundle's domain, as the launcher's
 }
 static NSColor *ui_accent(void) { return [NSColor colorWithCalibratedRed:80/255.0 green:1 blue:120/255.0 alpha:1]; }
+@interface DmFlipView : NSView
+@end
+@implementation DmFlipView
+- (BOOL)isFlipped { return YES; }
+@end
 @interface DmPanelRow : NSObject
 @property(copy) NSDictionary *s; @property(strong) NSTextField *note; @property BOOL locked;
 @end
@@ -187,11 +193,11 @@ static void settings_lock_scan(void) {
     if (!list.count) [st addArrangedSubview:panel_label(@"No settings list in this app (Resources/dm/launcher.json).", 12, NSFontWeightRegular, NSColor.whiteColor)];
     NSScrollView *sv = [[NSScrollView alloc] initWithFrame:self.bounds]; sv.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     sv.drawsBackground = NO; sv.hasVerticalScroller = YES;
-    NSView *doc = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, r.size.width, 10)]; [doc addSubview:st]; st.translatesAutoresizingMaskIntoConstraints = NO;
+    NSView *doc = [[DmFlipView alloc] initWithFrame:NSMakeRect(0, 0, r.size.width, 10)]; [doc addSubview:st]; st.translatesAutoresizingMaskIntoConstraints = NO;   // flipped: the rows grow downward from the top, which stays in view
     [NSLayoutConstraint activateConstraints:@[[st.leadingAnchor constraintEqualToAnchor:doc.leadingAnchor], [st.trailingAnchor constraintEqualToAnchor:doc.trailingAnchor], [st.topAnchor constraintEqualToAnchor:doc.topAnchor]]];
     doc.frame = NSMakeRect(0, 0, r.size.width - 16, st.fittingSize.height); sv.documentView = doc; [self addSubview:sv];
     self.stack = st; self.doc = doc;
-    [doc scrollPoint:NSMakePoint(0, doc.isFlipped ? 0 : doc.bounds.size.height)];
+    [doc scrollPoint:NSZeroPoint];
     return self;
 }
 - (BOOL)isFlipped { return YES; }
@@ -258,11 +264,19 @@ static void settings_lock_scan(void) {
 }
 // (switch2mac) The scrolled area's height, measured once the panel is on screen: before that the wrapping notes measure as one line each, the area came out shorter than
 // its rows and the last ones could not be scrolled to (Mario Kart World's long list on an M4). Twice: the second pass after the notes have taken their wrapped width
+// Then the panel takes the rows' height, up to the window's less a margin (it was 560 at most: on a tall window the last rows sat below a scroll the player did not
+// see, and the top scrolled out of view), centred again, and shows its top
 - (void)fitDoc {
     for (int pass = 0; pass < 2; pass++) {
         [self layoutSubtreeIfNeeded]; [self.stack layoutSubtreeIfNeeded];
         NSRect f = self.doc.frame; f.size.height = MAX(self.stack.fittingSize.height, NSMaxY(self.stack.frame)); self.doc.frame = f;
+        NSView *cv = self.superview;
+        if (cv) {
+            CGFloat h = fmin(ceil(f.size.height) + 2, cv.bounds.size.height - 60); if (h < 200) h = fmin(200, cv.bounds.size.height - 20);
+            NSRect p = self.frame; p.size.height = h; p.origin.y = floor((cv.bounds.size.height - h) / 2); self.frame = p;
+        }
     }
+    [self.doc scrollPoint:NSZeroPoint];
 }
 - (void)mouseDown:(NSEvent *)e { (void)e; }   // clicks on the panel's background do not reach the game
 @end
@@ -270,7 +284,7 @@ static void panel_toggle(void) {
     NSView *cv = s_win.contentView;
     if (g_panel) { [g_panel removeFromSuperview]; g_panel = nil; s_resume(); LOG("front end: settings panel closed"); return; }
     s_release();
-    CGFloat w = fmin(500, cv.bounds.size.width - 40), h = fmin(560, cv.bounds.size.height - 40);
+    CGFloat w = fmin(500, cv.bounds.size.width - 40), h = cv.bounds.size.height - 60;   // fitDoc then takes the rows' height
     g_panel = [[DmPanel alloc] initWithFrame:NSMakeRect(floor((cv.bounds.size.width - w) / 2), floor((cv.bounds.size.height - h) / 2), w, h)];
     g_panel.autoresizingMask = NSViewMinXMargin | NSViewMaxXMargin | NSViewMinYMargin | NSViewMaxYMargin;
     [cv addSubview:g_panel positioned:NSWindowAbove relativeTo:nil]; [g_panel fitDoc]; LOG("front end: settings panel open (key 2)");

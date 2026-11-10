@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
@@ -36,11 +36,26 @@
    "watch": [
     "games/ot0"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its ot0 port: Community port, work in progress. Base game card image (.xci; a trimmed image works) and update 1.0.3, 1.0.4 or 1.0.5 (required). Up to 120 fps (the Switch version holds 30)."
+   "about": "ly05010419's MacNativeGames (MIT), its ot0 port: Community port, work in progress. Base game card image (.xci; a trimmed image works) and update 1.0.3, 1.0.4 or 1.0.5 (required). Up to 120 fps (the Switch version holds 30).",
+   "plays": "the card image with update 1.0.3, 1.0.4 or 1.0.5",
+   "update_versions": [
+    "1.0.3",
+    "1.0.4",
+    "1.0.5"
+   ],
+   "version_names": {
+    "v196608": "1.0.3",
+    "v262144": "1.0.4",
+    "v327680": "1.0.5"
+   },
+   "needs_update": true,
+   "app_ids": [
+    "org.macnativegames.ot0"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v327680"
    ],
@@ -50,7 +65,10 @@
     "commit": "9c2fb0c9671d40c578a7e1b1c89df66f084d7b4b"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (1.0.5) with switch2mac's overlay and key-2 settings."
+   "about": "nxnative's profile (1.0.5) with switch2mac's overlay and key-2 settings.",
+   "version_names": {
+    "v327680": "1.0.5"
+   }
   }
  ],
  "disk_gb": 30,

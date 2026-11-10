@@ -54,6 +54,13 @@ def main():
         hn.write_text(s.replace(k, 'static _Atomic int g_game_w, g_game_h;   // (switch2mac) the size of the frame the game presents last (the overlay)\n'
                                    'void nvn_game_size(int *w, int *h) { *w = atomic_load(&g_game_w); *h = atomic_load(&g_game_h); }\n' + k, 1))
         edit(hn, 'const int *crop = present_crop(o->crop, (int)t->d.width, (int)t->d.height, lc);', '        atomic_store(&g_game_w, (int)t->d.width); atomic_store(&g_game_h, (int)t->d.height);   // (switch2mac)\n', 'nvn_game_size')
+    bi = nx / 'scripts/build_ipa_from_nsp.py'   # a quick try (switch2mac.py --quick) also takes the game's shared shader list (S2M_SEEN), and builds a game whose profile has no shader_seen.tsv
+    s = bi.read_text() if bi.is_file() else ''
+    old = ("    return set(re.findall(r'^[0-9a-f]{16}\\b', g.table('shader_seen.tsv').read_text(errors='replace'), re.M))\n")
+    if old in s:
+        bi.write_text(s.replace(old, "    t = ''.join(f.read_text(errors='replace') for f in (g.table('shader_seen.tsv'), Path(os.environ.get('S2M_SEEN') or '/nonexistent')) if f.is_file())   # (switch2mac) and the shared list\n"
+                                     "    return set(re.findall(r'^(?:[SC]\\t)?([0-9a-f]{16})(?:_[a-z]+)?\\b', t, re.M))\n", 1)); print('  build_ipa_from_nsp.py: quick tries take the shared shader list')
+    elif s and 'S2M_SEEN' not in s: print('  build_ipa_from_nsp.py: no seen_listed of the known form: a quick try uses only the profile\'s own list')
     st = nx / 'dm/games/settings.py'
     s = st.read_text(); w = "    Path(sys.argv[4]).write_text(json.dumps(d,"
     if w not in s: sys.exit(f'{st}: no line with {w!r}')

@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
@@ -32,11 +32,18 @@
    "watch": [
     "games/dread"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its dread port: Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet."
+   "about": "ly05010419's MacNativeGames (MIT), its dread port: Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet.",
+   "plays": "the base game 1.0.0 only (no update yet)",
+   "update_versions": [],
+   "no_update": true,
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.dread"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v327680"
    ],
@@ -46,7 +53,10 @@
     "commit": "a342d6401af8b609ccf3709cf9f7ca27bb784ddc"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (2.1.0) with switch2mac's overlay and key-2 settings."
+   "about": "nxnative's profile (2.1.0) with switch2mac's overlay and key-2 settings.",
+   "version_names": {
+    "v327680": "2.1.0"
+   }
   }
  ],
  "disk_gb": 30,

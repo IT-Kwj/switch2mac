@@ -73,7 +73,9 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     nonisolated package static let targetKey = "buildTarget"
     nonisolated package static let bcOnCPUKey = "bcOnCPU"
 
-    @Published package var gameDir = "" { didSet { if gameDir != oldValue { s1Extra = []; s1Pick = "" } } }   // another game: its own added files and pick
+    @Published package var gameDir = "" { didSet { if gameDir != oldValue { s1Extra = []; s1Pick = ""; s1NoUpdate = false; quickTry = false } } }   // another game: its own added files and pick
+    @Published package var quickTry = false   // the next build is a quick try (switch2mac.py --quick): only the shaders players have used, about half the time
+    @Published package var s1NoUpdate = false   // a Switch game: built without the update found beside it (switch2mac.py --no-update)
     @Published package var s1Extra: [String] = []   // a Switch game: update and DLC files the player added (switch2mac.py --add)
     @Published package var s1Pick = ""   // a Switch cartridge with several games: the one to build (switch2mac.py --title-id), "" for its first
     @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Switch2Mac.swift)

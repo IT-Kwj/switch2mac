@@ -21,7 +21,7 @@ struct StorageCard: View {
     private var engines: [StorageItem] { (items ?? []).filter { $0.kind == "engine" } }
 
     var body: some View {
-        CardGroup("Storage", footnote: "Building a game leaves its working files behind (the game unpacked, shaders, tools) so a rebuild is faster, and an engine copy for each engine version. Clean up removes them. Your games, saves, settings and the shader caches your games keep stay, and so do your dumps and keys: a later build only takes longer.") {
+        CardGroup("Storage", footnote: "Building a game leaves its working files behind (the game unpacked, shaders, tools) so a rebuild is faster, and a copy of the code of each build you used. Clean up removes them. Your games, saves, settings and the shader caches your games keep stay, and so do your dumps and keys: a later build only takes longer.") {
             CardRow("Build leftovers", detail: summary, dot: total > 0 ? LauncherPalette.unbuilt : LauncherPalette.ready, open: (items?.isEmpty == false) ? open : nil) {
                 if measuring || cleaning { ProgressView().controlSize(.small) }
                 else if total > 0 {
@@ -35,7 +35,7 @@ struct StorageCard: View {
             if open {
                 ForEach(builds + engines) { i in
                     CardDivider()
-                    CardRow(i.kind == "build" ? i.name : "Engine copy no build uses", detail: i.path, dot: nil) {
+                    CardRow(i.kind == "build" ? i.name : "Build code no game uses any more", detail: i.path, dot: nil) {
                         Text(Self.bytes(i.bytes)).font(.manrope(12.5, .semibold)).foregroundStyle(.secondary)
                     }
                 }
@@ -61,7 +61,7 @@ struct StorageCard: View {
         if items.isEmpty { return "Nothing to clean up." }
         var parts: [String] = []
         if !builds.isEmpty { parts.append("\(builds.count) game\(builds.count == 1 ? "" : "s")' build files") }
-        if !engines.isEmpty { parts.append("\(engines.count) unused engine cop\(engines.count == 1 ? "y" : "ies")") }
+        if !engines.isEmpty { parts.append("\(engines.count) unused build code cop\(engines.count == 1 ? "y" : "ies")") }
         return Self.bytes(total) + ": " + parts.joined(separator: " and ")
     }
 

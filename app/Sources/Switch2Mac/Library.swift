@@ -249,8 +249,14 @@ struct MacGameBundle {
         guard url.pathExtension.lowercased() == "app" else { throw Invalid.notGame }
         LauncherWork.count(.infoPlistRead)
         guard let data = try? Data(contentsOf: url.appendingPathComponent("Contents/Info.plist")),
-              let info = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
-              let rawID = info["DMTitleID"] as? String,
+              let info = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { throw Invalid.notGame }
+        // Another project's builder (MacNativeGames): no DMTitleID or dmhost; its bundle identifier names the game (OtherBuilderApps)
+        if info["DMTitleID"] == nil, let bid = info["CFBundleIdentifier"] as? String, let other = OtherBuilderApps.game(forBundle: bid),
+           let executable = info["CFBundleExecutable"] as? String, !executable.isEmpty, !executable.contains("/"), executable != ".", executable != "..",
+           FileManager.default.isExecutableFile(atPath: url.appendingPathComponent("Contents/MacOS/" + executable).path) {
+            return MacGameBundle(titleID: other.titleID, name: other.name)   // the page's name: the app's own is often short ("Tears of the Kingdom")
+        }
+        guard let rawID = info["DMTitleID"] as? String,
               rawID.range(of: "^[0-9A-Fa-f]{16}$", options: .regularExpression) != nil,
               let executable = info["CFBundleExecutable"] as? String,
               !executable.isEmpty, executable != ".", executable != "..", !executable.contains("/"),
@@ -346,8 +352,14 @@ final class GameLibrary: ObservableObject {
         return dirs.flatMap { dir in
             ((try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])) ?? [])
                 .filter { (try? MacGameBundle.read($0)) != nil }
-                .sorted { $0.path < $1.path }
+                .sorted { newer($0, than: $1) }   // two builds of one game: the newest is the one the Library takes
         }
+    }
+
+    static func newer(_ a: URL, than b: URL) -> Bool {
+        let l = (try? a.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+        let r = (try? b.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+        return l == r ? a.path < b.path : l > r
     }
 
     /// A bounded scan of build locations, never of a game's multi-GB contents.
@@ -410,8 +422,19 @@ final class GameLibrary: ObservableObject {
                 result[f.titleIDHex] = game
                 continue
             }
-            guard packages.contains(url.pathExtension.lowercased()),
-                  let id = TitleID.parse(url.lastPathComponent), id & 0xfff == 0 else { continue }
+            guard packages.contains(url.pathExtension.lowercased()) else { continue }
+            let named = TitleID.parse(url.lastPathComponent)
+            guard let id = named ?? (SwitchTitles.looksLikeAddOn(url) ? nil : SwitchTitles.byName(url.lastPathComponent, repo: repo)) else {
+                // A game file whose name says no game switch2mac knows: listed under its file name, so the player sees it was found. Building it reads its title
+                // from the file itself (switch2mac.py builder_titles, with the player's keys) and offers nxnative as an experimental build
+                if named == nil, !SwitchTitles.looksLikeAddOn(url), result["file:" + url.path] == nil {
+                    var game = LibraryGame(titleID: url.path, name: SwitchTitles.displayName(url.lastPathComponent))   // keyed by its path until a build learns its title ID (recordCompletedApp)
+                    game.inputs = ["base": [url.path]]; game.sourceFolder = url.deletingLastPathComponent().path; game.outputDirectory = game.sourceFolder
+                    result["file:" + url.path] = game
+                }
+                continue
+            }
+            guard id & 0xfff == 0 else { continue }
             let tid = String(format: "%016llX", id)
             guard result[tid] == nil else { continue }
             var game = LibraryGame(titleID: tid, name: title(for: url.path, repo: repo, titleID: tid))
@@ -478,6 +501,13 @@ final class GameLibrary: ObservableObject {
                 let previousSelection = self.selectedID
                 for source in sources {
                     if var existing = self.games.first(where: { $0.titleID == source.titleID }) {
+                        // A saved entry whose game file is an update or DLC (saved before add-ons were told apart, e.g. Tears of the Kingdom's
+                        // "… v.1.2.0.nsp"): the scan's base file and name replace them
+                        let savedBase = existing.inputs["base", default: []].first.map { URL(fileURLWithPath: $0) }
+                        if let b = savedBase, TitleID.parse(b.lastPathComponent) == nil, SwitchTitles.looksLikeAddOn(b), source.inputs["base", default: []].first != b.path {
+                            existing.inputs = source.inputs; existing.name = source.name
+                            if existing.sourceFolder.isEmpty || existing.sourceFolder == b.path { existing.sourceFolder = source.sourceFolder }
+                        }
                         if existing.inputs["base", default: []].isEmpty { existing.inputs = source.inputs }
                         else {
                             // Slots the library has empty and the scan fills: an update or DLC added since, or a game
@@ -496,8 +526,15 @@ final class GameLibrary: ObservableObject {
                     if let existing = self.games.first(where: { $0.titleID == info.titleID }), existing.isReady { continue }
                     _ = try? self.addApp(url)
                 }
+                // A game listed under an update or DLC file's path (before add-ons were told apart) with nothing built: no longer a game of its own
+                for g in self.games where g.titleID.hasPrefix("/") && g.appPath.isEmpty && SwitchTitles.looksLikeAddOn(URL(fileURLWithPath: g.titleID)) { self.remove(g.id) }
+                // ...or one under its game file's path while an entry with the game's title ID has the same file (a build learned the ID): one game, one entry
+                for g in self.games where g.titleID.hasPrefix("/") && g.appPath.isEmpty {
+                    guard let base = g.inputs["base"]?.first else { continue }
+                    if self.games.contains(where: { $0.id != g.id && !$0.titleID.hasPrefix("/") && $0.inputs["base"]?.first == base }) { self.remove(g.id) }
+                }
                 self.pruneMissingPaths()
-                self.selectedID = previousSelection ?? self.games.first?.id
+                self.selectedID = previousSelection.flatMap { id in self.games.contains { $0.id == id } ? id : nil } ?? self.games.first?.id
                 self.scanning = false
             }
         }
@@ -674,5 +711,67 @@ final class GameLibrary: ObservableObject {
         if !game.appPath.isEmpty, FileManager.default.fileExists(atPath: icon) { return URL(fileURLWithPath: icon) }
         // Extraction icons are small; they are a fallback, never presented as high-resolution artwork.
         return nil
+    }
+}
+
+
+/// A Switch game file named only after its game ("The Legend of Zelda Tears of the Kingdom.xci"): its title ID by name, from the repository's games/titles.tsv
+/// and the games' own pages, the longest name that fits (switch2mac.py title_by_name and norm_title do the same for a build). Read once per repository.
+enum SwitchTitles {
+    nonisolated(unsafe) private static var cache: (repo: String, names: [(key: String, id: UInt64)])?
+    private static let lock = NSLock()
+
+    static func norm(_ s: String) -> String {
+        var t = s.replacingOccurrences(of: #"\[[^\]]*\]|\([^)]*\)"#, with: " ", options: .regularExpression)
+        t = t.applyingTransform(.stripDiacritics, reverse: false) ?? t
+        t = t.lowercased().replacingOccurrences(of: "&", with: " and ")
+        let skip: Set<String> = ["the", "nsp", "xci", "nsz", "xcz", "base", "game"]
+        return t.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { w in
+            !w.isEmpty && !skip.contains(w) && w.range(of: #"^v\d+$"#, options: .regularExpression) == nil
+        }.joined(separator: " ")
+    }
+
+    /// A file with no title ID that is an update or DLC by its folder ("Updates", "DLC") or name ("… v1.2.0", "Update 1.1", "DLC Pack"): never taken as the game
+    static func looksLikeAddOn(_ url: URL) -> Bool {
+        let folders = url.deletingLastPathComponent().pathComponents.suffix(2).map { $0.lowercased() }
+        if folders.contains(where: { ["update", "updates", "upd", "dlc", "dlcs", "addon", "addons", "add-ons"].contains($0) }) { return true }
+        let name = url.deletingPathExtension().lastPathComponent.lowercased()
+        if name.range(of: #"\b(update|upd|dlc|patch)\b"#, options: .regularExpression) != nil { return true }
+        if let r = name.range(of: #"(?<![0-9])v?\.?([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{1,2})(?![0-9])"#, options: .regularExpression) {
+            return !name[r].hasSuffix("1.0.0")   // a version past the first: an update file
+        }
+        return false
+    }
+
+    /// A file name as a game's name: no extension, brackets or region tags ("Witcher 3, The - Wild Hunt (USA) (En,Fr).xci" → "Witcher 3, The - Wild Hunt")
+    static func displayName(_ file: String) -> String {
+        let stem = (file as NSString).deletingPathExtension
+        let t = stem.replacingOccurrences(of: #"\[[^\]]*\]|\([^)]*\)"#, with: "", options: .regularExpression).trimmingCharacters(in: .whitespaces)
+        return t.isEmpty ? stem : t
+    }
+
+    static func byName(_ file: String, repo: String) -> UInt64? {
+        let stem = norm((file as NSString).deletingPathExtension)
+        guard !stem.isEmpty else { return nil }
+        return names(repo).filter { stem == $0.key || stem.hasPrefix($0.key + " ") }.max { $0.key.count < $1.key.count }?.id
+    }
+
+    private static func names(_ repo: String) -> [(key: String, id: UInt64)] {
+        lock.lock(); defer { lock.unlock() }
+        if let c = cache, c.repo == repo { return c.names }
+        var out: [(key: String, id: UInt64)] = []
+        func add(_ tid: String, _ name: String) { if tid.hasPrefix("01"), let id = UInt64(tid, radix: 16) { let k = norm(name); if !k.isEmpty { out.append((k, id)) } } }
+        if let text = try? String(contentsOfFile: repo + "/games/titles.tsv", encoding: .utf8) {
+            for line in text.split(separator: "\n") where line.hasPrefix("01") {
+                let f = line.split(separator: "\t", maxSplits: 2); if f.count >= 2 { add(String(f[0]), String(f[1])) }
+            }
+        }
+        for dir in (try? FileManager.default.contentsOfDirectory(atPath: repo + "/games")) ?? [] {
+            guard let d = FileManager.default.contents(atPath: repo + "/games/" + dir + "/game.json"),
+                  let o = (try? JSONSerialization.jsonObject(with: d)) as? [String: Any],
+                  let tid = o["title_id"] as? String, let name = o["name"] as? String else { continue }
+            add(tid, name)
+        }
+        cache = (repo, out); return out
     }
 }

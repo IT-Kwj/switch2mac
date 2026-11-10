@@ -54,19 +54,25 @@ final class UninstallTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: home.path + "/Library/Application Support/switch2mac/repo"), "and the clone in its state folder")
     }
 
-    /// #427: the shared app's folder lives beside the engine trees now. Its frameworks cost a full rebuild, so it stays.
-    func testTheSharedAppsFolderStaysWhenTheEngineTreesGo() throws {
+    /// Everything switch2mac keeps goes, a leftover shell folder too; the games' saves and settings stay with the built games.
+    func testEverythingOfSwitch2macGoesSavesStay() throws {
         let support = home.appendingPathComponent("Library/Application Support/switch2mac")
-        let shell = support.appendingPathComponent("shell")
-        try FileManager.default.createDirectory(at: shell, withIntermediateDirectories: true)
-        try Data("{}".utf8).write(to: shell.appendingPathComponent("shell.json"))
-        let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [])
-        XCTAssertFalse(plan.stateFolders.contains(support.path))
-        XCTAssertTrue(plan.stateFolders.contains(support.path + "/engine"))
-        let result = Uninstall.run(plan, movingAppToTrash: false)
+        try FileManager.default.createDirectory(at: support.appendingPathComponent("shell"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: support.appendingPathComponent("boxart"), withIntermediateDirectories: true)
+        let logs = home.appendingPathComponent("Library/Logs/nxnative"), saves = home.appendingPathComponent("Library/Application Support/nxnative/0100000000010000")
+        try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
+        let caches = home.appendingPathComponent("Library/Caches/test.switch2mac")
+        try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
+        let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [], defaultsDomain: "test.switch2mac.uninstall-test")
+        XCTAssertTrue(plan.stateFolders.contains(support.path))
+        XCTAssertTrue(plan.stateFolders.contains(logs.path))
+        let result = Uninstall.run(Uninstall.Plan(stateFolders: plan.stateFolders), movingAppToTrash: false)
         XCTAssertTrue(result.failures.isEmpty, result.failures.joined(separator: "\n"))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: shell.appendingPathComponent("shell.json").path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: support.path + "/engine"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: support.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: logs.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: saves.path), "the games' saves stay")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: caches.path), "another domain's caches stay")
     }
 
     /// A checkout the player picked from somewhere else is not removed: we cannot know what else it holds.

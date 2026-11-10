@@ -55,16 +55,23 @@ actor BoxArtStore {
     /// Download the box fronts of the given games that have none yet; returns the title IDs that got one.
     @discardableResult func fetchMissing(_ games: [(titleID: String, name: String, switch2: Bool)]) async -> [String] {
         guard Self.enabled, !running else { return [] }
-        let wanted = games.filter { Self.cached($0.titleID, in: directory) == nil }
+        let wanted = games.filter { !$0.titleID.hasPrefix("/") && Self.cached($0.titleID, in: directory) == nil }   // a file known only by its path: no title to look up
         guard !wanted.isEmpty else { return [] }
         running = true
         defer { running = false; index = nil }   // the name tables (thousands of entries) are let go after each fetch: read again next time from index.json
         guard let index = await loadIndex() else { return [] }
         var added: [String] = []
         let tried = directory.appendingPathComponent("tried.json")
-        var none = (try? JSONDecoder().decode([String: String].self, from: Data(contentsOf: tried))) ?? [:]   // title ID → the index date it found nothing in
-        let stamp = ISO8601DateFormatter().string(from: index.fetched)
-        for g in wanted where none[g.titleID] != stamp {
+        // title ID → "<index date>|<name>|<when>" of a look that found nothing: looked at again with a newer index, another name (a file the Library now
+        // names properly), or after three days (a download that failed)
+        var none = (try? JSONDecoder().decode([String: String].self, from: Data(contentsOf: tried))) ?? [:]
+        let stamp = ISO8601DateFormatter().string(from: index.fetched), now = Date()
+        let again = { (g: (titleID: String, name: String, switch2: Bool)) -> Bool in
+            let f = (none[g.titleID] ?? "").components(separatedBy: "|")
+            guard f.count == 3, f[0] == stamp, f[1] == g.name, let when = ISO8601DateFormatter().date(from: f[2]) else { return true }
+            return now.timeIntervalSince(when) > 3 * 86400
+        }
+        for g in wanted where again(g) {
             var urls: [URL] = []
             if !g.switch2, let code = BoxArtMatch.find(g.name, in: index.gametdb) {
                 urls += ["US", "EN"].compactMap { URL(string: "https://art.gametdb.com/switch/coverHQ/\($0)/\(code).jpg") }
@@ -82,7 +89,7 @@ actor BoxArtStore {
                 try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
                 if (try? data.write(to: directory.appendingPathComponent(g.titleID.uppercased() + ".jpg"), options: .atomic)) != nil { got = true; break }
             }
-            if got { added.append(g.titleID) } else { none[g.titleID] = stamp }
+            if got { added.append(g.titleID); none[g.titleID] = nil } else { none[g.titleID] = [stamp, g.name, ISO8601DateFormatter().string(from: now)].joined(separator: "|") }
         }
         try? JSONEncoder().encode(none).write(to: tried, options: .atomic)
         return added

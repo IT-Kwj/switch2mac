@@ -4,13 +4,14 @@ import Foundation
 /// player's games and keys left alone. What goes:
 ///
 /// - the state folder `~/Library/Application Support/switch2mac/` (settings, the venv, library file)
-/// - engine trees this launcher installed (`~/Library/Application Support/switch2mac/engine/`). The shared app's folder beside
-///   it (`switch2mac/shell`, #427) stays: its frameworks cost a full rebuild, like the games they were built from.
+///   whole: the code and build tools it downloaded, engine copies, build leftovers, box art, the title cache
+/// - the games' logs (`~/Library/Logs/nxnative`) and the app's caches and saved window state
 /// - the project checkout the launcher itself cloned (`~/the original launcher`, only when it is the launcher's own
 ///   download; a checkout the player made by hand is not touched)
 /// - the launcher's settings (its UserDefaults domain)
 ///
-/// What stays: the games folder and everything in it, the build output folder, Homebrew, and the
+/// What stays: the games folder and everything in it (dumps, keys, firmware), the build output folder and the built games, each game's
+/// saves and settings (`~/Library/Application Support/nxnative`), Homebrew, and the
 /// app itself, which goes to the Trash when the player confirms — never deleted. A folder that holds the games
 /// folder or the build output folder stays as a whole.
 package enum Uninstall {
@@ -38,15 +39,15 @@ package enum Uninstall {
         let kept = [gamesFolder, outputFolder].filter { !$0.isEmpty }
         let holdsPlayerFiles = { (folder: String) in kept.contains { contains(folder, $0) } }
         // switch2mac's own folder only: ~/Library/Application Support/switch2mac belongs to the the original launcher app and is never touched.
+        // switch2mac's folder whole: its copy of the code and the build tools, engine copies, build leftovers, box art and banners, the title cache, its records
         let engine = home + "/Library/Application Support/switch2mac"
-        if fm.fileExists(atPath: engine), !holdsPlayerFiles(engine) {
-            // The shared app's folder stays. With it there, only the other entries go.
-            if fm.fileExists(atPath: engine + "/shell") {
-                for name in ((try? fm.contentsOfDirectory(atPath: engine)) ?? []).sorted() where name != "shell" { p.stateFolders.append(engine + "/" + name) }
-            } else {
-                p.stateFolders.append(engine)
-            }
+        if fm.fileExists(atPath: engine), !holdsPlayerFiles(engine) { p.stateFolders.append(engine) }
+        // what macOS and the games keep for it: the games' logs (not their saves and settings, which the built games keep using), the app's caches and window state
+        var extra = [home + "/Library/Logs/nxnative"]
+        if let d = defaultsDomain {
+            extra += [home + "/Library/Caches/" + d, home + "/Library/HTTPStorages/" + d, home + "/Library/WebKit/" + d, home + "/Library/Saved Application State/" + d + ".savedState"]
         }
+        for f in extra where fm.fileExists(atPath: f) && !holdsPlayerFiles(f) { p.stateFolders.append(f) }
         let own = home + "/switch2mac"
         for checkout in checkouts where fm.fileExists(atPath: checkout) {
             // The launcher's own clone sits at ~/the original launcher and is a git checkout with origin = this repo.

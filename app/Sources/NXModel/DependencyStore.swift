@@ -86,7 +86,7 @@ import NXCore
 
     // ---- What the views and the build read ----
 
-    package var allPresent: Bool { checked && deps.allSatisfy { $0.present } }
+    package var allPresent: Bool { checked && deps.allSatisfy { $0.present || $0.optional } }   // an optional row (MacNativeGames' packages) never stops a build
 
     /// Whether the list shows its rows: the choice made, else open while something is missing.
     package var open: Bool { expanded ?? !(checked && allPresent) }
@@ -164,7 +164,7 @@ import NXCore
                 }
                 return (ok, BuildProgress.failureInfo(collected.lines), nil)
             }.value
-            if let output = outcome.output { log("\n--- 安装输出 ---\n" + output) }
+            if let output = outcome.output { log("\n--- install output ---\n" + output) }
             if let j = deps.firstIndex(where: { $0.id == dep.id }) {
                 if let failure = outcome.failure {
                     deps[j].lastError = outcome.ok ? "" : failure.error

@@ -68,6 +68,9 @@ package enum DependencyCheck {
                         installed: { Toolchain.firstExisting(["/opt/homebrew/bin/\($0)", "/usr/local/bin/\($0)"]) },
                         brew: Toolchain.firstExisting(["/opt/homebrew/bin/brew", "/usr/local/bin/brew"]))
 
+        out += Toolchain.mngRows(brew: Toolchain.firstExisting(["/opt/homebrew/bin/brew", "/usr/local/bin/brew"]),
+                                 exists: { FileManager.default.fileExists(atPath: $0) })
+
         let (dn, dnOK) = Toolchain.findDotnet()
         out.append(Dep(id: "dotnet", name: "dep.dotnet", hint: "dep.dotnet.hint",
                        present: dnOK, detail: dnOK ? dn : "dep.dotnet.missing",

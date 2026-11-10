@@ -196,7 +196,7 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
 ```
 """)
     r = ROOT / 'README.md'; t = r.read_text()
-    row = f"| {name} | {ver} | [nxnative]({NX_REPO})'s builder | Added from nxnative's profile: see [its notes]({notes}). | [games/{slug(name)}](games/{slug(name)}) |\n"
+    row = f"| {name} | {ver} | [nxnative]({NX_REPO}) | Added from nxnative's profile: see [its notes]({notes}). | [games/{slug(name)}](games/{slug(name)}) |\n"
     t = t.replace('| Your game? |', row + '| Your game? |', 1)
     lines = t.split('\n'); i = next(k for k, l in enumerate(lines) if l.startswith('| Game | The folder you choose holds |'))
     j = i + 2
@@ -218,7 +218,7 @@ def add_switch1_game(tid, name, versions, sha):
     d.mkdir(parents=True)
     shown = ', '.join(v or vid for vid, v in versions) or 'see its profile'
     (d / 'game.json').write_text(json.dumps({'title_id': tid, 'name': name, 'version': shown, 'console': 'switch', 'check': 'daily',
-        'builds': [{'id': 'nxnative', 'name': "nxnative's engine", 'versions': [vid for vid, _ in versions], 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
+        'builds': [{'id': 'nxnative', 'name': 'nxnative', 'versions': [vid for vid, _ in versions], 'version_names': {vid: v for vid, v in versions if re.fullmatch(r'\d+(\.\d+)+', v or '')}, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
                     'shader_list': 'shader_list.tsv', 'about': f"nxnative's profile ({shown}) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."}],
         'disk_gb': 30}, indent=1, ensure_ascii=False) + '\n')
     (d / 'shader_list.tsv').write_text(f'# switch2mac shared shader list\tgame={tid}\tengine=nxnative-{sha[:12]}\n# {name}, built with nxnative at {sha[:12]}. Added to nxnative\'s own seed list '

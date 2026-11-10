@@ -18,7 +18,7 @@ with Mario Kart World's overlay and key-2 settings panel added (tools/engine/pat
 A game can have several builds (game.json "builds", each with its own engine and shader list): game.json "choose" picks one for this Mac (its chip and memory),
 from what players reported (games/<game>/reports.tsv); --engine overrides it.
 """
-import argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys, time
+import collections, argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -34,7 +34,7 @@ def say(msg): print(f'\n== {msg}', flush=True)
 
 def builds(g):   # a game's tested builds (game.json "builds"); a game with one "engine" has one build, named after its engine; a game not in games/ has none
     if 'builds' in g: return g['builds']
-    return [{'id': g['engine']['kind'], 'name': f'{g["engine"]["kind"]}\'s engine', 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if 'engine' in g else []
+    return [{'id': g['engine']['kind'], 'name': KINDS.get(g["engine"]["kind"], g["engine"]["kind"]), 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if 'engine' in g else []
 
 
 def unknown_game(tid):   # a game switch2mac has no folder for: it can still be tried with the untested builds (a Switch 1 game: nxnative's, which knows most of them)
@@ -72,6 +72,33 @@ def this_mac():   # what the build choice reads: the chip (its generation: 1 for
     return {'chip': chip, 'generation': int(m[1]) if m else 0, 'memory_gb': int(sysctl('hw.memsize') or 0) >> 30, 'model': model, 'macos': macos()}
 
 
+def update_name(b, ver, upd=None):   # the dump's update as players name it ("1.2.0"): from its file name, else the build's version_names for its number; '' for none or unknown
+    if upd:
+        m = re.search(r'(?<!\d)(?<!\d\.)(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?!\.?\d)', Path(upd).stem)
+        if m: return '.'.join(m.groups())
+    return (b.get('version_names') or {}).get(ver or '', '')
+
+
+def plays_text(b):   # the game versions a build plays, in words: game.json build "plays", else from its "versions" and "version_names"; '' when it lists none (any version)
+    if b.get('plays'): return b['plays']
+    names = b.get('version_names') or {}
+    vs = ['the base game alone' if v == 'v0' else f'update {names[v]} ({v})' if v in names else f'update {v}' for v in b.get('versions') or []]
+    return ' or '.join(vs)
+
+
+def fit_note(b, ver, upd=None, name=''):   # why a build does not play this dump, in words, '' when it does (game.json build "plays", "update_versions", "needs_update", "no_update")
+    has_upd = bool(upd) or (ver not in (None, '', 'v0'))
+    name = name or update_name(b, ver, upd)
+    plays = plays_text(b)
+    if b.get('no_update') and has_upd: return f'plays {plays}: leave your update out (Clear it under Update and DLC, or build from the base file alone)'
+    if b.get('needs_update') and not has_upd: return f'plays {plays}: add your update'
+    if 'update_versions' in b and has_upd and name and name not in b['update_versions']: return f'plays {plays}; your update is {name}'
+    if has_upd and not name and ver in (None, '', 'v0'): return ''   # an update whose version cannot be told (inside a card image): the builder checks it
+    if b.get('versions') and ver and ver not in b['versions']:
+        return f'plays {plays}; your files are ' + (f'update {name}' if has_upd and name else f'an update ({ver})' if has_upd and ver not in (None, '', 'v0') else 'an update of unknown version' if has_upd else 'the base game alone')
+    return ''
+
+
 def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any),
     # and this dump's form: switch2mac's own engine reads a dump's folders, so a .nup goes to the engines whose builders open it (nxnative, pokopia-native);
     # Switch 1 files (NSP / XCI, opened with the player's keys) to the builders that take them (S1_KINDS)
@@ -100,7 +127,7 @@ def recommend(g, mac, ver=None):   # (build id, why): the first game.json "choos
 
 S1_KINDS = ('nxnative', 'macnativegames')   # the engines whose builders take a Switch 1 game's NSP / XCI files and the player's prod.keys
 NO_UNTESTED = ('macnativegames',)   # builders made for their own games only (MacNativeGames' build_app.py: Tears of the Kingdom and Breath of the Wild): never offered as a guess for others
-KINDS = {'macnativegames': "MacNativeGames' runtime", 'switch2mac': "switch2mac's engine", 'nxnative': "nxnative's engine", 'pokopia-native': "pokopia-native's engine"}
+KINDS = {'macnativegames': 'MacNativeGames', 'switch2mac': 'switch2mac', 'nxnative': 'nxnative', 'pokopia-native': 'pokopia-native'}   # a build's name in the app: the project it comes from
 RISK = ' Nobody has built the game this way yet: it may stop partway, or build and not start. Try it at your own risk; Stop ends it at any time.'
 ABOUT = {
     'switch2mac': "Untested: switch2mac's engine with a profile guessed from this game's own files." + RISK,
@@ -120,6 +147,37 @@ def engine_pins():   # each engine's pin that an untested build uses: the ones t
     return pins
 
 
+CUSTOM = None   # --custom URL[@branch or commit]: the player's own nxnative fork, offered as the untested build "custom" (custom_build)
+
+
+def custom_build():   # the player's own fork as a build: nxnative's builder at the fork's commit (a branch or tag is resolved to its commit once, here)
+    url, _, ref = CUSTOM.partition('@')
+    url = url.strip().rstrip('/')
+    if not re.fullmatch(r'https://[\w.-]+/[\w.-]+/[\w.-]+(\.git)?', url): sys.exit(f'--custom takes a repository link such as https://github.com/<you>/nxnative (then @branch if not the main one): {url}')
+    if re.fullmatch(r'[0-9a-f]{40}', ref): sha = ref
+    else:
+        r = subprocess.run(['git', 'ls-remote', url, ref or 'HEAD'], capture_output=True, text=True, timeout=60, env=dict(os.environ, GIT_TERMINAL_PROMPT='0', GIT_ASKPASS='/usr/bin/false'))   # never a password prompt
+        heads = [l.split('\t')[0] for l in r.stdout.splitlines() if l.strip()]
+        if r.returncode or not heads: sys.exit(f'could not reach {url}{" branch " + ref if ref else ""}: check the link (a public repository) and the branch name')
+        sha = heads[0]
+    repo = '/'.join(url.removesuffix('.git').split('/')[-2:])
+    return {'id': 'custom', 'name': f'Your build ({repo}{"@" + ref if ref and len(ref) < 40 else ""})', 'engine': {'kind': 'nxnative', 'repo': url, 'commit': sha}, 'untested': True,
+            'about': f'Your own build: {url} at {sha[:12]}, built with nxnative\'s builder. switch2mac has not checked it: it may stop partway or not start.'}
+
+
+CUSTOM_PROBLEM = ''
+
+
+def custom_builds():   # [the player's own build], or [] with CUSTOM_PROBLEM saying why (a link that does not answer never stops the game being read)
+    global CUSTOM_PROBLEM
+    if not CUSTOM: return []
+    try: return [custom_build()]
+    except (SystemExit, subprocess.TimeoutExpired) as x: CUSTOM_PROBLEM = str(x) or 'the link did not answer'; return []
+
+
+UNTESTED_KINDS = ('nxnative',)   # the one engine offered untested for any game; the others stay with the games they were made for (pokopia-native: Pokopia; switch2mac, mkw-neo: Mario Kart World)
+
+
 def untested_builds(g):
     """Every engine the game has no tested build on, as an untested build: each guesses a profile from the game's own files (never another engine's
     profile). They will often fail; someone may take one further in a port of their own, which then becomes a tested build here."""
@@ -131,7 +189,7 @@ def untested_builds(g):
     return [{'id': f'{k}-untested', 'name': f'{KINDS[k]} (untested)', 'engine': pins[k], 'untested': True,
              'about': (f"Work in progress: {KINDS[k]} with its own profile for this game, not finished yet." + RISK) if k in wip else
                       (f"Not tried through switch2mac yet: {KINDS[k]} with its own profile for this game. Needs your own prod.keys." + RISK) if known else ABOUT[k]}
-            for k in KINDS if k not in have and k in pins and k not in NO_UNTESTED and (not s1 or k in S1_KINDS)]
+            for k in KINDS if k in UNTESTED_KINDS and k not in have and k in pins and k not in NO_UNTESTED and (not s1 or k in S1_KINDS)] + custom_builds()
 
 
 def profile_src(tid): return PROFILE or NX / f'dm/games/{tid}'
@@ -143,6 +201,18 @@ def with_build(g, bid=None, ver=None):   # the game as one of its builds: its en
     b = next((b for b in bs if b['id'] == bid), None)
     if not b: sys.exit(f'{g["name"]} has no build {bid!r} (its builds: {", ".join(b["id"] for b in bs)})')
     return dict(g, engine=b['engine'], build=b, disk_gb=b.get('disk_gb', g.get('disk_gb')))   # a build may need more disk than the game's usual (Pokopia's full nxnative build)
+
+
+def list_keys(g, b):   # how many shaders a build's shared list names (games/<game>/<its shader_list>: S and C rows), 0 for none
+    f = g['dir'] / b.get('shader_list', 'shader_list.tsv') if g.get('dir') else None
+    try: return len(re.findall(r'^[SC]\t[0-9a-f]{16}(?:_[a-z]+)?(?:\t|$)', f.read_text(errors='replace'), re.M)) if f else 0
+    except OSError: return 0
+
+
+def quick_ok(g, b):   # a quick try (--quick) needs nxnative's builder and a list of the shaders players used: the game's shared list, or the engine profile's own shader_seen.tsv
+    if b['engine']['kind'] != 'nxnative' or b.get('untested'): return False
+    if list_keys(g, b): return True
+    return bool(g.get('title_id')) and (ENGINES / f'nxnative-{b["engine"]["commit"][:12]}' / 'dm/games' / g['title_id'] / 'shader_seen.tsv').is_file()
 
 
 def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
@@ -170,7 +240,8 @@ class Progress:
     # Time left: each stage's expected length is how long it took the last time (history: <work>/stage_times.json), else a first-build guess
     # (FIRST: Mario Kart World on an M1 Max with nothing cached). While a stage runs, a progress event a second gives its share done and the
     # seconds left (marked as an estimate); the app shows them as the bar and the time left. The history is written when a stage ends well.
-    FIRST = {'the dump': 1, 'game files': 140, 'code': 90, 'shader split': 15, 'Metal shaders': 900, 'host': 30, 'app': 160, 'engine': 60}
+    FIRST = {'the dump': 1, 'game files': 140, 'code': 90, 'shader split': 15, 'Metal shaders': 900, 'host': 30, 'app': 160, 'engine': 60,
+             'game code': 160, 'game data': 60, 'startup shaders': 1200, 'the app': 450}   # the last four: MacNativeGames' steps (Tears of the Kingdom, M1 Max, nothing cached)
     order = []   # the stages still to come after the running one, for the time left in all (Mario Kart World's build sets them)
     def __init__(self): self.json, self.k, self.n, self.name, self.t0, self.open, self.step_text, self.hist, self.hist_path = False, 0, 0, '', 0.0, False, '', {}, None
     def history(self, path):
@@ -222,9 +293,9 @@ def hide(text):
     return text
 
 
-def run(cmd, env=None, cwd=None, shift=None):   # shift: the tool writes --progress json events of its own: number its stages after ours (shift = our stages before it)
+def run(cmd, env=None, cwd=None, shift=None, watch=None):   # shift: the tool writes --progress json events of its own: number its stages after ours (shift = our stages before it); watch: called with each output line
     print('$', hide(' '.join(str(c) for c in cmd)), flush=True)
-    if shift is None and not HIDE:
+    if shift is None and not HIDE and not watch:
         r = subprocess.run([str(c) for c in cmd], env=env, cwd=cwd); rc = r.returncode
     else:
         pr = subprocess.Popen([str(c) for c in cmd], env=env, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace')
@@ -238,10 +309,22 @@ def run(cmd, env=None, cwd=None, shift=None):   # shift: the tool writes --progr
                 if 'n' in ev: ev['n'] += shift or 0; P.plan(ev['n'])
                 line = json.dumps(ev, ensure_ascii=False) + '\n'
             sys.stdout.write(hide(line)); sys.stdout.flush()
+            if watch: watch(line)
         rc = pr.wait()
     if rc:
         P.end(False, f'{Path(str(cmd[1] if len(cmd) > 1 and str(cmd[0]).endswith("python") else cmd[0])).name} failed ({rc})')
         sys.exit(f'\nstopped: {Path(str(cmd[0])).name} failed ({rc})')
+
+
+MNG_STEPS = ('game code', 'game data', 'startup shaders', 'the app')   # MacNativeGames' builder says "[time] 1/4 code: ...", "2/4 data: ..." (build_app.py say): one stage each
+
+
+def mng_watch(line):   # a MacNativeGames builder line → our stage (its time left from the last build of this game, else FIRST) or the running stage's step text
+    m = re.search(r'\]\s+([1-4])/4 \w+: ?(.*)', line)
+    if not m: return
+    name, text = MNG_STEPS[int(m[1]) - 1], hide(m[2].strip())[:140]
+    if name != P.name and (P.name not in MNG_STEPS or MNG_STEPS.index(name) > MNG_STEPS.index(P.name)): P.stage(name, text)
+    else: P.step(text)
 
 
 def has_packages():   # the build's Python packages are importable here (the switch2mac app's bundled Python): no .venv needed
@@ -408,6 +491,7 @@ DUMP_S1 = []   # the Switch 1 files the dump path names (read_dump), or [] for a
 S1_EXT = ('.nsp', '.nsz', '.xci', '.xcz')
 S1_PICK = None   # --title-id: which game of a cartridge with several (or of files of several games) to build
 S1_EXTRA = []    # --add: update and DLC files the player added to a Switch game
+S1_NO_UPDATE = False   # --no-update: build the game without the update found beside it (a version the chosen build does not play)
 
 
 def s1_family(p):   # a Switch 1 file's game, from the first title ID in its name: base, update (+0x800) and DLC (+0x1000...) share it; None without one
@@ -420,9 +504,14 @@ def s1_files(d):   # the Switch 1 game files a dump path names: the file itself,
     if d.is_file():   # one game's file, perhaps in a folder of many games: it, and its own update and DLC beside it or one folder up (matched by title ID)
         if d.suffix.lower() not in S1_EXT: return []
         fam = s1_family(d)
+        if fam is None: fam = next(iter({int(t, 16) & ~0x1FFF for t in s1_ids(d)}), None)   # a file named only after its game: its tickets, or its name
         if fam is None: return [d]
-        near = [x for folder in {d.parent, d.parent.parent} if folder.is_dir() for x in folder.iterdir()
-                if x.is_file() and x.suffix.lower() in S1_EXT and not x.name.startswith('.') and s1_family(x) == fam]
+        # beside it, one folder up, and in the folders beside its own (a ROMs folder split by kind: Switch/Games, Switch/Updates, Switch/DLC)
+        up = d.parent.parent
+        folders = {d.parent, up} | ({x for x in up.iterdir() if x.is_dir() and not x.name.startswith('.')} if up.is_dir() and up != d.parent else set())
+        near = [x for folder in folders if folder.is_dir() for x in folder.iterdir()
+                if x.is_file() and x.suffix.lower() in S1_EXT and not x.name.startswith('.') and x != d
+                and (s1_family(x) == fam or (s1_family(x) is None and fam in {int(t, 16) & ~0x1FFF for t in s1_ids(x)}))]
         return sorted(set(near) | {d})
     if not d.is_dir() or any((d / x).is_dir() for x in ('exefs', 'base')): return []
     return sorted(p for p in d.iterdir() if p.is_file() and p.suffix.lower() in S1_EXT and not p.name.startswith('.'))
@@ -486,6 +575,7 @@ def title_by_name(p):   # a Switch 1 game file named only after its game ("Metro
 
 
 def s1_ids(p):   # the Switch 1 title IDs a file names: in its file name (any brackets) and its tickets (NSP, card image); else the game its name is (title_by_name)
+    if BUILDER_IDS.get(p): return set(BUILDER_IDS[p])   # read from the file itself (builder_titles)
     ids = {t.upper() for t in re.findall(r'(?<![0-9A-Fa-f])(01[0-9A-Fa-f]{14})(?![0-9A-Fa-f])', p.name)} | \
           {n[:16].upper() for n in inner_names(p) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}
     if not ids and (t := title_by_name(p)): ids = {t}
@@ -516,11 +606,52 @@ def s1_scan(files):   # (base game title ID or None, newest update version or 0,
     return base, max((v for t, v in vers.items() if base and t == f'{int(base, 16) | 0x800:016X}'), default=0), sorted(ids)
 
 
+KEYS = None          # --keys: the player's prod.keys, for nxnative's own reader of files whose names do not say which game they are (builder_titles)
+BUILDER_IDS = {}     # file → title IDs that reader found (s1_ids takes them first)
+TITLES_CACHE = Path.home() / 'Library/Application Support/switch2mac/titles.json'   # what it found, by path, size and date: it reads each file once
+
+
+def builder_titles(paths):   # the title IDs inside Switch files whose names do not say, read by nxnative's own package reader (nx_extract --contents, with the player's
+    # keys: switch2mac holds no decryption code), into BUILDER_IDS. Needs the keys and .NET; the first read builds nx_extract (about a minute). Nothing when it cannot
+    if not KEYS or not paths: return
+    try: cache = json.loads(TITLES_CACHE.read_text())
+    except (OSError, ValueError): cache = {}
+    key = lambda p: f'{p}|{p.stat().st_size}|{int(p.stat().st_mtime)}'
+    want = [p for p in paths if key(p) not in cache]
+    if want:
+        pins = collections.Counter(json.dumps(b['engine'], sort_keys=True) for g in GAMES.values() for b in builds(g)
+                                   if b['engine']['kind'] == 'nxnative' and b['engine']['repo'].rstrip('/').endswith('seedds/nxnative'))
+        if not pins: return
+        d = engine_dir({'engine': json.loads(pins.most_common(1)[0][0])})   # the nxnative commit most games are pinned at (the updater keeps it recent)
+        tool = TITLES_CACHE.parent / f'nx_extract-{d.name}'   # nxnative's extractor, built once per engine commit and kept
+        sys.path.insert(0, str(d / 'scripts'))
+        got = {}
+        try:
+            import build_ipa_from_nsp as nb
+            say(f'reading which game {len(want)} file(s) are, with nxnative\'s reader and your keys (once)')
+            nx = next((x for x in sorted(tool.glob('**/nx_extract')) if x.is_file() and os.access(x, os.X_OK)), None) if tool.is_dir() else None
+            if not nx: tool.mkdir(parents=True, exist_ok=True); nx = Path(nb.build_nx_extract(d, tool, tool / 'logs', env()))
+            for p in want:
+                r = subprocess.run([str(nx), str(Path(KEYS).expanduser().resolve()), '--contents', str(p)], capture_output=True, text=True, env=env())
+                got[p] = [(t, int(i, 16), int(v)) for t, i, v in re.findall(r'^content (\w+) ([0-9a-f]{16}) (\d+)$', r.stdout + r.stderr, re.M)] or 'unreadable'
+        except Exception as x:   # no .NET, keys that cannot open the file, a damaged file: say so; the name rules stay
+            print(f'  could not read the files\' titles: {x}')
+        finally: sys.path.remove(str(d / 'scripts'))
+        for p, m in got.items():
+            cache[key(p)] = [] if isinstance(m, str) else [f'{i:016X}' for t, i, _ in m if t in ('Application', 'Patch', 'AddOnContent')]
+        TITLES_CACHE.parent.mkdir(parents=True, exist_ok=True); TITLES_CACHE.write_text(json.dumps(cache))
+    for p in paths: BUILDER_IDS[p] = set(cache.get(key(p), []))
+
+
 def s1_title(d):   # the Switch 1 game a dump path is, or a stop that says what to do
     base, _, ids = s1_scan(DUMP_S1)
     if base: return base
+    if not ids:   # nothing in the names: nxnative's reader opens them with the player's keys
+        builder_titles([p for p in DUMP_S1 if not s1_ids(p)])
+        base, _, ids = s1_scan(DUMP_S1)
+        if base: return base
     names = ', '.join(p.name for p in DUMP_S1[:3]) + (' …' if len(DUMP_S1) > 3 else '')
-    if not ids: sys.exit(f'switch2mac can\'t tell which game {names} is without opening it: name the files the way dump tools do, with the title ID in brackets, '
+    if not ids: sys.exit(f'switch2mac can\'t tell which game {names} is' + ('' if KEYS else ' (choose your prod.keys and it opens the file to find out)') + ': name the files the way dump tools do, with the title ID in brackets, '
                          'e.g. "Game [0100F2C0115B6000][v0].nsp" and "Game [0100F2C0115B6800][v458752].nsp"')
     sys.exit(f'these files are more than one game ({", ".join(ids)}): keep one game (its base game, update and DLC) per folder')
 
@@ -535,7 +666,7 @@ def s1_parts(files, tid):   # (base game file, update file or None, DLC files) o
     if not base: sys.exit(f'no base game file of {tid} among {", ".join(p.name for p in files)}: the base game must be there too')
     if len(base) > 1: base.sort(key=lambda p: p.suffix.lower() != '.xci')   # a card image first: it may carry its own update
     if len(upd) > 1: upd.sort(key=lambda p: max(map(int, re.findall(r'\[v(\d+)\]', p.name) or ['0'])), reverse=True)
-    return base[0], (upd[0] if upd else None), dlc
+    return base[0], (upd[0] if upd and not S1_NO_UPDATE else None), dlc
 
 
 def find_firmware(keys):   # the player's unpacked firmware kept near their prod.keys ("Keys/prod.keys" beside "Firmware/", 50 or more .nca files), for builders that need the system fonts;
@@ -695,7 +826,9 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
     if untested: print(f'  UNTESTED: {g["name"]} on {KINDS[eng["kind"]]}, with a profile it guesses from the game\'s files. It may stop partway or not start.')
     if getattr(a, 'quick', False):
         if eng['kind'] != 'nxnative': sys.exit(f'--quick is for builds on nxnative\'s builder; {g["name"]} is built with {KINDS[eng["kind"]]}')
-        print('  QUICK: only the shaders the profile\'s playtests used (and those the last runs reported missing): minutes, not hours. Areas they do not cover draw with parts missing until a full build')
+        if not quick_ok(dict(g, title_id=tid), g['build']): sys.exit(f'{g["name"]}: no list of the shaders players used yet, so a quick try has nothing to build from: build it whole (without --quick)')
+        seen = w / 'quick-shaders.tsv'; ship_list(tid, seen); e = dict(e, S2M_SEEN=str(seen))   # the game's shared list joins the profile's shader_seen.tsv (tools/engine/patch.py teaches the builder S2M_SEEN)
+        print('  QUICK TRY: only the shaders players have used (the game\'s shared shader list, its profile\'s playtests and what your last runs reported missing): about half the time. Places nobody has played yet may miss parts until a full build')
     if eng['kind'] == 'nxnative' or (untested and eng['kind'] == 'pokopia-native'):
         nx = d
         P.plan(2); P.stage('engine', f'{eng["kind"]} {eng["commit"][:12]} with switch2mac\'s overlay and settings')
@@ -740,7 +873,8 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         if not fonts and not eng.get('builder') and (base.suffix.lower() in ('.nsp', '.nsz') or tid == '01007EF00011E000'):
             print('  NOTE: from an .nsp, and always for Breath of the Wild, MacNativeGames needs the Switch\'s system fonts: --firmware <your firmware dump> or --shared-fonts <a TotK build\'s fonts>')
         print(f'  base {base.name}' + (f', update {upd.name}' if upd else '') + (f', {len(dlc)} DLC' if dlc else ''))
-        P.plan(1); P.stage('build', 'MacNativeGames\' builder: the game files, its runtime, shaders and the app')
+        P.plan(P.k + 4); P.order = list(MNG_STEPS)   # its four steps as our stages, so the bar and the time left follow them (mng_watch)
+        P.stage('game code', 'MacNativeGames\' builder: the game\'s code for Apple silicon')
         b = eng.get('builder')
         if b:   # a community port with its own builder script (games/<port>/...): game.json names it and its arguments, as that port's README gives them
             m = re.search(r'v(\d{5,})', upd.name) if upd and b.get('updates') else None
@@ -763,10 +897,10 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
                 else: cmd.append(x)
             if 'dlc' in b and dlc: cmd += [z for f in dlc for z in (b['dlc'], f)]
             print(f'  MacNativeGames port: {b["script"]}')
-            run([py314, d / b['script']] + cmd + eng.get('args', []), env=e, cwd=d / b.get('cwd', ''))
+            run([py314, d / b['script']] + cmd + eng.get('args', []), env=e, cwd=d / b.get('cwd', ''), watch=mng_watch)
         else:
             run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
-                + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d)
+                + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d, watch=mng_watch)
     elif DUMP_S1: sys.exit(f'{g["name"]}: {KINDS[eng["kind"]]} builds Switch 2 games only')
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
@@ -1022,19 +1156,27 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
         print(json.dumps(out, ensure_ascii=False)); return
     g = GAMES.get(tid) or unknown_game(tid)   # a game switch2mac has no folder for: offered with the untested builds only
     mac = this_mac(); ver = dump_version(a.dump); rec, why = recommend(g, mac, ver)
+    s1_update = s1_base = None   # a Switch game's update file (its name tells players' version names: "v.1.2.0") and base file
+    if DUMP_S1:
+        try: s1_base, s1_update = s1_parts(DUMP_S1, tid)[:2]
+        except SystemExit: pass
+    upd_name = next((n for b in builds(g) if (n := update_name(b, ver, s1_update))), '')   # the update's version name, from its file or any build's list
+    fw = Path(a.firmware).expanduser().resolve() if getattr(a, 'firmware', None) else find_firmware(getattr(a, 'keys', None)) if DUMP_S1 else None
     if not rec: out['problem'] = f'title {tid}: no engine is set up to try it'; print(json.dumps(out)); return
     eng = with_build(g, rec)['engine']
     out.update(ok=True, name=g['name'], version=g.get('version', ''), engine=eng.get('kind', 'switch2mac'), commit=eng.get('commit', '')[:12],
                disk_gb=g.get('disk_gb'), page=f'games/{g["dir"].name}/README.md' if g.get('dir') else '', untested=not builds(g),
                mac=mac, recommended=rec, why=why, reports=reports(g), dump_version=ver, dump_form='nup' if DUMP_NUP else 'switch1' if DUMP_S1 else 'folder',
-               needs_keys=bool(DUMP_S1), files=[p.name for p in DUMP_S1],
-               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', ''), 'fits': fits(b, ver)} for b in builds(g)],
+               needs_keys=bool(DUMP_S1), files=[p.name for p in DUMP_S1], firmware=str(fw) if fw else '', base_ext=Path(s1_base).suffix.lower().lstrip('.') if s1_base else '',
+               update_name=upd_name, custom_problem=CUSTOM_PROBLEM,
+               builds=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b.get('about', ''),
+                        'fits': fits(b, None) and not fit_note(b, ver, s1_update, upd_name), 'note': fit_note(b, ver, s1_update, upd_name), 'plays': plays_text(b), 'firmware': b.get('firmware', ''), 'quick': quick_ok(dict(g, title_id=tid), b)} for b in builds(g)],
                experimental=[{'id': b['id'], 'name': b['name'], 'engine': b['engine']['kind'], 'commit': b['engine']['commit'][:12], 'about': b['about']} for b in untested_builds(g)])
     if DUMP_S1 and getattr(a, 'keys', None): out['keys_ok'], out['keys_note'] = check_keys(a.keys)
     if DUMP_S1:   # what goes to the builder: the base game, its update and DLC; and the games a cartridge holds, to pick from
         try:
             base, upd, dlc = s1_parts(DUMP_S1, tid)
-            out['parts'] = {'base': base.name, 'update': upd.name if upd else '', 'dlc': [p.name for p in dlc]}
+            out['parts'] = {'base': base.name, 'base_path': str(base), 'update': upd.name if upd else '', 'dlc': [p.name for p in dlc]}
             inside = {int(n[:16], 16) for n in inner_names(base) if re.fullmatch(r'[0-9A-Fa-f]{32}\.tik', n)}   # titles whose tickets the base game's own file carries
             if not upd and int(tid, 16) | 0x800 in inside: out['parts']['update'] = f'Inside {base.name}'
             known = {int(t, 16) for t in s1_ids(base)} | {int(tid, 16)}   # the titles its name and tickets already name (a cartridge's other game and its update too)
@@ -1149,17 +1291,20 @@ def main():
     for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the switch2mac app')
     ip = sub.add_parser('install'); ip.add_argument('--to', default='/Applications', help='the folder the app goes to (default /Applications)')
     stp = sub.add_parser('storage'); stp.add_argument('--clean', action='store_true'); stp.add_argument('--json', action='store_true'); stp.add_argument('--builds', action='append', help='a folder of build folders (default: the app\'s)')
-    dp = sub.add_parser('identify'); dp.add_argument('dump')
+    dp = sub.add_parser('identify'); dp.add_argument('dump'); dp.add_argument('--firmware', help='your unpacked firmware dump (else the one beside your prod.keys is looked for)')
     bp.add_argument('--firmware', help='MacNativeGames builds from an .nsp (and Breath of the Wild): your unpacked firmware dump, for the system fonts')
     bp.add_argument('--shared-fonts', help='MacNativeGames: the six shared fonts an earlier Tears of the Kingdom build extracted, instead of --firmware')
     for x in (bp, dp): x.add_argument('--keys', help='a Switch 1 game (.nsp / .nsz / .xci / .xcz): your own prod.keys, passed to the builder only (never copied or kept)')
     for x in (bp, dp):
         x.add_argument('--title-id', help='a Switch cartridge with several games (or files of several games): the one to build, its title ID')
         x.add_argument('--add', action='append', default=[], metavar='FILE', help='a Switch game: an update or DLC file to build with it (again for more)')
+        x.add_argument('--no-update', action='store_true', help='a Switch game: build it without the update found beside it')
+        x.add_argument('--custom', metavar='URL[@BRANCH]', help='your own nxnative fork, offered as the build "custom" (untested): https://github.com/<you>/nxnative@<branch>')
     gp = sub.add_parser('run'); gp.add_argument('vars', nargs='*', help='host switches, VAR=value'); gp.add_argument('--print', action='store_true', help='show the command only')
     a = ap.parse_args()
-    global S1_PICK, S1_EXTRA
-    S1_PICK = getattr(a, 'title_id', None); S1_EXTRA = [Path(x).expanduser().resolve() for x in getattr(a, 'add', None) or []]
+    global S1_PICK, S1_EXTRA, S1_NO_UPDATE, KEYS, CUSTOM
+    CUSTOM = getattr(a, 'custom', None) or None
+    S1_PICK = getattr(a, 'title_id', None); S1_EXTRA = [Path(x).expanduser().resolve() for x in getattr(a, 'add', None) or []]; S1_NO_UPDATE = bool(getattr(a, 'no_update', False)); KEYS = getattr(a, "keys", None)
     if a.cmd not in ('setup', 'identify', 'builds', 'storage') and Path(sys.prefix).resolve() != VENV.resolve() and not has_packages():   # run inside .venv, unless this Python has the packages (the app's)
         os.execv(py(), [str(py()), __file__] + sys.argv[1:])
     try:

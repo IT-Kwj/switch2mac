@@ -7,7 +7,7 @@
  "builds": [
   {
    "id": "switch2mac",
-   "name": "switch2mac's engine",
+   "name": "switch2mac",
    "engine": {
     "kind": "switch2mac",
     "repo": "https://github.com/azmasm/switch2mac-engine",
@@ -21,7 +21,7 @@
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
@@ -67,7 +67,10 @@
     ""
    ],
    "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update.",
-   "nup_needs_base": true
+   "nup_needs_base": true,
+   "version_names": {
+    "v917504": "1.8.0"
+   }
   }
  ],
  "choose": [

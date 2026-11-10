@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
@@ -40,11 +40,23 @@
    "watch": [
     "games/mvdk"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its mvdk port: Community port, early. Base game (.nsp or .xci) and the 1.0.1 update (required); your firmware for the system fonts."
+   "about": "ly05010419's MacNativeGames (MIT), its mvdk port: Community port, early. Base game (.nsp or .xci) and the 1.0.1 update (required); your firmware for the system fonts.",
+   "plays": "1.0.1: the base game with update 1.0.1",
+   "update_versions": [
+    "1.0.1"
+   ],
+   "version_names": {
+    "v65536": "1.0.1"
+   },
+   "needs_update": true,
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.mvdk"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v65536"
    ],
@@ -54,7 +66,10 @@
     "commit": "3a993fa3feaa1071cece5677b4c1b752973b956e"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings."
+   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings.",
+   "version_names": {
+    "v65536": "1.0.1"
+   }
   }
  ],
  "disk_gb": 30,
