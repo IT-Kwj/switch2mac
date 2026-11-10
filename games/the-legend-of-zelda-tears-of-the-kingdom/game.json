@@ -10,7 +10,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "9fe3fdc1d08ce5e1a64d120f257d79cc2dc7c0ca"
+    "commit": "64baa886e15d37720d7df525257cd8df438d622d"
    },
    "shader_list": "shader_list-macnativegames.tsv",
    "watch": [
@@ -30,7 +30,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "651369bc7e160ef01ee7328ccef56cce93b3e046"
+    "commit": "3303b5a7c63a28e1d8da03a549fecca4a7c4d65a"
    },
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3."
   }

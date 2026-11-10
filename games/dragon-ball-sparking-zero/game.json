@@ -14,7 +14,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "f5f6d4b547d3a796b99cb54f3c0e61751a77db32"
+    "commit": "9b69d27de46cb548d6c7c045bec15d7d3bc51c57"
    },
    "shader_list": "shader_list.tsv",
    "about": "nxnative's profile (2.0.76) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
