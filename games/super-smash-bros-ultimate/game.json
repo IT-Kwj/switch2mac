@@ -10,7 +10,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "0dc980660817fa68aecf2ba8c10bd186e6c5d704",
+    "commit": "585d0734fabd1763be5921cd8f829625f5c59a9d",
     "builder": {
      "script": "games/ssbu/scripts/build_ssbu.py",
      "args": [

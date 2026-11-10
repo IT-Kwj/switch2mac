@@ -2,7 +2,7 @@
 
 Title ID `01006A800016E000`. A **Switch** game: built from your own copy's `.xci` / `.nsp` files with your own `prod.keys` (see [LEGAL.md](../../LEGAL.md)). Version 1.0.0 with update 13.0.2 or 13.0.5.
 
-Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/ssbu`](https://github.com/ly05010419/MacNativeGames/tree/0dc980660817fa68aecf2ba8c10bd186e6c5d704/games/ssbu) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
+Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/ssbu`](https://github.com/ly05010419/MacNativeGames/tree/585d0734fabd1763be5921cd8f829625f5c59a9d/games/ssbu) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
 
 ## Build
 
