@@ -222,3 +222,19 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 3. 移动新 app 到 `/Applications`
 4. 存档位置不变：`~/Library/Application Support/nxnative/<title ID>/`
 
+
+### 2026-11-10 重新构建（nxnative e121931f473a）
+
+- 引擎版本：nxnative `e121931f473a`（从 `7d8dcdf824a6` 升级）
+- 构建时间：约 22 分钟（09:39 - 10:01）
+- Shader 数量：11,560 个（全部重新编译，0 个缓存命中）
+- Shader 编译时间：11 分 57 秒
+- 最终 App 大小：23.6 GB（安装后 24 GB）
+- 构建产物占用：29 GB（从 27 GB 增加）
+- Pipeline archive：665.3 MB（从 508.7 MB 增加）
+- 应用自定义修改：
+  - 中文界面（s2m_ui.m）
+  - poll 修复（hle_net.c: 100ms 上限）
+  - 中文语言设置（settings.tsv, nacp.py）
+- 更新内容：Compute shared memory 修复（超过 32KB 的共享内存现在为每个 workgroup 分配独立的 slice）
+
