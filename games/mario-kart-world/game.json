@@ -39,7 +39,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/MenAtCafe/mkw-neo",
-    "commit": "bc188c4dfa9c7902448db26f72e95769e99497eb"
+    "commit": "cfa62ddc2ffeca801f9545be5c7caefbdba84235"
    },
    "versions": [
     "v0"
