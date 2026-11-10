@@ -1,0 +1,24 @@
+{
+ "title_id": "0100DA801624E000",
+ "name": "TUNIC",
+ "version": "1.0.3",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative's engine",
+   "versions": [
+    "v196608"
+   ],
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "3bbe20949ecf017d6520a897911deb95602d4475"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.3) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}
