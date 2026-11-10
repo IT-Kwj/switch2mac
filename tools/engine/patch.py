@@ -40,7 +40,9 @@ def main():
     edit(fm, '#include "front.h"', '// (switch2mac) overlay and settings panel: s2m_ui.m\n'
          'void s2m_ui_attach(NSWindow *win, NSView *view, CAMetalLayer *layer, void (*release)(void), void (*resume)(void)); int s2m_ui_key(NSEvent *e);\n', 'declarations')
     edit(fm, 'v.layer = g_layer; [(DmGameView *)v fitDrawable];', '        s2m_ui_attach(win, v, g_layer, input_release, input_resume);   // (switch2mac) the overlay and settings panel\n', 'overlay attached to the window')
-    edit(fm, 'if (e.type == NSEventTypeKeyDown && (e.modifierFlags & NSEventModifierFlagCommand)) return e;',
+    keys = ('if (e.type == NSEventTypeKeyDown && (e.modifierFlags & NSEventModifierFlagCommand)) return e;',   # nxnative's key monitor: ⌘ shortcuts go to the menu
+            'if (cmd) return e;   // ⌘ shortcuts go to the menu')   # pokopia-native's (8c34a990: Shift, Control and Option as game keys, F1 its Settings window)
+    edit(fm, next((k for k in keys if k in fm.read_text()), keys[0]),
          '            if (s2m_ui_key(e)) return nil;   // (switch2mac) keys 1 and 2, and every key while the settings panel is open\n', 'keys 1 and 2')
     mtl = nvn / 'nvn_mtl.m'
     if 'mtl_cur_frame(void) {' not in mtl.read_text():
