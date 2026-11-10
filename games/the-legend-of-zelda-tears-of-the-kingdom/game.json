@@ -28,6 +28,19 @@
    "app_ids": [
     "org.macnativegames.totk",
     "org.macnativegames.totk-native"
+   ],
+   "fixes": [
+    {
+     "id": "totk-areamerge-heap-64k",
+     "what": "Loading a save near some areas (Zora's Domain and others) no longer crashes 1.0.0: the game's own 32 KB heap for merged area scenery (AreaMergeTarRenderer) is made 64 KB, so a 2.2 KB request no longer comes back empty (MacNativeGames issue #1742, fix by lili2029; issue #1792)",
+     "version_dir": "v0",
+     "build_id": "082CE09B06E33A123CB1E2770F5F9147709033DB",
+     "file": "rewritten/{v}/main.patched.bin",
+     "table": "build/game-data/{v}/runtime-tables.bin",
+     "at": "0xec1f74",
+     "find": "a1630091000090520301805224008052e5031f2a",
+     "replace": "a16300912000a0520301805224008052e5031f2a"
+    }
    ]
   },
   {

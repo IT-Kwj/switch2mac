@@ -816,6 +816,34 @@ def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<k
     return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])] + g.get('build', {}).get('switches', []))
 
 
+def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fixes switch2mac adds to a MacNativeGames app after its builder, until MacNativeGames has them
+    """Each fix names the game version it is for (its version folder and main's build ID), the bytes to find in that version's rewritten code and
+    what they become. It is applied only where those bytes are found exactly once; bytes already as the fix makes them mean MacNativeGames fixed it
+    (nothing to do); anything else leaves the app as it is, with a note. The app checks its code against a SHA-256 in runtime-tables.bin: that entry
+    is moved to the new code's. Then the app is signed again (ad hoc, as the builder signs it). Returns the ids applied."""
+    res, done = Path(app) / 'Contents/Resources', []
+    game = next((x for x in res.iterdir() if (x / 'rewritten').is_dir()), None) if res.is_dir() else None
+    for f in fixes:
+        v = f['version_dir']; bid = game / f'extracted/{v}/exefs/main.build-id' if game else None
+        if not bid or not bid.exists() or bid.read_text().strip().upper() != f['build_id'].upper(): continue   # not this game version
+        code, table = game / f['file'].format(v=v), game / f['table'].format(v=v)
+        old, new = bytes.fromhex(f['find']), bytes.fromhex(f['replace'])
+        data = code.read_bytes()
+        at = int(f['at'], 16) if f.get('at') else None   # where the bytes are in the version switch2mac checked (the fix's own bytes may appear elsewhere too)
+        if data.count(old) != 1:
+            fixed = at is not None and data[at:at + len(new)] == new
+            print(f'  fix {f["id"]}: ' + ('already in MacNativeGames\' build, nothing to add' if fixed else 'its code is not where switch2mac knows it: not applied (the build is unchanged)'))
+            continue
+        t = table.read_bytes(); h0 = hashlib.sha256(data).hexdigest().encode()
+        if t.count(h0) != 1: print(f'  fix {f["id"]}: the app\'s check of its code is not the one switch2mac knows: not applied'); continue
+        data = data.replace(old, new); t = t.replace(h0, hashlib.sha256(data).hexdigest().encode())
+        for p, d in ((code, data), (table, t)):   # a new file moved over the old one (never written in place)
+            tmp = p.with_name(p.name + '.s2m'); tmp.write_bytes(d); os.replace(tmp, p)
+        done.append(f['id']); print(f'  fix {f["id"]}: {f["what"]}')
+    if done and sign: run(['codesign', '--force', '--sign', '-', app])
+    return done
+
+
 def engine_build(a, tid, w, e):   # a game on another engine: its own builder does it all (game files, code, shaders, host, app), checking the version itself
     g = GAMES[tid]; eng = g['engine']; d = engine_dir(g); dump = Path(a.dump).expanduser().resolve()
     if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
@@ -901,6 +929,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         else:
             run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
                 + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d, watch=mng_watch)
+        mng_fixes(app, g['build'].get('fixes', []))   # switch2mac's fixes for this build, on any MacNativeGames commit (game.json "fixes")
     elif DUMP_S1: sys.exit(f'{g["name"]}: {KINDS[eng["kind"]]} builds Switch 2 games only')
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-10 (2)
+
+- **Tears of the Kingdom 1.0.0 (MacNativeGames build):** loading a save near Zora's Domain and some other areas no longer crashes. switch2mac adds the fix lili2029 found on MacNativeGames #1742 (the game's own scenery memory made 64 KB) to every MacNativeGames build until MacNativeGames has it. Rebuild Tears of the Kingdom to get it.
+
 ## 2026-11-10 (1): switch2mac app 0.4.3
 
 - **Quick try:** for nxnative builds with a shared shader list, the Build page offers a build of only the shaders players have actually used, in about half the time. It's handy for trying a game; a full build can follow later.
