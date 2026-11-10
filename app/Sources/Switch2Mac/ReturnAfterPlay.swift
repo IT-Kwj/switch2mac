@@ -35,9 +35,60 @@ enum ReturnAfterPlay {
         p.executableURL = URL(fileURLWithPath: "/bin/sh")
         p.arguments = ["-c", reopenScript, "sh", String(pid), bundle.path]
         p.standardInput = FileHandle.nullDevice; p.standardOutput = FileHandle.nullDevice; p.standardError = FileHandle.nullDevice
-        guard (try? p.run()) != nil else { return false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { NSApp.terminate(nil) }   // the game is open by now; the waiter outlives this app
+        guard (try? p.run()) != nil else { return false }   // the waiter outlives this app
+        waitUntilShown(pid: pid)
         return true
+    }
+
+    /// When switch2mac may close after starting a game. Quitting while the game was still opening its window (a fixed half second
+    /// did that: Tears of the Kingdom checks its files and goes full screen after it) left the player on the desktop, the game
+    /// running in a full-screen space nobody saw until its Dock icon was clicked. Now switch2mac waits until the game is in front
+    /// with a window on the screen, and has stayed so for `settle` seconds (past a full-screen animation). If that never comes
+    /// within `limit` seconds, the game is brought forward first. A game that quits before it shows keeps switch2mac open.
+    struct CloseTiming: Equatable {
+        enum Step: Equatable { case wait, quit, bringGameThenQuit, stay }
+        var settle: TimeInterval = 1.0
+        var limit: TimeInterval = 45
+        private var shownSince: TimeInterval?
+
+        init(settle: TimeInterval = 1.0, limit: TimeInterval = 45) { self.settle = settle; self.limit = limit }
+
+        /// One look at the game, `elapsed` seconds after it was started.
+        mutating func next(alive: Bool, shown: Bool, elapsed: TimeInterval) -> Step {
+            guard alive else { return .stay }
+            if shown {
+                if shownSince == nil { shownSince = elapsed }
+                if elapsed - (shownSince ?? elapsed) >= settle { return .quit }
+            } else { shownSince = nil }
+            return elapsed >= limit ? .bringGameThenQuit : .wait
+        }
+    }
+
+    /// Whether the game `pid` is the active app with an ordinary window on the screen the player is looking at
+    /// (a window in another space, such as a full-screen one not shown, is not on screen).
+    static func gameShown(pid: Int32) -> Bool {
+        guard NSRunningApplication(processIdentifier: pid)?.isActive == true,
+              let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return false }
+        return list.contains { w in
+            guard (w[kCGWindowOwnerPID as String] as? Int32) == pid, (w[kCGWindowLayer as String] as? Int) == 0,
+                  let b = w[kCGWindowBounds as String] as? [String: CGFloat] else { return false }
+            return (b["Width"] ?? 0) >= 200 && (b["Height"] ?? 0) >= 200
+        }
+    }
+
+    private static func waitUntilShown(pid: Int32, timing: CloseTiming = CloseTiming(), started: Date = Date()) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            var timing = timing
+            let alive = kill(pid, 0) == 0
+            switch timing.next(alive: alive, shown: alive && gameShown(pid: pid), elapsed: Date().timeIntervalSince(started)) {
+            case .wait: waitUntilShown(pid: pid, timing: timing, started: started)
+            case .quit: NSApp.terminate(nil)
+            case .bringGameThenQuit:
+                NSRunningApplication(processIdentifier: pid)?.activate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { NSApp.terminate(nil) }
+            case .stay: break   // the game closed before it showed: switch2mac stays (the waiter's open only brings it forward)
+            }
+        }
     }
 
     /// The launcher's windows forward: unhidden, active, its main window in front.

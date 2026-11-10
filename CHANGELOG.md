@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-10 (3): switch2mac app 0.4.4
+
+- **Games no longer start hidden:** with **Close switch2mac while playing** on, switch2mac now waits until the game is on screen before it closes. It closed half a second after starting the game, and a game that takes longer to go full screen (Tears of the Kingdom) was left running out of sight until its Dock icon was clicked. If a game hasn't shown after 45 seconds, switch2mac brings it to the front itself.
+
 ## 2026-11-10 (2)
 
 - **Tears of the Kingdom 1.0.0 (MacNativeGames build):** loading a save near Zora's Domain and some other areas no longer crashes. switch2mac adds the fix lili2029 found on MacNativeGames #1742 (the game's own scenery memory made 64 KB) to every MacNativeGames build until MacNativeGames has it. Rebuild Tears of the Kingdom to get it.

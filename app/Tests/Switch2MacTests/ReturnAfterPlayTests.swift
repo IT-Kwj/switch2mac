@@ -57,6 +57,25 @@ import XCTest
         XCTAssertTrue(ReturnAfterPlay.reopenScript.contains("\"$1\"") && ReturnAfterPlay.reopenScript.contains("\"$2\""), "the paths arrive as arguments")
     }
 
+    /// "Close while you play" waits for the game's window: it closes only once the game has been in front with a window for the settle time,
+    /// starts over when the window goes away (a full-screen animation), brings the game forward at the limit, and stays if the game quit.
+    func testCloseWaitsUntilTheGameShows() {
+        var t = ReturnAfterPlay.CloseTiming(settle: 1, limit: 10)
+        XCTAssertEqual(t.next(alive: true, shown: false, elapsed: 0.5), .wait)
+        XCTAssertEqual(t.next(alive: true, shown: true, elapsed: 3.0), .wait)
+        XCTAssertEqual(t.next(alive: true, shown: false, elapsed: 3.5), .wait, "hidden again: the settle time starts over")
+        XCTAssertEqual(t.next(alive: true, shown: true, elapsed: 4.0), .wait)
+        XCTAssertEqual(t.next(alive: true, shown: true, elapsed: 4.5), .wait)
+        XCTAssertEqual(t.next(alive: true, shown: true, elapsed: 5.0), .quit)
+
+        var never = ReturnAfterPlay.CloseTiming(settle: 1, limit: 10)
+        XCTAssertEqual(never.next(alive: true, shown: false, elapsed: 9.9), .wait)
+        XCTAssertEqual(never.next(alive: true, shown: false, elapsed: 10.0), .bringGameThenQuit)
+
+        var gone = ReturnAfterPlay.CloseTiming(settle: 1, limit: 10)
+        XCTAssertEqual(gone.next(alive: false, shown: false, elapsed: 2), .stay)
+    }
+
     /// The in-game offer counts the Mac busy only past its cores; the sounds and the offer have their texts and are on (sounds) / quiet (offer) by default.
     func testPlayLoadAndInterfaceSounds() {
         XCTAssertFalse(PlayLoadWatcher.isBusy(7.5, cores: 10)); XCTAssertTrue(PlayLoadWatcher.isBusy(10.5, cores: 10)); XCTAssertFalse(PlayLoadWatcher.isBusy(0.5, cores: 0))
