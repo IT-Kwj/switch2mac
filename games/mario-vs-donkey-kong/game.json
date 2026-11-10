@@ -10,7 +10,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "f8a5cd31c6cdc2bed5303a86f621122827ccb226",
+    "commit": "585d0734fabd1763be5921cd8f829625f5c59a9d",
     "builder": {
      "script": "games/mvdk/scripts/build_mvdk.py",
      "args": [
