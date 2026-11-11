@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-11 (2): switch2mac app 0.4.5
+
+- **The window moves only by its header:** a press and drag anywhere in switch2mac used to move the whole window, which got in the way of swiping through the game cases on the 3D shelves. A drag there now swipes the cases; the bar at the top (with the tabs) still moves the window, and a double-click on it still does what your Mac's title-bar setting says.
+- **"azmasm's build" everywhere:** What's New, Performance and Share now use Mario Kart World's new build name too (the build menu got it earlier today).
+
 ## 2026-11-11 (1)
 
 - **Mario Kart World's own build is now called "azmasm's build":** it was named "switch2mac", the same as the app, which confused players. Only the name changes: your installed game, saves and reports carry on, and `--engine switch2mac` still works. The game's overlay shows the new name after its next rebuild; What's New and Performance show it from the next app release.

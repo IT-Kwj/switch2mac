@@ -10,7 +10,7 @@ package struct LauncherWindowChrome: NSViewRepresentable {
             window.titlebarAppearsTransparent = true
             window.styleMask.insert(.fullSizeContentView)
             window.backgroundColor = NSColor(red: 0.055, green: 0.055, blue: 0.06, alpha: 1)
-            window.isMovableByWindowBackground = true
+            window.isMovableByWindowBackground = false   // only the header moves the window (TitlebarDoubleClick); a press elsewhere belongs to what is under it (the shelves' drag to swipe, sliders)
         }
     }
     package func makeNSView(context: Context) -> NSView { ChromeView() }

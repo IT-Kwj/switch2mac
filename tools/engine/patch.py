@@ -45,6 +45,10 @@ def main():
     edit(fm, next((k for k in keys if k in fm.read_text()), keys[0]),
          '            if (s2m_ui_key(e)) return nil;   // (switch2mac) keys 1 and 2, and every key while the settings panel is open\n', 'keys 1 and 2')
     mtl = nvn / 'nvn_mtl.m'
+    if 's2m_fg_shown(void)' not in mtl.read_text():   # the overlay's shown frame rate with frame generation: the engine's count where it has one
+        t = mtl.read_text()
+        mtl.write_text(t.rstrip('\n') + '\nuint64_t s2m_fg_shown(void) { return %s; }   // (switch2mac) the overlay: pictures shown after a generated frame\n' % ('g_fg_shown' if 'static uint64_t g_fg_shown;' in t else '0'))
+        print('  nvn_mtl.m: s2m_fg_shown')
     if 'mtl_cur_frame(void) {' not in mtl.read_text():
         edit(mtl, 'static _Atomic uint64_t g_cur_frame;', 'uint64_t mtl_cur_frame(void) { return atomic_load(&g_cur_frame); }   // (switch2mac) the overlay\'s frames per second\n', 'mtl_cur_frame')
     hn = nvn / 'hle_nvn.c'
