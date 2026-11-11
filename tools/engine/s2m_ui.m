@@ -249,8 +249,8 @@ static void settings_lock_scan(void) {
 - (void)mark:(DmPanelRow *)row value:(NSString *)v {
     NSString *env = row.s[@"env"], *n = row.s[@"note"] ?: @"";
     BOOL live = [env isEqual:@"DM_OVERLAY"] || [env isEqual:@"DM_FULLSCREEN"], later = !live && ![v isEqual:setting_running(row.s)];
-    NSString *add = row.locked ? @"Set by how this game was started (its launch settings or env.txt), so it can't be changed here."
-                  : later ? @"Changed: applies when the game starts again." : nil;
+    NSString *add = row.locked ? @"由本次启动设置（启动环境或 env.txt）固定，无法在此更改。"
+                  : later ? @"已更改：下次启动游戏时生效。" : nil;
     NSString *t = add ? (n.length ? [NSString stringWithFormat:@"%@\n%@", n, add] : add) : n;
     row.note.stringValue = t; row.note.hidden = !t.length;
     row.note.textColor = row.locked ? [NSColor colorWithCalibratedRed:1 green:0.75 blue:0.35 alpha:1] : later ? ui_accent() : [NSColor colorWithWhite:0.65 alpha:1];
@@ -258,7 +258,7 @@ static void settings_lock_scan(void) {
 - (void)toggleAdvanced:(id)sender {
     (void)sender; BOOL show = self.advanced.firstObject.hidden;
     for (NSView *c in self.advanced) c.hidden = !show;
-    NSString *t = show ? @"Advanced ▾" : @"Advanced ▸";
+    NSString *t = show ? @"高级 ▾" : @"高级 ▸";
     self.more.attributedTitle = [[NSAttributedString alloc] initWithString:t attributes:@{NSFontAttributeName: [NSFont systemFontOfSize:11 weight:NSFontWeightBold], NSForegroundColorAttributeName: [NSColor colorWithWhite:0.6 alpha:1]}];
     [self fitDoc];
 }
