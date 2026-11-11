@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-11-10 (4)
+
+- **Two more MacNativeGames builds:** Super Mario Odyssey (1.3.0 / 1.4.1; 60 fps at 2560x1440 on an M1 Max in its own tests, sessions end after 20 minutes as MacNativeGames ships it) and Xenoblade Chronicles 3 (1.0.0 / 2.2.1 with its add-ons; 2.5 hours without glitches in its own tests), next to nxnative's builds under **Build with…**. Both need your Switch's firmware for the system fonts. Not built through switch2mac yet: tell us how they go.
+
+## 2026-11-10 (3): switch2mac app 0.4.4
+
+- **Games no longer start hidden:** with **Close switch2mac while playing** on, switch2mac now waits until the game is on screen before it closes. It closed half a second after starting the game, and a game that takes longer to go full screen (Tears of the Kingdom) was left running out of sight until its Dock icon was clicked. If a game hasn't shown after 45 seconds, switch2mac brings it to the front itself.
+
+## 2026-11-10 (2)
+
+- **Tears of the Kingdom 1.0.0 (MacNativeGames build):** loading a save near Zora's Domain and some other areas no longer crashes. switch2mac adds the fix lili2029 found on MacNativeGames #1742 (the game's own scenery memory made 64 KB) to every MacNativeGames build until MacNativeGames has it. Rebuild Tears of the Kingdom to get it.
+
+## 2026-11-10 (1): switch2mac app 0.4.3
+
+- **Quick try:** for nxnative builds with a shared shader list, the Build page offers a build of only the shaders players have actually used, in about half the time. It's handy for trying a game; a full build can follow later.
+- **Every build says what it plays:** the Build page lists each build with the game version it plays. A build that doesn't fit your files is shown in red with the reason. A MacNativeGames build that is known to fail (wrong update, missing firmware) is stopped before it starts. You can leave an update out, choose a firmware folder, try **Your own build…** from a fork's link, or **Clear** the page.
+- **MacNativeGames builds** show their four steps (game code, game data, startup shaders, the app) with the time left. Their Homebrew packages are optional rows in Build tools, installed during setup when Homebrew is there.
+- **Library:** Switch files are recognised by name, and a file with no build yet is listed with a note instead of hidden. Apps made by MacNativeGames (Tears of the Kingdom and others) now show as built. An update file chosen by mistake switches to its base game.
+- **Settings › Where your files are:** every place switch2mac and your games keep files (games, saves and settings, build leftovers, logs, your dumps and keys folders), with sizes and Show in Finder. Nothing there deletes. **Uninstall** now removes everything switch2mac put on your Mac except your games, their saves and your own files, and says so first.
+- **Clearer words:** builds are named after their project (nxnative, switch2mac, MacNativeGames, a person's fork), with no more "engine". The library setting is called "Your games folder". What's New explains its coloured dots.
+- **In game:** the performance overlay (key 1) shows the build's name at the right edge of the box. The settings panel (key 2) fits its rows to the window, so the last ones are no longer hidden.
+- **Quitting during a build asks first:** "<game> is still building", with **Keep building** or **Quit and stop the build**.
+
 ## 2026-11-08 (3): switch2mac app 0.4.2
 
 - **Storage:** a new **Settings › Storage** card shows what building leaves on your Mac (each game's build files and engine copies no build uses), with their sizes, and one **Clean up** button. Your games, saves, settings, the games' own shader caches, your dumps and keys always stay; a later rebuild only takes longer. Engine copies no build uses are now also removed after each build.

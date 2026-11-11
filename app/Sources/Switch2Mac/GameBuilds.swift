@@ -18,6 +18,24 @@ enum GameBuilds {
         return []
     }
 
+    /// Whether the repository has a page for the game (games/<game>/game.json): a game with none has no build made for it yet. Read once per repository.
+    static func hasPage(titleID: String, repo: String) -> Bool {
+        guard !titleID.isEmpty else { return false }
+        pageLock.lock(); defer { pageLock.unlock() }
+        if pageCache?.repo != repo {
+            var ids = Set<String>()
+            let games = URL(fileURLWithPath: repo).appendingPathComponent("games")
+            for dir in (try? FileManager.default.contentsOfDirectory(at: games, includingPropertiesForKeys: nil)) ?? [] {
+                if let data = try? Data(contentsOf: dir.appendingPathComponent("game.json")),
+                   let o = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any], let t = o["title_id"] as? String { ids.insert(t.uppercased()) }
+            }
+            pageCache = (repo, ids)
+        }
+        return pageCache?.ids.contains(titleID.uppercased()) ?? false
+    }
+    nonisolated(unsafe) private static var pageCache: (repo: String, ids: Set<String>)?
+    private static let pageLock = NSLock()
+
     /// The build installed, by id; nil before switch2mac.py install noted one.
     static func installed(titleID: String) -> String? {
         let note = NSHomeDirectory() + "/Library/Application Support/nxnative/\(titleID)/s2m_build.txt"

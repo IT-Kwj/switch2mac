@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
@@ -32,7 +32,15 @@
    "watch": [
     "games/ori"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its ori port: Community port. The card image (.xci) that holds the 1.0.1 update, or a base game with the 1.0.1 update; your firmware for the system fonts."
+   "about": "ly05010419's MacNativeGames (MIT), its ori port: Community port. The card image (.xci) that holds the 1.0.1 update, or a base game with the 1.0.1 update; your firmware for the system fonts.",
+   "plays": "1.0.1: the card image that holds it, or the base game with update 1.0.1",
+   "update_versions": [
+    "1.0.1"
+   ],
+   "firmware": "always",
+   "app_ids": [
+    "org.macnativegames.ori"
+   ]
   }
  ],
  "disk_gb": 30

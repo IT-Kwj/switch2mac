@@ -103,6 +103,26 @@ import XCTest
         XCTAssertFalse(store.allPresent, "not while a check runs")
     }
 
+    func testAMissingOptionalRowDoesNotStopBuilds() async {
+        let store = makeStore()
+        var mng = dep("mng:opus", present: false); mng.optional = true
+        scanner.result = DependencyCheck.Result(deps: [dep("xcode", present: true), mng], python: "", dotnet: "")
+        await store.check().value
+        XCTAssertTrue(store.allPresent, "MacNativeGames' packages are only needed by its builds")
+    }
+
+    func testMacNativeGamesRowsSayWhatIsThereAndHowToInstall() {
+        let rows = Toolchain.mngRows(brew: "/opt/homebrew/bin/brew", exists: { $0 == "/opt/homebrew/opt/opus/lib" })
+        XCTAssertEqual(rows.map(\.id), ["mng:python@3.14", "mng:opus", "mng:libvpx"])
+        XCTAssertTrue(rows.allSatisfy(\.optional))
+        XCTAssertEqual(rows.map(\.present), [false, true, false])
+        XCTAssertEqual(rows[1].detail, "/opt/homebrew/opt/opus/lib")
+        XCTAssertTrue(rows[2].installCmd.last!.hasSuffix("\"/opt/homebrew/bin/brew\" install libvpx"))
+        let noBrew = Toolchain.mngRows(brew: nil, exists: { _ in false })
+        XCTAssertTrue(noBrew[0].installCmd.last!.contains("Homebrew/install"), "without Homebrew, Homebrew comes first")
+        XCTAssertTrue(noBrew[0].installCmd.last!.hasSuffix("/opt/homebrew/bin/brew install python@3.14"))
+    }
+
     func testTheBuildReadsTheStoreThroughDependencyStatus() async {
         scanner.result = DependencyCheck.Result(deps: [dep("xcode", present: true)], python: "/py", dotnet: "/dn")
         let store = makeStore()

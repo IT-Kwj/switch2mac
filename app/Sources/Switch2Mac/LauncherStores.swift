@@ -72,6 +72,7 @@ import NXModel
                 if defaults.string(forKey: OnboardingDefaults.platform) == "mac" { _ = dependencies.check() }
             })
         laterBuild.value = build
+        QuitDuringBuild.gameName = { [weak build] in build?.dumpInfo?.name ?? "" }   // named in the question a quit during a build asks
         self.repo = repo; self.engineSync = engineSync; self.dependencies = dependencies; self.deviceStore = devices
         self.appUpdates = updates; self.build = build
 

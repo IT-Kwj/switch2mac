@@ -7,7 +7,7 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
@@ -18,11 +18,11 @@
   },
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "f8a5cd31c6cdc2bed5303a86f621122827ccb226",
+    "commit": "9e212f52f0271691bc126e6cc033bbed2904a498",
     "builder": {
      "script": "games/wonder/scripts/build_wonder.py",
      "cwd": "games/wonder",
@@ -51,7 +51,18 @@
    "watch": [
     "games/wonder"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its community Wonder port (early): 1.0.0, or 1.2.1 with its update (not 1.0.1); an .nsp needs your firmware for the system fonts. Its own runtime: no switch2mac overlay."
+   "about": "ly05010419's MacNativeGames (MIT), its community Wonder port (early): 1.0.0, or 1.2.1 with its update (not 1.0.1); an .nsp needs your firmware for the system fonts. Its own runtime: no switch2mac overlay.",
+   "plays": "the base game 1.0.0 alone, or with update 1.2.1",
+   "update_versions": [
+    "1.2.1"
+   ],
+   "version_names": {
+    "v327680": "1.2.1"
+   },
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.wonder"
+   ]
   }
  ],
  "choose": [

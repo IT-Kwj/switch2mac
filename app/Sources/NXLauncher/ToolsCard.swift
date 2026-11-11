@@ -87,7 +87,7 @@ package struct ToolsCard<Diagnostics: View, ShellCache: View>: View {
             Button(action: { withAnimation(.easeInOut(duration: 0.18)) { dependencies.toggle() } }) {
                 CardRow(loc.t("dep.title"),
                     detail: !dependencies.checked ? loc.t("dep.checking")
-                        : (dependencies.allPresent ? loc.t("dep.allReady") : String(format: loc.t("dep.missing"), dependencies.deps.filter { !$0.present }.count)),
+                        : dependencySummary,
                     dot: !dependencies.checked ? LauncherPalette.unbuilt : (dependencies.allPresent ? LauncherPalette.ready : LauncherPalette.building),
                     open: dependencies.open) {
                     if !dependencies.checked { ProgressView().controlSize(.small) }
@@ -101,7 +101,8 @@ package struct ToolsCard<Diagnostics: View, ShellCache: View>: View {
                 ForEach(dependencies.deps, id: \.id) { d in
                     CardDivider()
                     VStack(alignment: .leading, spacing: 0) {
-                        CardRow(loc.t(d.name), detail: repo.shortPath(dependencies.detail(of: d)), dot: d.present && !d.warning ? LauncherPalette.ready : LauncherPalette.building,
+                        CardRow(loc.t(d.name), detail: repo.shortPath(dependencies.detail(of: d)),
+                            dot: d.present && !d.warning ? LauncherPalette.ready : (d.optional ? LauncherPalette.unbuilt : LauncherPalette.building),
                             help: loc.t(d.hint)) {
                             if d.installing {
                                 ProgressView().controlSize(.small)
@@ -130,6 +131,14 @@ package struct ToolsCard<Diagnostics: View, ShellCache: View>: View {
             CardDivider()
             CardRow(loc.t("diag.title"), detail: loc.t("diag.note")) { diagnostics }
         }
+    }
+
+    /// The Build tools row's line: all ready, or how many are missing, saying when some are only needed by MacNativeGames' builds.
+    private var dependencySummary: String {
+        let missing = dependencies.deps.filter { !$0.present }, optional = missing.filter(\.optional).count
+        if missing.isEmpty { return loc.t("dep.allReady") }
+        if optional == missing.count { return String(format: loc.t("dep.optionalOnly"), optional) }
+        return optional > 0 ? String(format: loc.t("dep.missingOptional"), missing.count, optional) : String(format: loc.t("dep.missing"), missing.count)
     }
 
     /// The release app's engine (EngineSyncStore): which one the build uses, its channel, and the automatic update.

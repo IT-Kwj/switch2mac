@@ -109,9 +109,14 @@ package struct CardRow<Trailing: View>: View {
                             .fixedSize(horizontal: false, vertical: true).help(help.isEmpty ? detail : help)
                     }
                 }
-                if !detail2.isEmpty {
-                    Text(detail2).font(.mono(12, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
-                        .lineLimit(1).truncationMode(.middle).help(detail2)
+                if !detail2.isEmpty {   // the same rule as detail: a path on one line, cut in the middle; a sentence (a warning) wraps, never cut
+                    if detail2.hasPrefix("/") || detail2.hasPrefix("~") {
+                        Text(detail2).font(.mono(12, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
+                            .lineLimit(1).truncationMode(.middle).help(detail2)
+                    } else {
+                        Text(detail2).font(.manrope(12.5, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
+                            .fixedSize(horizontal: false, vertical: true).help(detail2)
+                    }
                 }
             }
             Spacer(minLength: 12)

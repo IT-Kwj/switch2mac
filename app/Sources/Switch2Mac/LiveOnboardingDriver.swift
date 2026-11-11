@@ -549,11 +549,15 @@ enum OnboardingLaunch {
 
     /// The "tools" card is Homebrew and the brew formulas the build uses: every row that is none of Xcode, Python or .NET.
     private static let handled: Set<String> = ["xcode", "metal", "python", "dotnet"]
+    private static var hasBrew: Bool { ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].contains { FileManager.default.isExecutableFile(atPath: $0) } }
+
     private func deps(for task: OnboardingBackgroundTask) -> [Dep] {
         switch task {
         case .python: return stores.dependencies.deps.filter { $0.id == "python" }
         case .dotnet: return stores.dependencies.deps.filter { $0.id == "dotnet" }
-        case .tools: return stores.dependencies.deps.filter { !Self.handled.contains($0.id) }
+        // MacNativeGames' Homebrew packages (optional rows) come along when Homebrew is already there; without it they wait for a MacNativeGames
+        // build (switch2mac.py installs them then) or the Install button in Settings, since Homebrew's own install asks for the Mac's password
+        case .tools: return stores.dependencies.deps.filter { !Self.handled.contains($0.id) && (!$0.optional || Self.hasBrew) }
         }
     }
 
@@ -561,8 +565,8 @@ enum OnboardingLaunch {
         guard backgroundStarted, stores.dependencies.checked else { return }
         for task in OnboardingBackgroundTask.allCases {
             let rows = deps(for: task)
-            if rows.allSatisfy(\.present) { state.background[task] = .done }
-            else if let failure = rows.compactMap({ failedDeps[$0.id] }).first { state.background[task] = .failed(failure) }
+            if rows.allSatisfy({ $0.present || ($0.optional && failedDeps[$0.id] != nil) }) { state.background[task] = .done }   // an optional row that failed does not hold setup up
+            else if let failure = rows.filter({ !$0.optional }).compactMap({ failedDeps[$0.id] }).first { state.background[task] = .failed(failure) }
             else if rows.contains(where: \.installing) || rows.contains(where: { $0.id == currentInstall }) { state.background[task] = .running(nil) }
             else { state.background[task] = .queued }
         }

@@ -354,6 +354,11 @@ extension LauncherView {
                     .overlay(Capsule().strokeBorder(LauncherPalette.cream.opacity(0.35)))
                     .help(loc.t("switch2.help"))
             }
+            if !building, !game.isReady, !GameBuilds.hasPage(titleID: game.titleID, repo: m.repo.path) {   // no build made for it yet: nxnative may still build it
+                Text("· " + (prominent ? "No build made for this game yet: nxnative can try it (experimental)" : "No build yet"))
+                    .font(.manrope(prominent ? 13 : 12)).foregroundStyle(LauncherPalette.building).lineLimit(1)
+                    .help("Nobody has made a build for this game yet. Build offers nxnative as an experimental build: it guesses a profile from the game's own files and may stop partway or not start.")
+            }
             if !building && toolsAge.older.contains(game.id) {   // a quiet note beside the status, not a warning
                 Text("· " + loc.t(prominent ? "library.olderTools" : "library.olderToolsShort"))
                     .font(.manrope(prominent ? 13 : 12)).foregroundStyle(.secondary).lineLimit(1)

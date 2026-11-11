@@ -7,7 +7,7 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v3080192"
    ],

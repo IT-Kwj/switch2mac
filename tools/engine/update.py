@@ -102,8 +102,19 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
         host = nx / 'dm/host'; prof = d / 'profile'
         genv = dict(env, DM_GAMES_DIR=str(prof), DM_GAMES_FIRST='1', DM_GAME=g['title_id'])
     elif e['kind'] == 'macnativegames':   # its own runtime and builder (build_app.py), no switch2mac front end: the new commit must still have the builder and the game's runtime
-        for f in ([e['builder']['script']] if e.get('builder') else ['build_app.py', 'games/totk']):   # a community port: its own builder script
+        b = e.get('builder') or {}
+        if b.get('steps'):   # a port built in steps (Xenoblade 3): its scripts and its Makefile's targets must still be there
+            cwd = b.get('cwd', ''); files = [f'{cwd}/Makefile']; targets = set()
+            for s in b['steps']:
+                if s['cmd'][0] == 'make': targets |= {x for x in s['cmd'][1:] if '=' not in x}
+                files += [f'{cwd}/{x}' for x in s['cmd'] if x.endswith('.py') and '{' not in x]
+        else: files = [b['script']] if b else ['build_app.py', 'games/totk']   # a community port: its own builder script
+        for f in dict.fromkeys(files):
             if not (d / f).exists(): raise RuntimeError(f'the new commit has no {f}')
+        if b.get('steps'):
+            mk = (d / b.get('cwd', '') / 'Makefile').read_text()
+            gone = sorted(t for t in targets if not re.search(rf'^{re.escape(t)}\s*:', mk, re.M))
+            if gone: raise RuntimeError(f'the new commit\'s {b.get("cwd", "")}/Makefile has no target {", ".join(gone)}')
         return
     else: raise RuntimeError(f'engine kind {e["kind"]} unknown')
     if compile_host:
@@ -196,7 +207,7 @@ In the switch2mac app: choose your dump folder on the **Builds** page and press 
 ```
 """)
     r = ROOT / 'README.md'; t = r.read_text()
-    row = f"| {name} | {ver} | [nxnative]({NX_REPO})'s builder | Added from nxnative's profile: see [its notes]({notes}). | [games/{slug(name)}](games/{slug(name)}) |\n"
+    row = f"| {name} | {ver} | [nxnative]({NX_REPO}) | Added from nxnative's profile: see [its notes]({notes}). | [games/{slug(name)}](games/{slug(name)}) |\n"
     t = t.replace('| Your game? |', row + '| Your game? |', 1)
     lines = t.split('\n'); i = next(k for k, l in enumerate(lines) if l.startswith('| Game | The folder you choose holds |'))
     j = i + 2
@@ -218,7 +229,7 @@ def add_switch1_game(tid, name, versions, sha):
     d.mkdir(parents=True)
     shown = ', '.join(v or vid for vid, v in versions) or 'see its profile'
     (d / 'game.json').write_text(json.dumps({'title_id': tid, 'name': name, 'version': shown, 'console': 'switch', 'check': 'daily',
-        'builds': [{'id': 'nxnative', 'name': "nxnative's engine", 'versions': [vid for vid, _ in versions], 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
+        'builds': [{'id': 'nxnative', 'name': 'nxnative', 'versions': [vid for vid, _ in versions], 'version_names': {vid: v for vid, v in versions if re.fullmatch(r'\d+(\.\d+)+', v or '')}, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
                     'shader_list': 'shader_list.tsv', 'about': f"nxnative's profile ({shown}) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."}],
         'disk_gb': 30}, indent=1, ensure_ascii=False) + '\n')
     (d / 'shader_list.tsv').write_text(f'# switch2mac shared shader list\tgame={tid}\tengine=nxnative-{sha[:12]}\n# {name}, built with nxnative at {sha[:12]}. Added to nxnative\'s own seed list '

@@ -7,7 +7,7 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v393216"
    ],
@@ -17,7 +17,57 @@
     "commit": "36e6e4aec4c78516e2bca6a2eabe6110587712d5"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (1.4.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+   "about": "nxnative's profile (1.4.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "version_names": {
+    "v393216": "1.4.1"
+   }
+  },
+  {
+   "id": "macnativegames",
+   "name": "MacNativeGames",
+   "engine": {
+    "kind": "macnativegames",
+    "repo": "https://github.com/ly05010419/MacNativeGames",
+    "commit": "9e212f52f0271691bc126e6cc033bbed2904a498",
+    "builder": {
+     "script": "games/odyssey/scripts/build_odyssey.py",
+     "cwd": "games/odyssey",
+     "pip": [
+      "capstone==5.0.9",
+      "cryptography==50.0.2",
+      "lz4==4.4.5"
+     ],
+     "args": [
+      "--game",
+      "{base}",
+      "--update?",
+      "{update}",
+      "--keys",
+      "{keys}",
+      "--work",
+      "{work}/Odyssey_build",
+      "--firmware?",
+      "{firmware}"
+     ],
+     "app_out": "{work}/Odyssey_build/Odyssey.app",
+     "needs": [
+      "firmware"
+     ]
+    }
+   },
+   "watch": [
+    "games/odyssey"
+   ],
+   "about": "MacNativeGames' Odyssey port (community, early; MIT): its own runtime with the TotK settings panel (key 1: FPS graph, render size, MetalFX), 60 fps in the Wooded Kingdom at 2560x1440 on an M1 Max in its own tests; Cap, Bonneton and Wooded Kingdoms played, later ones not yet. The app ends a session after 20 minutes on purpose (longer runs of its renderer once crashed macOS's graphics driver; set 'session-minutes.txt' in 'Odyssey Data' beside the app to change it). Saves go to 'Odyssey Data' next to the app. Not built through switch2mac yet.",
+   "plays": "the base game with update 1.3.0 or 1.4.1 (a card image or NSP holding both, or the base NSP and the update NSP)",
+   "update_versions": [
+    "1.3.0",
+    "1.4.1"
+   ],
+   "firmware": "always",
+   "app_ids": [
+    "local.projectidea.odyssey"
+   ]
   }
  ],
  "disk_gb": 30

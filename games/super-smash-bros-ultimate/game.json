@@ -6,11 +6,11 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' port",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "0dc980660817fa68aecf2ba8c10bd186e6c5d704",
+    "commit": "9e212f52f0271691bc126e6cc033bbed2904a498",
     "builder": {
      "script": "games/ssbu/scripts/build_ssbu.py",
      "args": [
@@ -40,11 +40,21 @@
    "watch": [
     "games/ssbu"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its ssbu port: Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code."
+   "about": "ly05010419's MacNativeGames (MIT), its ssbu port: Community port. Base game 1.0.0 (card image .xci; a base .nsp needs your firmware for the system fonts) and update 13.0.2 or 13.0.5 (required): the app runs the update's code.",
+   "plays": "the 1.0.0 card image with update 13.0.2 or 13.0.5",
+   "update_versions": [
+    "13.0.2",
+    "13.0.5"
+   ],
+   "needs_update": true,
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.ssbu"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v2031616"
    ],
@@ -54,7 +64,10 @@
     "commit": "843081d00d303c750384713341047fae44601130"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (13.0.5) with switch2mac's overlay and key-2 settings."
+   "about": "nxnative's profile (13.0.5) with switch2mac's overlay and key-2 settings.",
+   "version_names": {
+    "v2031616": "13.0.5"
+   }
   }
  ],
  "disk_gb": 30,

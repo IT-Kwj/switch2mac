@@ -6,11 +6,11 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' runtime",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "64baa886e15d37720d7df525257cd8df438d622d"
+    "commit": "adc0e199f25982f1bc52dd33da6a25bf73676acb"
    },
    "shader_list": "shader_list-macnativegames.tsv",
    "watch": [
@@ -18,11 +18,34 @@
     "build_app.py",
     "tools/builder"
    ],
-   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Tears of the Kingdom 1.0.0, 1.2.1 or 1.4.3 (1.4.3 recommended), up to native 4K (5K on Macs with 32 GB or more): its main game, the most polished port there. Needs Homebrew's python@3.14, opus and libvpx."
+   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Tears of the Kingdom 1.0.0, 1.2.1 or 1.4.3 (1.4.3 recommended), up to native 4K (5K on Macs with 32 GB or more): its main game, the most polished port there. Needs Homebrew's python@3.14, opus and libvpx.",
+   "plays": "the base game 1.0.0 alone, or with update 1.2.1 or 1.4.3 (1.4.3 recommended)",
+   "update_versions": [
+    "1.2.1",
+    "1.4.3"
+   ],
+   "firmware": "nsp",
+   "app_ids": [
+    "org.macnativegames.totk",
+    "org.macnativegames.totk-native"
+   ],
+   "fixes": [
+    {
+     "id": "totk-areamerge-heap-64k",
+     "what": "Loading a save near some areas (Zora's Domain and others) no longer crashes 1.0.0: the game's own 32 KB heap for merged area scenery (AreaMergeTarRenderer) is made 64 KB, so a 2.2 KB request no longer comes back empty (MacNativeGames issue #1742, fix by lili2029; issue #1792)",
+     "version_dir": "v0",
+     "build_id": "082CE09B06E33A123CB1E2770F5F9147709033DB",
+     "file": "rewritten/{v}/main.patched.bin",
+     "table": "build/game-data/{v}/runtime-tables.bin",
+     "at": "0xec1f74",
+     "find": "a1630091000090520301805224008052e5031f2a",
+     "replace": "a16300912000a0520301805224008052e5031f2a"
+    }
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v720896"
    ],
@@ -30,9 +53,13 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "3303b5a7c63a28e1d8da03a549fecca4a7c4d65a"
+    "commit": "f02d0474cf1ed1de32ccee1313e1448d4f7da401"
    },
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3."
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3.",
+   "version_names": {
+    "v720896": "1.4.3"
+   },
+   "plays": "update 1.4.3"
   }
  ],
  "disk_gb": 55,

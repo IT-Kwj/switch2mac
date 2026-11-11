@@ -121,6 +121,16 @@ import XCTest
         XCTAssertTrue(store.keysReady, "a Switch 2 dump needs no keys")
     }
 
+    /// Quick try: identify says which builds can do one (nxnative's builder and a list of the shaders players used); the switch is turned off again for another game.
+    func testQuickTryIsReadPerBuildAndClearedForAnotherGame() throws {
+        let info = try XCTUnwrap(DumpInfo(json: #"{"ok": true, "title_id": "0400486024DEC000", "name": "Game", "builds": [{"id": "nxnative", "name": "nxnative", "engine": "nxnative", "commit": "abc", "quick": true}, {"id": "fork", "name": "fork", "engine": "nxnative", "commit": "def"}]}"#))
+        XCTAssertEqual(info.builds.map(\.quick), [true, false], "a build without the field cannot do a quick try")
+        let store = makeStore()
+        store.gameDir = "/a"; store.quickTry = true
+        store.gameDir = "/b"
+        XCTAssertFalse(store.quickTry, "another game starts with a full build")
+    }
+
     /// #416: the export choice is not an install, so the stop for a missing device and team does not apply to it.
     func testTheExportChoiceNeedsNoDeviceAndNoTeam() throws {
         throw XCTSkip("the original launcher's iPhone export: switch2mac builds Mac apps only and startBuild goes straight to switch2mac.py (the iPhone code is kept for later)")

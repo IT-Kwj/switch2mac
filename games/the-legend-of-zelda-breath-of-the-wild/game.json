@@ -6,11 +6,11 @@
  "builds": [
   {
    "id": "macnativegames",
-   "name": "MacNativeGames' runtime",
+   "name": "MacNativeGames",
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "64baa886e15d37720d7df525257cd8df438d622d"
+    "commit": "adc0e199f25982f1bc52dd33da6a25bf73676acb"
    },
    "shader_list": "shader_list-macnativegames.tsv",
    "watch": [
@@ -18,11 +18,25 @@
     "build_app.py",
     "tools/builder"
    ],
-   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Breath of the Wild 1.6.0 or 1.9.0, up to native 4K, on the same runtime as Tears of the Kingdom. Needs Homebrew's python@3.14, opus and libvpx."
+   "about": "ly05010419's MacNativeGames (MIT): its own Switch runtime and Metal renderer, not nxnative. Breath of the Wild 1.6.0 or 1.9.0, up to native 4K, on the same runtime as Tears of the Kingdom. Needs Homebrew's python@3.14, opus and libvpx.",
+   "plays": "update 1.6.0 or 1.9.0 (or the 1.6.0 cartridge image, which holds its update)",
+   "update_versions": [
+    "1.6.0",
+    "1.9.0"
+   ],
+   "version_names": {
+    "v786432": "1.6.0",
+    "v1114112": "1.9.0"
+   },
+   "needs_update": true,
+   "firmware": "always",
+   "app_ids": [
+    "org.macnativegames.botw"
+   ]
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v1114112"
    ],
@@ -30,9 +44,13 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "143c0d0909e19dd325c0961fc77ea5f6d0ad59b7"
+    "commit": "3304d6a0d7edebc4bb5b57c73e6d7b431721c8f5"
    },
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.9.0."
+   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.9.0.",
+   "version_names": {
+    "v1114112": "1.9.0"
+   },
+   "plays": "update 1.9.0"
   }
  ],
  "disk_gb": 35,

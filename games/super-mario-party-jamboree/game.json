@@ -7,17 +7,20 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v458752"
    ],
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "cc60a0c1d749dadfdf6fb052db1b48194f2b95af"
+    "commit": "80fc2ecb8d580e953dff0a6e4324d833c9aab6ab"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (2.3.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+   "about": "nxnative's profile (2.3.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "version_names": {
+    "v458752": "2.3.0"
+   }
   }
  ],
  "disk_gb": 30

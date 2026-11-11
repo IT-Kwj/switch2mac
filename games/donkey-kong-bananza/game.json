@@ -6,7 +6,7 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v458752"
    ],
@@ -15,7 +15,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "7ffa63cca09f718d6c9deb830656291b608e4ddb"
+    "commit": "3304d6a0d7edebc4bb5b57c73e6d7b431721c8f5"
    }
   },
   {

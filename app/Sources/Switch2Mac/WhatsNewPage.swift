@@ -16,6 +16,7 @@ struct WhatsNewPage: View {
 
     var body: some View {
         CardPageHeading("What's New", note: "What changed in switch2mac, and new builds and games, checked every few minutes. Your games' updates show in the Library.")
+        DotKey(newGames: !newGames.isEmpty)
         if !store.news.isEmpty { newsCard }
         if !newGames.isEmpty {
             CardGroup("New games") {
@@ -166,6 +167,28 @@ struct WhatsNewPage: View {
     }
 }
 
+/// What the dots on this page say, in one line under the heading: yellow = about a game in your Library, grey = another game (or every game),
+/// green = a new game you can build (shown only while the New games card is there).
+struct DotKey: View {
+    let newGames: Bool
+    var body: some View {
+        HStack(spacing: 18) {
+            item(LauncherPalette.progress, "About one of your games")
+            item(LauncherPalette.unbuilt, "Other games")
+            if newGames { item(LauncherPalette.ready, "New game you can build") }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4).padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+    }
+    private func item(_ c: Color, _ text: String) -> some View {
+        HStack(spacing: 7) {
+            Circle().fill(c).frame(width: 7, height: 7)
+            Text(text).font(.manrope(12)).foregroundStyle(.secondary)
+        }
+    }
+}
+
 /// One build update: the game, which build, and what changed.
 struct UpdateRow: View {
     let update: WhatsNew.Update
@@ -182,7 +205,7 @@ struct UpdateRow: View {
 
     private var line: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.ready.opacity(0.6)).frame(width: 7, height: 7)
+            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.unbuilt).frame(width: 7, height: 7)
             Text(update.game).font(.manrope(14, .semibold)).lineLimit(1).layoutPriority(2)
             Text(multi ? "\(update.build) build" : update.engine).font(.manrope(12)).foregroundStyle(.secondary).lineLimit(1).layoutPriority(1)
             Text(note).font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
@@ -195,7 +218,7 @@ struct UpdateRow: View {
 
     private var full: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.ready.opacity(0.6)).frame(width: 7, height: 7)
+            Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.unbuilt).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(update.game).font(.manrope(14, .semibold))

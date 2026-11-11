@@ -21,7 +21,7 @@
   },
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",

@@ -7,7 +7,7 @@
  "builds": [
   {
    "id": "nxnative",
-   "name": "nxnative's engine",
+   "name": "nxnative",
    "versions": [
     "v65536"
    ],
@@ -17,7 +17,10 @@
     "commit": "b001c49bf6fc42d43a48dffbbe71a2f11736f677"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "version_names": {
+    "v65536": "1.0.1"
+   }
   }
  ],
  "disk_gb": 30
