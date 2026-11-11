@@ -352,3 +352,14 @@ DM_FOCUS_KEEP=1
 - 闪退问题：上游 `3304d6a0` **未修复**，继续保留 `DM_FOCUS_KEEP=1`。
   以后升级时如果上游代码修好了，删掉 Application Support 里的 `env.txt` 即可。
 
+#### 同版本二次构建：高级菜单汉化（11:18）
+
+- 引擎不变：nxnative `3304d6a0d7ed`
+- 补齐 key 2 高级菜单的英文项：帧率、按键加入、Switch 2 手柄（含说明）、
+  掉帧时保持帧；同时补上动态分辨率、渲染比例、画面适配、帧率显示、触摸反馈、
+  画面形状等通用行，以及“高级 ▾ / 高级 ▸”和锁定/变更提示的中文。
+- 构建后 `Resources/dm/launcher.json` 已确认：`DM_FPS_TARGET` = 帧率、
+  `DM_PAD_PRESS_TO_JOIN` = 按键加入、`DM_SW2` = Switch 2 手柄、
+  `DM_FPS_HOLD` = 掉帧时保持帧。
+- App 23.1 GB，仍带 logo 图标；已安装到 `/Applications`。
+
