@@ -1,0 +1,11 @@
+{
+ "title_id": "0400C76024710000",
+ "name": "PRAGMATA",
+ "version": "update v196608",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "ccd834e06a3938834bb5579e2ccc6a0ad13d3970"
+ },
+ "disk_gb": 50
+}

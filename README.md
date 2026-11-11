@@ -52,6 +52,7 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | The Legend of Zelda: Tears of the Kingdom (Switch) | 1.4.3 (update v720896) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (default), or nxnative | New in switch2mac, **not built here yet**: MacNativeGames reports it runs well on Apple silicon. Built with your own `prod.keys`. | [games/the-legend-of-zelda-tears-of-the-kingdom](games/the-legend-of-zelda-tears-of-the-kingdom) |
 | The Legend of Zelda: Breath of the Wild (Switch) | 1.9.0 (update v1114112) | [MacNativeGames](https://github.com/ly05010419/MacNativeGames) (default), or nxnative | New in switch2mac, **not built here yet**. Built with your own `prod.keys`. | [games/the-legend-of-zelda-breath-of-the-wild](games/the-legend-of-zelda-breath-of-the-wild) |
 | Every other Switch game nxnative has a profile for (133 more) | its profile's versions | nxnative | Added from nxnative's profiles and kept up to date automatically (checked daily): each page links nxnative's notes on how far it plays. A game with no profile can still be tried with an untested build, guessed from its files. | [games/](games) |
+| PRAGMATA | update v196608 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/ccd834e06a3938834bb5579e2ccc6a0ad13d3970/dm/games/0400C76024710000). | [games/pragmata](games/pragmata) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. azmasm's build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -73,6 +74,7 @@ The files your dump tool wrote, for example:
 | Star Fox | `base/` and `updates/131072/` |
 | Kirby Air Riders | `base/` and `updates/458752/` |
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
+| PRAGMATA | `base/` and `updates/196608/` |
 
 **A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; azmasm's build of Mario Kart World (`switch2mac` on the command line) needs a dump folder, so the app recommends another build for a `.nup`.
 
