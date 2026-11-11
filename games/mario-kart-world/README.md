@@ -15,16 +15,16 @@ Mario Kart World can be built four ways. Same game, same save; each has its own 
 
 | Build (`--engine`) | Engine | Game version | Suits | Why |
 |---|---|---|---|---|
-| `switch2mac` | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
+| `switch2mac` (in the app: azmasm's build) | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
 | `nxnative` | upstream nxnative (commit in `game.json`) | 1.0.0 | M3 and newer, and Macs with 17-23 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
 | `mkw-neo` | [MenAtCafe/mkw-neo](https://github.com/MenAtCafe/mkw-neo) (MIT) | 1.0.0 | 16 GB or less, and every MacBook Air | Tuned to fit 8 GB: a race holds about 4 GB (40-58 fps on a MacBook Neo, every course played) |
 | `nxnative-mkw` | [Thijs2004/nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (MIT) | 1.8.0 (update v917504) | any Mac whose dump has the 1.8.0 update | The only build here with a 1.8.0 profile |
 
-`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac`. `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the switch2mac app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
+`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac` (azmasm's build). `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the switch2mac app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
 
 ## Build
 
-Built with switch2mac's own engine, [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+azmasm's build uses [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
 In the switch2mac app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
 

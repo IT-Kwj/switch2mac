@@ -127,10 +127,10 @@ def recommend(g, mac, ver=None):   # (build id, why): the first game.json "choos
 
 S1_KINDS = ('nxnative', 'macnativegames')   # the engines whose builders take a Switch 1 game's NSP / XCI files and the player's prod.keys
 NO_UNTESTED = ('macnativegames',)   # builders made for their own games only (MacNativeGames' build_app.py: Tears of the Kingdom and Breath of the Wild): never offered as a guess for others
-KINDS = {'macnativegames': 'MacNativeGames', 'switch2mac': 'switch2mac', 'nxnative': 'nxnative', 'pokopia-native': 'pokopia-native'}   # a build's name in the app: the project it comes from
+KINDS = {'macnativegames': 'MacNativeGames', 'switch2mac': "azmasm's build", 'nxnative': 'nxnative', 'pokopia-native': 'pokopia-native'}   # a build's name in the app: the project it comes from
 RISK = ' Nobody has built the game this way yet: it may stop partway, or build and not start. Try it at your own risk; Stop ends it at any time.'
 ABOUT = {
-    'switch2mac': "Untested: switch2mac's engine with a profile guessed from this game's own files." + RISK,
+    'switch2mac': "Untested: azmasm's build with a profile guessed from this game's own files." + RISK,
     'nxnative': "Untested: nxnative's builder guesses a profile from this game's own files (it may boot the game for a few seconds to size its memory)." + RISK,
     'pokopia-native': "Untested: pokopia-native's engine (nxnative with xFractals' Switch 2 changes) with a profile guessed from this game's own files." + RISK,
 }

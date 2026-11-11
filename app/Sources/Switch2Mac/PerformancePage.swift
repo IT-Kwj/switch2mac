@@ -281,7 +281,8 @@ enum ShareReport {
 
     /// The Build answer: the engine, as the form's description asks for it (tools/reports.py looks for the engine's name).
     static func buildLabel(_ engine: String, version: String) -> String {
-        version == "untested" ? "\(engine) untested".trimmingCharacters(in: .whitespaces) : engine
+        let name = BuildName.shown(engine)
+        return version == "untested" ? "\(name) untested".trimmingCharacters(in: .whitespaces) : name
     }
 
     static func mac(_ specs: MacSpecs) -> String {

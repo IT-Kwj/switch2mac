@@ -30,7 +30,7 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 
 | Game | Version | Built with | Status | Page |
 |---|---|---|---|---|
-| Mario Kart World | 1.0.0 | [switch2mac](https://github.com/azmasm/switch2mac-engine) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
+| Mario Kart World | 1.0.0 | [azmasm's build](https://github.com/azmasm/switch2mac-engine) | Plays start to finish: menus, Grand Prix, free roam, traffic, movies; ~58 fps in races on an M1 Max (Performance mode), 2560x1440. **16 GB Macs may not run it smoothly** (see below) | [games/mario-kart-world](games/mario-kart-world) |
 | Donkey Kong Bananza | update v458752 | [nxnative](https://github.com/seedds/nxnative) | nxnative reports: plays at **60 fps on an M4 Pro** through the first level's opening areas (busy scenes dip to 30 for a few seconds). | [games/donkey-kong-bananza](games/donkey-kong-bananza) |
 | Pokémon Pokopia | v327680, 2.0.1 | [pokopia-native](https://github.com/xFractals/pokopia-native) by xFractals (default), or [nxnative](https://github.com/seedds/nxnative)'s (2.0.1 only, hours of shader building) | pokopia-native reports: plays on its author's **M4 Mac** past the first wake-up with no issues found. A player reports **30 fps on a MacBook Air M3 (16 GB)** at 3440x1440, "runs well". | [games/pokemon-pokopia](games/pokemon-pokopia) |
 | Yoshi and the Mysterious Book | update v131072 (1.0.2) | [nxnative](https://github.com/seedds/nxnative) | nxnative reports: plays at **60 fps on a 16 GB M6** through the first habitat, a save and a reload. About 133,000 shaders: a full build can take many hours. | [games/yoshi-and-the-mysterious-book](games/yoshi-and-the-mysterious-book) |
@@ -54,7 +54,7 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Every other Switch game nxnative has a profile for (133 more) | its profile's versions | nxnative | Added from nxnative's profiles and kept up to date automatically (checked daily): each page links nxnative's notes on how far it plays. A game with no profile can still be tried with an untested build, guessed from its files. | [games/](games) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
-> **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. switch2mac's own build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
+> **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. azmasm's build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
 
 ### Your dump folder
 
@@ -74,7 +74,7 @@ The files your dump tool wrote, for example:
 | Kirby Air Riders | `base/` and `updates/458752/` |
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 
-**A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; switch2mac's own engine (Mario Kart World's `switch2mac` build) needs a dump folder, so the app recommends another build for a `.nup`.
+**A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; azmasm's build of Mario Kart World (`switch2mac` on the command line) needs a dump folder, so the app recommends another build for a `.nup`.
 
 **Switch games:** choose the game's `.nsp` or `.xci` file, or the folder with its base game, update and DLC, then your own `prod.keys` when the app asks. The app recognises the game from the file names dump tools write (`Game [0100F2C0115B6000][v0].nsp`); nxnative's builder opens the files. Tested builds for Switch 1 games, and more of them, are coming.
 
@@ -147,7 +147,7 @@ Still stuck? Open an issue on this page with a screenshot and the game's log: in
 
 The runtime loads the game's modules into memory, rewrites their system calls and SDK functions into calls to native code (file system, audio, input, threads, time), and implements NVN2, the Switch 2 graphics API, on Metal. Switch 2 shaders (NVIDIA Ampere code) are translated into Metal Shading Language ahead of time and compiled into Metal libraries.
 
-Each game is built with the engine its port was made with, pinned in its `game.json`: switch2mac's own engine ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A check several times a day moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
+Each game is built with the engine its port was made with, pinned in its `game.json`: azmasm's build ([switch2mac-engine](https://github.com/azmasm/switch2mac-engine), a fork of nxnative) for Mario Kart World, upstream [nxnative](https://github.com/seedds/nxnative) for most games, and xFractals' [pokopia-native](https://github.com/xFractals/pokopia-native) for Pokopia. switch2mac adds the same front end to every one (overlay, settings, the shared shader list), and when a game has more than one build it picks the one that suits your Mac from players' reports. A check several times a day moves each game to its engine's newest version. The story of getting Mario Kart World from a black screen to 58 fps on switch2mac's engine: [docs/mario-kart-world.md](docs/mario-kart-world.md).
 
 ## Repository layout
 
@@ -171,7 +171,7 @@ Each game is built with the engine its port was made with, pinned in its `game.j
 
 Made by the build, never committed: `work/` (the build), `engines/` (each game's engine, fetched at the commit its `game.json` names), `.venv/`.
 
-Mario Kart World's engine, switch2mac's own fork of nxnative with its Switch 2 work and the game's profile, is its own repository: [switch2mac-engine](https://github.com/azmasm/switch2mac-engine). Engine bugs and fixes (graphics, crashes, speed) go there; everything else here. Not sure? Open it here, and it is moved if it belongs there.
+The engine of azmasm's build of Mario Kart World, a fork of nxnative with its Switch 2 work and the game's profile, is its own repository: [switch2mac-engine](https://github.com/azmasm/switch2mac-engine). Engine bugs and fixes (graphics, crashes, speed) go there; everything else here. Not sure? Open it here, and it is moved if it belongs there.
 
 ## Contributing
 

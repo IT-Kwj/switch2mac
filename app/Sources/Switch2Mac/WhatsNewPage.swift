@@ -201,13 +201,13 @@ struct UpdateRow: View {
         if compact { line } else { full }
     }
 
-    private var note: String { update.note.isEmpty ? "Moved to \(update.engine) \(update.commit.prefix(8))." : Self.summary(update.note) }
+    private var note: String { update.note.isEmpty ? "Moved to \(BuildName.shown(update.engine)) \(update.commit.prefix(8))." : Self.summary(update.note) }
 
     private var line: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Circle().fill(yours ? LauncherPalette.progress : LauncherPalette.unbuilt).frame(width: 7, height: 7)
             Text(update.game).font(.manrope(14, .semibold)).lineLimit(1).layoutPriority(2)
-            Text(multi ? "\(update.build) build" : update.engine).font(.manrope(12)).foregroundStyle(.secondary).lineLimit(1).layoutPriority(1)
+            Text(multi ? BuildName.row(update.build) : BuildName.shown(update.engine)).font(.manrope(12)).foregroundStyle(.secondary).lineLimit(1).layoutPriority(1)
             Text(note).font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
             Spacer(minLength: 12)
             Text(update.date.formatted(.relative(presentation: .named))).font(.manrope(11.5)).foregroundStyle(.tertiary).lineLimit(1).layoutPriority(2)
@@ -222,9 +222,9 @@ struct UpdateRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(update.game).font(.manrope(14, .semibold))
-                    Text(multi ? "\(update.build) build" : update.engine).font(.manrope(12)).foregroundStyle(.secondary)
+                    Text(multi ? BuildName.row(update.build) : BuildName.shown(update.engine)).font(.manrope(12)).foregroundStyle(.secondary)
                 }
-                Text(update.note.isEmpty ? "Moved to \(update.engine) \(update.commit.prefix(8))." : whole ? update.note : Self.summary(update.note))
+                Text(update.note.isEmpty ? "Moved to \(BuildName.shown(update.engine)) \(update.commit.prefix(8))." : whole ? update.note : Self.summary(update.note))
                     .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(whole ? nil : 2).fixedSize(horizontal: false, vertical: whole).help(update.note)
             }
             Spacer(minLength: 12)
@@ -314,7 +314,7 @@ struct UpdateDetails: View {
     }
 
     private var versions: String {
-        var s = "Yours: \(standing.engine)" + (standing.mine.isEmpty ? "" : " \(standing.mine)")
+        var s = "Yours: \(BuildName.shown(standing.engine))" + (standing.mine.isEmpty ? "" : " \(standing.mine)")
         if let d = standing.builtOn { s += " (\(d.formatted(.dateTime.month(.abbreviated).day())))" }
         if !standing.newest.isEmpty { s += "  →  newest: \(standing.newest)" }
         return s

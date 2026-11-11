@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 (1)
+
+- **Mario Kart World's own build is now called "azmasm's build":** it was named "switch2mac", the same as the app, which confused players. Only the name changes: your installed game, saves and reports carry on, and `--engine switch2mac` still works. The game's overlay shows the new name after its next rebuild; What's New and Performance show it from the next app release.
+
 ## 2026-11-10 (4)
 
 - **Two more MacNativeGames builds:** Super Mario Odyssey (1.3.0 / 1.4.1; 60 fps at 2560x1440 on an M1 Max in its own tests, sessions end after 20 minutes as MacNativeGames ships it) and Xenoblade Chronicles 3 (1.0.0 / 2.2.1 with its add-ons; 2.5 hours without glitches in its own tests), next to nxnative's builds under **Build with…**. Both need your Switch's firmware for the system fonts. Not built through switch2mac yet: tell us how they go.

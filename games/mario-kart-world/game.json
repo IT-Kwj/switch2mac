@@ -7,14 +7,14 @@
  "builds": [
   {
    "id": "switch2mac",
-   "name": "switch2mac",
+   "name": "azmasm's build",
    "engine": {
     "kind": "switch2mac",
     "repo": "https://github.com/azmasm/switch2mac-engine",
     "commit": "ad737b6f97a122ab0c3e166aff116a82ceed4bb5"
    },
    "shader_list": "shader_list.tsv",
-   "about": "switch2mac's own engine: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far.",
+   "about": "azmasm's fork of nxnative: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far.",
    "versions": [
     "v0"
    ]
@@ -91,7 +91,7 @@
   {
    "memory_max": 23,
    "build": "nxnative",
-   "why": "Macs with 17-23 GB: nxnative's build needs much less memory than switch2mac's (which grows past 20 GB in long sessions)"
+   "why": "Macs with 17-23 GB: nxnative's build needs much less memory than azmasm's (which grows past 20 GB in long sessions)"
   },
   {
    "chip_min": 3,
@@ -100,7 +100,7 @@
   },
   {
    "build": "switch2mac",
-   "why": "M1 and M2 Macs with 24 GB or more run switch2mac's build faster (about 58 fps against 47 on an M1 Max)"
+   "why": "M1 and M2 Macs with 24 GB or more run azmasm's build faster (about 58 fps against 47 on an M1 Max)"
   }
  ]
 }

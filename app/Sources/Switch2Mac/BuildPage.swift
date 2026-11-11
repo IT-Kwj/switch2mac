@@ -74,7 +74,7 @@ struct DumpCard: View {
         guard let i = build.dumpInfo else { return "" }
         guard i.ok else { return i.problem }
         let chosen = i.allBuilds.first { $0.id == build.buildChoice(i) }
-        let engine = chosen?.name ?? (i.engine == "switch2mac" ? "switch2mac" : i.engine)
+        let engine = chosen?.name ?? BuildName.shown(i.engine)
         return [i.dumpForm == "switch1" ? "Switch" : "", Self.versionText(i.dumpVersion, update: i.updateName, without: build.s1NoUpdate),
                 (i.parts?.dlc ?? []).isEmpty ? "" : "\((i.parts?.dlc ?? []).count) DLC", "built with \(engine)", i.diskGB.map { "needs about \($0) GB free" }]
             .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
