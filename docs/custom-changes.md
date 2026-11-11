@@ -288,3 +288,44 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 - Logo 文件位置：`/Users/amid031799/Downloads/MKWROM/Mario Kart World.png`
 - 构建命令：`./switch2mac.py build "/Users/amid031799/Downloads/MKWROM" --engine nxnative --icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
 
+
+## 9. 马车世界启动崩溃修复（2026-11-11）
+
+### 现象
+
+Mario Kart World（nxnative `e121931f473a`）打开后立即退出，帧率都没出现。两次运行日志
+（`~/Library/Logs/nxnative/0400C3F00006E000.log` 及其 `.prev.log`）在同一位置崩溃：
+
+```
+[dm] oe notification popped by the game: 15
+[dm] CRASH sig=11 addr=0xd8 pc=main+0x26380c4 lr=main+0x2637f80
+```
+
+### 原因
+
+1. 启动进入全屏时，游戏窗口短暂失去 key window，引擎的 `front_mac.m` 调
+   `dm_focus_set(2)`，`hle_oe.c` 向游戏队列推送 OE 通知 15（焦点/恢复通知）。
+2. MKW 的通知处理线程弹出 15 后，会解引用 `main+0x33e54b0` 处的 OE 客户端单例
+   （随后读 `+0xd8`）。nxnative 把 `oe::Initialize` 当作 no-op，这个单例保持
+   NULL，于是 SIGSEGV（addr 0xd8）。
+3. 大金刚（nxnative `7ffa63cca09f`）也会收到 15，但它的处理函数不碰这个空指针，
+   所以不崩。`hle_oe.c`/`front_mac.m` 在大金刚与马车两个引擎版本之间完全相同，
+   因此升级 nxnative 未必能修好，这是 MKW 专用的 HLE 缺口 + 启动时机。
+
+### 绕过（已应用，无需重新构建）
+
+在 `~/Library/Application Support/nxnative/0400C3F00006E000/env.txt` 写入：
+
+```
+DM_FOCUS_KEEP=1
+```
+
+引擎不再把窗口失焦上报给游戏（`front_mac.m` 的 `keep` 分支），启动时不会入队
+通知 15，MKW 的处理函数也就不会访问空单例。副作用：切到别的 App 时游戏不会
+认为自己失焦（不会暂停渲染）。
+
+### 重新构建后要保留
+
+`env.txt` 在 Application Support，不在 App 包里；重新构建、重新安装都不会被删。
+如果换游戏或删除存档目录，需要重新写这份 env.txt。
+
