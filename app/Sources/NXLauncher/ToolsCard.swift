@@ -116,7 +116,7 @@ package struct ToolsCard<Diagnostics: View, ShellCache: View>: View {
                         if !d.lastError.isEmpty {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(d.lastError).font(.mono(11)).foregroundStyle(LauncherPalette.building)
-                                    .lineLimit(3).help(d.lastError)
+                                    .lineLimit(6).fixedSize(horizontal: false, vertical: true)
                                 if !d.fixHint.isEmpty {
                                     Text(loc.t(d.fixHint)).font(.manrope(11.5)).foregroundStyle(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)

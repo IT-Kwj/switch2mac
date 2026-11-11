@@ -18,7 +18,9 @@ mkdir "$WORK/root"
 ditto "$APP" "$WORK/root/switch2mac.app"
 # a copy found elsewhere (Downloads) must not be updated in place: always install into /Applications
 pkgbuild --analyze --root "$WORK/root" "$WORK/comp.plist" > /dev/null
-/usr/libexec/PlistBuddy -c "Set :0:BundleIsRelocatable false" -c "Set :0:BundleOverwriteAction upgrade" "$WORK/comp.plist"
+# plutil -replace sets a key whether pkgbuild wrote it or not (macOS 27's pkgbuild leaves BundleIsRelocatable out; PlistBuddy's Set then failed)
+plutil -replace 0.BundleIsRelocatable -bool NO "$WORK/comp.plist"
+plutil -replace 0.BundleOverwriteAction -string upgrade "$WORK/comp.plist"
 PKG="$OUT/switch2mac-$VERSION.pkg"
 pkgbuild --root "$WORK/root" --component-plist "$WORK/comp.plist" --identifier io.github.azmasm.switch2mac.pkg \
     --version "$VERSION" --install-location /Applications "$PKG"

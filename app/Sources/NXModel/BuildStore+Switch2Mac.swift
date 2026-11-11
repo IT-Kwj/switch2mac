@@ -271,7 +271,7 @@ extension BuildStore {
                     hop {
                         self.running = false
                         self.append(r.out + r.err)
-                        let app = lib + "/" + info.name + ".app"
+                        let app = BuildStore.installedApp(r.out) ?? (lib + "/" + info.name + ".app")
                         let made = r.status == 0 && FileManager.default.fileExists(atPath: app)
                         self.macAppPath = made ? app : ""
                         self.done = made
@@ -286,6 +286,18 @@ extension BuildStore {
                 hop { self?.ingest(s) }
             }, onExit: onExit)
         } catch { fail(String(format: t("msg.launchFailed"), error.localizedDescription)) }
+    }
+}
+
+extension BuildStore {
+    /// Where `switch2mac.py install` put the app (its "installed: <path>" line): the file name is the game's name with ":" as " -",
+    /// since Finder shows a ":" in a file name as "/". Nil when the line is missing (older switch2mac.py: the app is then `<name>.app`).
+    package static func installedApp(_ out: String) -> String? {
+        for line in out.split(separator: "\n") where line.hasPrefix("installed: ") {
+            let path = line.dropFirst("installed: ".count).trimmingCharacters(in: .whitespaces)
+            if path.hasSuffix(".app") { return path }
+        }
+        return nil
     }
 }
 

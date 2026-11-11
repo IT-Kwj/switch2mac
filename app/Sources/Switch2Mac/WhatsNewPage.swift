@@ -195,7 +195,8 @@ struct UpdateRow: View {
     let multi: Bool
     var yours = false   // a game in your library: its dot stands out
     var compact = false   // one line
-    var whole = false   // the whole change message, however long (What's New's Build updates)
+    var whole = false   // the change message in full on request (What's New's Build updates): three lines, then More / Less
+    @State private var open = false
 
     var body: some View {
         if compact { line } else { full }
@@ -213,7 +214,6 @@ struct UpdateRow: View {
             Text(update.date.formatted(.relative(presentation: .named))).font(.manrope(11.5)).foregroundStyle(.tertiary).lineLimit(1).layoutPriority(2)
         }
         .padding(.horizontal, 18).padding(.vertical, 10)
-        .help(update.note.isEmpty ? note : update.note)
     }
 
     private var full: some View {
@@ -225,7 +225,11 @@ struct UpdateRow: View {
                     Text(multi ? BuildName.row(update.build) : BuildName.shown(update.engine)).font(.manrope(12)).foregroundStyle(.secondary)
                 }
                 Text(update.note.isEmpty ? "Moved to \(BuildName.shown(update.engine)) \(update.commit.prefix(8))." : whole ? update.note : Self.summary(update.note))
-                    .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(whole ? nil : 2).fixedSize(horizontal: false, vertical: whole).help(update.note)
+                    .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(whole && open ? nil : whole ? 3 : 2).fixedSize(horizontal: false, vertical: true)
+                if whole && update.note.count > Self.longNote {   // engine commits can run to a page: three lines, the rest on request (no hover text)
+                    Button(open ? "Less" : "More") { open.toggle() }
+                        .buttonStyle(.plain).font(.manrope(12, .semibold)).foregroundStyle(LauncherPalette.progress)
+                }
             }
             Spacer(minLength: 12)
             VStack(alignment: .trailing, spacing: 3) {   // when, as nxnative's changes show it; the commit under it
@@ -235,6 +239,9 @@ struct UpdateRow: View {
         }
         .padding(.horizontal, 18).padding(.vertical, 12)
     }
+
+    /// A message longer than this gets More / Less instead of showing in full (about three lines of the row at the window's usual width).
+    static let longNote = 260
 
     /// A commit message as one short line: its first sentence or clause, without the bracketed references (chain, issue and PR numbers) engine commits end with.
     static func summary(_ note: String) -> String {
@@ -255,7 +262,7 @@ struct EngineChangeRow: View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Circle().fill(games.contains(where: owned.contains) ? LauncherPalette.progress : LauncherPalette.unbuilt).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 6) {
-                Text(UpdateRow.summary(change.text)).font(.manrope(13)).lineLimit(2).help(change.text)
+                Text(UpdateRow.summary(change.text)).font(.manrope(13)).lineLimit(2)
                 HStack(spacing: 6) {
                     ForEach(games, id: \.self) { g in
                         Text(g).font(.manrope(11.5, .semibold))

@@ -57,6 +57,8 @@ static void engine_name(NSString **name, NSString **version) {
     NSRange dash = [s rangeOfString:@"-" options:NSBackwardsSearch]; NSString *tail = dash.location != NSNotFound ? [s substringFromIndex:dash.location + 1] : @"";
     BOOL hex = tail.length >= 7 && [tail rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"] invertedSet]].location == NSNotFound;
     *name = hex ? [s substringToIndex:dash.location] : s; *version = hex ? [tail substringToIndex:MIN(8u, tail.length)] : @"";
+    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when switch2mac.py baked one in
+    if (b && *b) *name = @(b);
 }
 - (void)refreshWithCPU:(double)cpuPct {
     self.hidden = g_ov_mode == 0; if (!g_ov_mode) return;

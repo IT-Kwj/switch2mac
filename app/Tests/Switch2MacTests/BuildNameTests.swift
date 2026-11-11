@@ -5,6 +5,8 @@ final class BuildNameTests: XCTestCase {
     func testTheOwnBuildIsNotNamedAfterTheApp() {
         XCTAssertEqual(BuildName.shown("switch2mac"), "azmasm's build")
         XCTAssertEqual(BuildName.row("switch2mac"), "azmasm's build")
+        XCTAssertEqual(BuildName.shown("azmasm"), "azmasm's build", "Ocarina of Time's build from the ocarina branch")
+        XCTAssertEqual(BuildName.row("azmasm"), "azmasm's build")
     }
 
     func testOtherBuildsKeepTheirNames() {
