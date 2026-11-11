@@ -2,7 +2,7 @@
 
 Title ID `010093801237C000`. A **Switch** game: built from your own copy's `.xci` / `.nsp` files with your own `prod.keys` (see [LEGAL.md](../../LEGAL.md)). Version 1.0.0.
 
-Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/dread`](https://github.com/ly05010419/MacNativeGames/tree/3da42ce293bd9dfd27e29bbe349e6ac5a781d5c2/games/dread) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
+Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/dread`](https://github.com/ly05010419/MacNativeGames/tree/4b308d25f91b7cad5b72f0ceb3af6b96d8c94027/games/dread) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port, early. Base game 1.0.0 (.xci or .nsp); updates are not supported yet. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
 
 ## Build
 
