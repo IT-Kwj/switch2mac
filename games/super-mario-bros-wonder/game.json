@@ -22,7 +22,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "4b308d25f91b7cad5b72f0ceb3af6b96d8c94027",
+    "commit": "df1e321d4a9304855f81de3c9a3d471c4c748af5",
     "builder": {
      "script": "games/wonder/scripts/build_wonder.py",
      "cwd": "games/wonder",
