@@ -114,7 +114,17 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 ## 5. 已知未解决
 
 - 游玩时约一半时间 fps 在 30–40：游戏自身帧率控制器在帧时间超过 16.7 ms 时切到 30 fps 档，触发源是 host 的 `submit+present` 偶尔抖动到 20–38 ms。GPU、CPU、内存都不是瓶颈，尚未修。
-- 0fps 卡顿在 poll 修复后需继续观察是否还出现在“选赛道之前”等其它位置。
+- **0fps 长卡顿（已确认是上游问题）**：对应 nxnative issue
+  [#1859](https://github.com/seedds/nxnative/issues/1859)。比赛结束/切换画面时，
+  MKW 主线程会有一段很长的 CPU 计算：落在性能核上约 13–14 秒，落在能效核上
+  约 50–60 秒。日志特征：`[longframe] ... whole frame 14002–60054 ms`，GPU 只有
+  25–94 ms，`new pipelines 0 + shader libraries 0`；同一 300 帧窗口 CPU 约 100%
+  单核，性能核占比 11–15%（长）或 100%（短）。不是我们的 poll 补丁、不是显存/
+  shader 编译，3304d6a0 仍未修，上游也没有确定修复。可试的开关只有 `DM_RT=0`
+  （未验证，可能影响升频）。
+- 自动加速（Auto-accelerate）开启时无法火箭起步：游戏辅助会在倒计时前就把油门
+  视为按住，火箭起步需要窗口内的新按键；这是游戏辅助本身的行为，不是模拟器输入
+  丢失。关闭自动加速即可火箭起步。
 
 ## 6. 引擎升级记录
 
