@@ -1,0 +1,27 @@
+{
+ "title_id": "010019A01E2F2000",
+ "name": "Metroid Prime 4: Beyond",
+ "version": "1.1.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative",
+   "versions": [
+    "v131072"
+   ],
+   "version_names": {
+    "v131072": "1.1.0"
+   },
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "430ace123293221937234fb89290876f57c2754a"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}
