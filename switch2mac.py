@@ -906,7 +906,8 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
             s1 = ['--title-id', tid]
         run([py(), nx / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
              '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + (['-k', Path(a.keys).expanduser().resolve()] if DUMP_S1 else [])
-            + (['--seen-shaders'] if getattr(a, 'quick', False) else []) + lang_args + s1
+            + (['--seen-shaders'] if getattr(a, 'quick', False) else [])
+            + (['--icon', Path(a.icon).expanduser().resolve()] if getattr(a, 'icon', None) else []) + lang_args + s1
             + eng.get('args', []), env=e, cwd=nx, shift=P.k if P.json else None)
     elif eng['kind'] == 'macnativegames':   # MacNativeGames (ly05010419, MIT): its own runtime and builder (build_app.py) for Tears of the Kingdom and Breath of the Wild
         if not DUMP_S1: sys.exit(f'{g["name"]}: MacNativeGames builds from the game\'s .xci / .nsp files with your prod.keys')
@@ -1367,6 +1368,7 @@ def main():
     sub.add_parser('setup'); bp = sub.add_parser('build'); bp.add_argument('dump')
     bp.add_argument('--engine', help='a game with several builds: build this one (see: builds <dump>) instead of the one chosen for this Mac')
     bp.add_argument('--quick', action='store_true', help='nxnative builds: only the shaders the game\'s playtests used (its shader_seen.tsv), for testing a change in minutes; a full build afterwards fills in the rest')
+    bp.add_argument('--icon', help='nxnative builds: a JPEG or PNG the app uses as its icon (dumps and NUP without control data have none)')
     sp = sub.add_parser('builds'); sp.add_argument('dump', help='a dump folder, a title ID or a games/ folder name')
     rp = sub.add_parser('refresh'); rp.add_argument('--force', action='store_true', help='rebuild even with no new shaders')
     for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the switch2mac app')

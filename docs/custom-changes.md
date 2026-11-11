@@ -287,6 +287,9 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 
 - Logo 文件位置：`/Users/amid031799/Downloads/MKWROM/Mario Kart World.png`
 - 构建命令：`./switch2mac.py build "/Users/amid031799/Downloads/MKWROM" --engine nxnative --icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
+- `switch2mac.py` 原先没有 `--icon` 参数（只有引擎的 `build_ipa_from_nsp.py` 支持），
+  已在本项目补上：`switch2mac.py` 的 `build` 子命令接受 `--icon`，nxnative 构建时
+  原样传给引擎 builder。
 
 
 ## 9. 马车世界启动崩溃修复（2026-11-11）
@@ -328,4 +331,23 @@ DM_FOCUS_KEEP=1
 
 `env.txt` 在 Application Support，不在 App 包里；重新构建、重新安装都不会被删。
 如果换游戏或删除存档目录，需要重新写这份 env.txt。
+
+
+### 2026-11-11 重新构建（nxnative 3304d6a0d7ed）
+
+- 引擎版本：nxnative `3304d6a0d7ed`（从 `e121931f473a` 升级，55 个引擎提交）
+- 构建时间：约 21 分钟（09:59 - 10:20）
+- Shader 数量：11,560 个（全部重新编译，0 个缓存命中）
+- Shader 编译时间：10 分 22 秒
+- Shader list：13,431 行（比上次 13,132 行多 299 行）
+- 最终 App 大小：23.1 GB（安装后 23 GB）
+- 构建产物占用：27 GB
+- Pipeline archive：521.6 MB（上次 665.3 MB）
+- 已带 logo 图标：`--icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
+- 应用自定义修改：
+  - 中文界面（s2m_ui.m）
+  - poll 修复（hle_net.c: 100ms 上限）
+  - 中文语言设置（settings.tsv, nacp.py）
+- 闪退问题：上游 `3304d6a0` **未修复**，继续保留 `DM_FOCUS_KEEP=1`。
+  以后升级时如果上游代码修好了，删掉 Application Support 里的 `env.txt` 即可。
 
