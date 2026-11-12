@@ -10,7 +10,8 @@
    "name": "azmasm's build",
    "engine": {
     "kind": "switch2mac",
-    "repo": "https://github.com/azmasm/switch2mac-engine",
+    "repo": "https://github.com/azmasm/hermit-engine",
+    "branch": "switch2mac",
     "commit": "54c5cfddb071449e7af07c384e278290b1ff2a1b"
    },
    "shader_list": "shader_list.tsv",
@@ -28,7 +29,7 @@
     "commit": "a2514d7def4e35f3c47f8792af9e6ad31c90ace9"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: its own Switch 2 shader translator and shared terrain tiles (less memory). Suits M3 and newer.",
+   "about": "Upstream nxnative with Hermit's overlay and key-2 settings: its own Switch 2 shader translator and shared terrain tiles (less memory). Suits M3 and newer.",
    "versions": [
     "v0"
    ]

@@ -2,7 +2,7 @@
 
 Title ID `04003F40232DE000`, update v196608. **nxnative reports it plays on a 16 GB M6 Mac** from a new save into the first field (frame median 16.6 ms, with long frames every few frames); battles not reached.
 
-Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
+Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with Hermit's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
 - the game starts at once: no settings window first
 - **key 1**: the performance overlay in the top right (compact FPS and resolution → detailed graph, GPU, frame time, CPU, memory → off)
@@ -11,7 +11,7 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 | What | |
 |---|---|
 | Profile and notes | [nxnative `dm/games/04003F40232DE000`](https://github.com/seedds/nxnative/tree/aafe01d31dece4fb9dc032d86a566f35fa826f69/dm/games/04003F40232DE000) |
-| Dump folder | `base/` and `updates/196608/` (the update RomFS is whole: 46 GB). nxnative tested a NUP of the same files; switch2mac builds from a dump folder |
+| Dump folder | `base/` and `updates/196608/` (the update RomFS is whole: 46 GB). nxnative tested a NUP of the same files; Hermit builds from a dump folder |
 | Shaders | about 102,000: a full build can take many hours |
 | Verified by nxnative | on an M6 Mac with 16 GB: the first-run settings, the opening movies and cutscenes, the first field; frame p50 16.6 ms, p95 about 18 ms, p99 100-114 ms (Metal's submission queue, open) |
 | Known | A Mac Studio M5 Max froze the whole display (WindowServer and GPU timeouts) while playing (open, seedds/nxnative#1223). The language list is missing in an app built from a dump |
@@ -22,11 +22,11 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 
 ## How it runs on players' Macs
 
-[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. switch2mac has not test-built this game: what is known comes from these reports.
+[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. Hermit has not test-built this game: what is known comes from these reports.
 
 ## Build
 
-In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
+In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

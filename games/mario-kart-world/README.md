@@ -1,6 +1,6 @@
 # Mario Kart World
 
-Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in switch2mac-engine](https://github.com/azmasm/switch2mac-engine/tree/switch2mac/dm/games/0400C3F00006E000).
+Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in hermit-engine](https://github.com/azmasm/hermit-engine/tree/switch2mac/dm/games/0400C3F00006E000).
 
 | Version | Title version | Status |
 |---|---|---|
@@ -15,18 +15,18 @@ Mario Kart World can be built four ways. Same game, same save; each has its own 
 
 | Build (`--engine`) | Engine | Game version | Suits | Why |
 |---|---|---|---|---|
-| `switch2mac` (in the app: azmasm's build) | [switch2mac-engine](https://github.com/azmasm/switch2mac-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
+| `switch2mac` (in the app: azmasm's build) | [hermit-engine](https://github.com/azmasm/hermit-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
 | `nxnative` | upstream nxnative (commit in `game.json`) | 1.0.0 | M3 and newer, and Macs with 17-23 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
 | `mkw-neo` | [MenAtCafe/mkw-neo](https://github.com/MenAtCafe/mkw-neo) (MIT) | 1.0.0 | 16 GB or less, and every MacBook Air | Tuned to fit 8 GB: a race holds about 4 GB (40-58 fps on a MacBook Neo, every course played) |
 | `nxnative-mkw` | [Thijs2004/nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (MIT) | 1.8.0 (update v917504) | any Mac whose dump has the 1.8.0 update | The only build here with a 1.8.0 profile |
 
-`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac` (azmasm's build). `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the switch2mac app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
+`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac` (azmasm's build). `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the Hermit app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
 
 ## Build
 
-azmasm's build uses [switch2mac-engine](https://github.com/azmasm/switch2mac-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+azmasm's build uses [hermit-engine](https://github.com/azmasm/hermit-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
-In the switch2mac app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
+In the Hermit app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"
@@ -89,7 +89,7 @@ If something still looks missing after a while (a shader the list does not cover
 - **Not a locked 60**: about 58 fps in races. The game's own frame-rate controller switches to 30 fps pacing whenever a frame takes longer than 16.7 ms, so heavy moments feel uneven.
 - **Performance mode** skips the update of one environment-reflection chain (pixel shader `83ea368cd702b9de`, ~4 ms a frame on the Mac for reasons not found yet). No visible difference was seen in play; turn it off in the settings for full reflections.
 - **Shadows / detail in the distance** can flicker when driving fast (may be the game's own detail switching).
-- **Memory: 16 GB Macs may not run it smoothly.** It uses 13-16 GB in races and up to about 20 GB in long free-roam sessions, so a 16 GB Mac can stutter, slow down or ask you to quit other apps. Optimizing it is under way (switch2mac never frees parts of the big terrain textures once loaded: the first fix). Macs with 24 GB or more have run it fine so far (tested on 64 GB, reported on 24 GB).
+- **Memory: 16 GB Macs may not run it smoothly.** It uses 13-16 GB in races and up to about 20 GB in long free-roam sessions, so a 16 GB Mac can stutter, slow down or ask you to quit other apps. Optimizing it is under way (Hermit never frees parts of the big terrain textures once loaded: the first fix). Macs with 24 GB or more have run it fine so far (tested on 64 GB, reported on 24 GB).
 - **First start** shows a progress screen while the shared pipeline list (~12,000 entries) is built; a place the list lacks can still stutter once.
 - **First start after each install** waits 1-3 minutes for macOS's scan of the app.
 - Only the US English language list is offered (the dump has no control data).
@@ -106,6 +106,6 @@ An update has other build IDs, and from 1.8.0 on also a `subsdk1` module and a n
 
 1. Pack the update's own `exefs/` and `romfs/` (an update dump's RomFS is the full patched tree) as the dump folder.
 2. Add a `build` line for it in `game.tsv` (the IDs are printed when `build` stops) and the modules in its `modules` line, then run `build` again.
-3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in switch2mac-engine's `dm/host`).
+3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in hermit-engine's `dm/host`).
 
 Please report what happens (log + screenshots, no game files). Mark such builds as untested. For 1.8.0 there is now a tested build, `nxnative-mkw` (above).

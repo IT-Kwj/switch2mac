@@ -1,6 +1,6 @@
 # Mario Kart World on the Mac: how the port was made
 
-A record of the problems found on the way from the first boot to a playable app, for anyone porting the next Switch 2 game. Version 1.0.0, Apple M1 Max. All fixes are in switch2mac-engine's ``.
+A record of the problems found on the way from the first boot to a playable app, for anyone porting the next Switch 2 game. Version 1.0.0, Apple M1 Max. All fixes are in hermit-engine's ``.
 
 ## Starting point
 
@@ -55,4 +55,4 @@ About 320 shaders (the final screen copy, the movie colour conversion, the minim
 
 ## App
 
-`dm/mac/pack_app.py` packs the host, rewritten modules, Metal libraries, RomFS image and fonts into one app (APFS clones on the same disk). switch2mac added the in-game overlay (key 1) and settings panel (key 2), a no-window launch that applies every setting, and run-time shader capture into the app's support folder for `switch2mac.py refresh`.
+`dm/mac/pack_app.py` packs the host, rewritten modules, Metal libraries, RomFS image and fonts into one app (APFS clones on the same disk). Hermit added the in-game overlay (key 1) and settings panel (key 2), a no-window launch that applies every setting, and run-time shader capture into the app's support folder for `switch2mac.py refresh`.

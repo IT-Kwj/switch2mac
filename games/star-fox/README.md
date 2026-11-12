@@ -2,7 +2,7 @@
 
 Title ID `0400E88025B1A000`, update v131072. **nxnative reports it plays on an M4 Pro Mac (48 GB)**: the title, the prologue cinematic and the tutorial flight, with sound, at 56 to 60 fps.
 
-Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
+Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with Hermit's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
 - the game starts at once: no settings window first
 - **key 1**: the performance overlay in the top right (compact FPS and resolution → detailed graph, GPU, frame time, CPU, memory → off)
@@ -21,11 +21,11 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 
 ## How it runs on players' Macs
 
-[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. switch2mac has not test-built this game: what is known comes from these reports.
+[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. Hermit has not test-built this game: what is known comes from these reports.
 
 ## Build
 
-In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
+In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"

@@ -1,7 +1,7 @@
 import Foundation
 
 // : the shared app's folder (frameworks, shell.json, banner cache) used to sit inside the game output folder,
-// the one place a player cleans. It now lives in ~/Library/Application Support/switch2mac/shell. An old install moves once, and
+// the one place a player cleans. It now lives in ~/Library/Application Support/Hermit/shell. An old install moves once, and
 // only when that is safe: the folder is the one the launcher made itself (`switch2mac-shell`), it is a plain folder with a readable
 // shell.json, the new place is free and on the same volume, so the move is a rename and never a copy. On any doubt the old folder
 // stays where it is and keeps being used. Nothing is deleted.
@@ -10,9 +10,9 @@ package enum ShellRootMigration {
     /// The name of the folder older versions made inside the output folder.
     package static let legacyName = "switch2mac-shell"
 
-    /// `~/Library/Application Support/switch2mac/shell`, next to the engine trees (switch2mac's own folder, never the original launcher's).
+    /// `~/Library/Application Support/Hermit/shell`, next to the engine trees (Hermit's own folder, never the original launcher's).
     package static func defaultRoot(home: String = NSHomeDirectory()) -> String {
-        home + "/Library/Application Support/switch2mac/shell"
+        home + "/Library/Application Support/\(AppIdentity.folder)/shell"
     }
 
     /// Whether a root is one this launcher made inside an output folder, which is the only kind that moves. A root the player

@@ -75,14 +75,14 @@ package enum LocalizationFiles {
     package static func directory(environment: [String: String] = ProcessInfo.processInfo.environment,
                                   resources: URL? = BundledTools.resources,
                                   executable: URL? = Bundle.main.executableURL,
-                                  sourceFile: String? = nil) -> URL? {   // switch2mac: no #filePath default, which would write the building Mac's path into the app
+                                  sourceFile: String? = nil) -> URL? {   // Hermit: no #filePath default, which would write the building Mac's path into the app
         var candidates: [URL] = []
         if let named = environment["NX_L10N_DIR"], !named.isEmpty { candidates.append(URL(fileURLWithPath: named)) }
         if let resources { candidates.append(resources.appendingPathComponent("l10n")) }
         var folder = executable?.deletingLastPathComponent()
         while let current = folder, current.path != "/" {
             candidates.append(current.appendingPathComponent("frontend/l10n"))
-            candidates.append(current.appendingPathComponent("app/l10n"))   // switch2mac: the app lives in app/
+            candidates.append(current.appendingPathComponent("app/l10n"))   // Hermit: the app lives in app/
             if ["frontend", "app"].contains(current.lastPathComponent) { candidates.append(current.appendingPathComponent("l10n")) }
             folder = current.deletingLastPathComponent()
         }

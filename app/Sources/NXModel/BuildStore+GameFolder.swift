@@ -82,7 +82,7 @@ extension BuildStore {
         }
     }
 
-    /// The base game is there (switch2mac: no keys, ever).
+    /// The base game is there (Hermit: no keys, ever).
     package var inputsReady: Bool { slot("base").ok }
 
     /// The key of the build folder and the app (`<key>_build`, `<key>.app`): the folder's title ID, else the base package's (TitleID.buildKey).

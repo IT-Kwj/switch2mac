@@ -7,7 +7,7 @@ import NXCore
 extension BuildStore {
     package func startBuild() {
         guard !running else { return }
-        return startSwitch2MacBuild()   // switch2mac: BuildStore+Switch2Mac.swift (the original launcher's NSP path below is kept until it is removed)
+        return startHermitBuild()   // Hermit: BuildStore+Hermit.swift (the original launcher's NSP path below is kept until it is removed)
         // The shared app needs a device this Mac knows. Found out here, before an hour of building, not after it.
         if target != BuildTarget.mac, !shellDeviceChecked, !exportsShell {
             guard installsDirectly else { doneNote = t("shell.needsDevice"); done = false; return }
@@ -142,7 +142,7 @@ extension BuildStore {
             }
         }
         let engine = EngineLayout.root(repo.path)   // the checkout's engine/ (#214)
-        var args = [engine + "/" + RepoLayout.buildScript, inputDir, "--progress", "json"]   // switch2mac: no keys
+        var args = [engine + "/" + RepoLayout.buildScript, inputDir, "--progress", "json"]   // Hermit: no keys
         // A compatibility switch the player turned on: written to a small env file the pipeline
         // copies into the app bundle (main.m sets one variable per line at boot). Only for an iPhone or iPad build;
         // a Mac app runs on this Mac's GPU, which always has BC support.

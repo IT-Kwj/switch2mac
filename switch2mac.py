@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""switch2mac: build a native Mac app of a Switch 2 game from your own dump.
+"""Hermit: build a native Mac app of a Switch 2 game from your own dump.
 
   ./switch2mac.py setup                       Python packages into .venv (once)
   ./switch2mac.py build <dump folder>         the whole build: game files, code, shaders, host, app
@@ -12,7 +12,7 @@
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs; or the dump is one .nup file (a NUP container: base, updates and DLC),
 which the nxnative-based builds open themselves (tools/nup.py reads its title ID and version first).
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
-Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: switch2mac-engine's dm/games/<title ID>).
+Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: hermit-engine's dm/games/<title ID>).
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
 with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
 A game can have several builds (game.json "builds", each with its own engine and shader list): game.json "choose" picks one for this Mac (its chip and memory),
@@ -22,7 +22,7 @@ import collections, argparse, datetime, hashlib, json, os, re, shutil, struct, s
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NX = None   # the engine of the game being built on switch2mac's engine: engines/switch2mac-<commit> (use_engine)
+NX = None   # the engine of the game being built on Hermit's engine: engines/switch2mac-<commit> (use_engine)
 VENV = ROOT / '.venv'
 ENGINES = ROOT / 'engines'   # pinned checkouts of the other engines some games are built with (game.json "engine")
 GAMES = {g['title_id']: dict(g, dir=p.parent) for p in sorted((ROOT / 'games').glob('*/game.json')) for g in [json.loads(p.read_text())]}
@@ -37,7 +37,7 @@ def builds(g):   # a game's tested builds (game.json "builds"); a game with one 
     return [{'id': g['engine']['kind'], 'name': KINDS.get(g["engine"]["kind"], g["engine"]["kind"]), 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}] if 'engine' in g else []
 
 
-def unknown_game(tid):   # a game switch2mac has no folder for: it can still be tried with the untested builds (a Switch 1 game: nxnative's, which knows most of them)
+def unknown_game(tid):   # a game Hermit has no folder for: it can still be tried with the untested builds (a Switch 1 game: nxnative's, which knows most of them)
     s1 = tid.startswith('01')
     return {'title_id': tid, 'name': engine_game_name(tid) or listed_name(tid) or file_game_name(tid) or f'Switch {1 if s1 else 2} game {tid}', 'version': '', 'builds': [], 'dir': None, 'switch1': s1}
 
@@ -55,7 +55,7 @@ def listed_name(tid):   # the game's name in games/titles.tsv (nxnative's profil
     return next((l.rstrip('\n').split('\t')[1] for l in t.open(encoding='utf-8') if l.upper().startswith(tid + '\t')), '') if t.exists() else ''
 
 
-def engine_game_name(tid):   # the game's name in the nxnative profile at the pin switch2mac keeps (dm/games/<title ID>/game.tsv "name"), '' when that engine is not fetched or has none
+def engine_game_name(tid):   # the game's name in the nxnative profile at the pin Hermit keeps (dm/games/<title ID>/game.tsv "name"), '' when that engine is not fetched or has none
     for d in sorted(ENGINES.glob('nxnative-*')):
         f = d / f'dm/games/{tid}/game.tsv'
         if f.is_file():
@@ -100,7 +100,7 @@ def fit_note(b, ver, upd=None, name=''):   # why a build does not play this dump
 
 
 def fits(b, ver):   # whether a build plays this game version (game.json build "versions": the update folders its profile knows, "v0" the base game; none listed: any),
-    # and this dump's form: switch2mac's own engine reads a dump's folders, so a .nup goes to the engines whose builders open it (nxnative, pokopia-native);
+    # and this dump's form: Hermit's own engine reads a dump's folders, so a .nup goes to the engines whose builders open it (nxnative, pokopia-native);
     # Switch 1 files (NSP / XCI, opened with the player's keys) to the builders that take them (S1_KINDS)
     if DUMP_NUP and b['engine']['kind'] == 'switch2mac': return False
     if DUMP_S1 and b['engine']['kind'] not in S1_KINDS: return False
@@ -134,7 +134,7 @@ ABOUT = {
     'nxnative': "Untested: nxnative's builder guesses a profile from this game's own files (it may boot the game for a few seconds to size its memory)." + RISK,
     'pokopia-native': "Untested: pokopia-native's engine (nxnative with xFractals' Switch 2 changes) with a profile guessed from this game's own files." + RISK,
 }
-PROFILE = None   # an untested build on switch2mac's engine: the profile guessed from the game's files (<work>/guessed/<title ID>); None: the engine's own
+PROFILE = None   # an untested build on Hermit's engine: the profile guessed from the game's files (<work>/guessed/<title ID>); None: the engine's own
 
 
 def engine_pins():   # each engine's pin that an untested build uses: the ones the updater keeps current (Mario Kart World's two, Pokopia's pokopia-native)
@@ -162,7 +162,7 @@ def custom_build():   # the player's own fork as a build: nxnative's builder at 
         sha = heads[0]
     repo = '/'.join(url.removesuffix('.git').split('/')[-2:])
     return {'id': 'custom', 'name': f'Your build ({repo}{"@" + ref if ref and len(ref) < 40 else ""})', 'engine': {'kind': 'nxnative', 'repo': url, 'commit': sha}, 'untested': True,
-            'about': f'Your own build: {url} at {sha[:12]}, built with nxnative\'s builder. switch2mac has not checked it: it may stop partway or not start.'}
+            'about': f'Your own build: {url} at {sha[:12]}, built with nxnative\'s builder. Hermit has not checked it: it may stop partway or not start.'}
 
 
 CUSTOM_PROBLEM = ''
@@ -182,13 +182,13 @@ def untested_builds(g):
     """Every engine the game has no tested build on, as an untested build: each guesses a profile from the game's own files (never another engine's
     profile). They will often fail; someone may take one further in a port of their own, which then becomes a tested build here."""
     have = {b['engine']['kind'] for b in builds(g)}; pins = engine_pins()
-    wip = g.get('wip', {})   # game.json "wip": {kind: engine pin}, a port of this game on that engine still in progress, at its own pin (Ocarina of Time on switch2mac's oot work)
+    wip = g.get('wip', {})   # game.json "wip": {kind: engine pin}, a port of this game on that engine still in progress, at its own pin (Ocarina of Time on Hermit's oot work)
     pins.update(wip)
     s1 = g.get('switch1') or g.get('title_id', '').startswith('01')   # a Switch 1 game: only the builders that open its files
     known = s1 and bool(engine_game_name(g.get('title_id', '')))   # nxnative's own profile for it (it has about 150 Switch 1 games): no guess
     return [{'id': f'{k}-untested', 'name': f'{KINDS[k]} (untested)', 'engine': pins[k], 'untested': True,
              'about': (f"Work in progress: {KINDS[k]} with its own profile for this game, not finished yet." + RISK) if k in wip else
-                      (f"Not tried through switch2mac yet: {KINDS[k]} with its own profile for this game. Needs your own prod.keys." + RISK) if known else ABOUT[k]}
+                      (f"Not tried through Hermit yet: {KINDS[k]} with its own profile for this game. Needs your own prod.keys." + RISK) if known else ABOUT[k]}
             for k in KINDS if k in UNTESTED_KINDS and k not in have and k in pins and k not in NO_UNTESTED and (not s1 or k in S1_KINDS)] + custom_builds()
 
 
@@ -234,7 +234,7 @@ def built_game(w):   # the game a finished build in w is, as the build it was ma
 
 
 class Progress:
-    """The build's stages. --progress json writes one event per line, the form the switch2mac app reads (NX2Apple's launcher, from nxnative's build script):
+    """The build's stages. --progress json writes one event per line, the form the Hermit app reads (NX2Apple's launcher, from nxnative's build script):
     {"ev": "stage", "k": 2, "n": 7, "name": ...}, {"ev": "step", "k", "step"}, {"ev": "stage_end", "k", "name", "ok", "elapsed", "summary"}, {"ev": "say", "msg"}.
     Anything else on the output (the tools' own lines) is log text. Without it, a stage is the usual '== name' line."""
     # Time left: each stage's expected length is how long it took the last time (history: <work>/stage_times.json), else a first-build guess
@@ -327,12 +327,12 @@ def mng_watch(line):   # a MacNativeGames builder line → our stage (its time l
     else: P.step(text)
 
 
-def has_packages():   # the build's Python packages are importable here (the switch2mac app's bundled Python): no .venv needed
+def has_packages():   # the build's Python packages are importable here (the Hermit app's bundled Python): no .venv needed
     import importlib.util
     return sys.version_info >= (3, 12) and all(importlib.util.find_spec(m) for m in ('capstone', 'lz4', 'fontTools', 'zstandard'))
 
 
-def py():   # the Python the build's tools run under: .venv (Terminal setup), else this one when it has the packages (the switch2mac app's own Python, which never makes a .venv)
+def py():   # the Python the build's tools run under: .venv (Terminal setup), else this one when it has the packages (the Hermit app's own Python, which never makes a .venv)
     p = VENV / 'bin/python'
     if p.exists(): return p
     if has_packages(): return Path(sys.executable)
@@ -413,7 +413,7 @@ EMPTY_TABLES = {   # a guessed profile's shader tables before the shader split f
 
 
 def guess_profile(w, tid, exefs, romfs, version, name):
-    """A provisional profile for switch2mac's engine, guessed from the game's own files by the engine's dm/games/profile_guess.py (the keys and layout
+    """A provisional profile for Hermit's engine, guessed from the game's own files by the engine's dm/games/profile_guess.py (the keys and layout
     nxnative's builder writes for a game it has no profile for, without its memory check). In <work>/guessed/<title ID>; an existing one is kept, so it can be edited by hand."""
     out = w / 'guessed' / tid
     if (out / 'game.tsv').is_file(): print(f'  reusing the guessed profile {out / "game.tsv"} (delete it to guess again)'); return out
@@ -484,9 +484,9 @@ def read_dump(d):   # once per command: whether the dump is a .nup (DUMP_NUP) or
 
 
 # Switch 1 games come as their own console's NSP / NSZ / XCI / XCZ files (base game, update, DLC), which are encrypted: only the builder opens them, with the
-# player's own prod.keys (passed to it as a path at build time, never read, copied or stored here). switch2mac reads no game data from them: which game and
+# player's own prod.keys (passed to it as a path at build time, never read, copied or stored here). Hermit reads no game data from them: which game and
 # version they are comes from what a dump tool writes in the clear, the "[title ID][v<version>]" in the file names and an NSP's ticket names (<rights ID>.tik,
-# whose first 16 hex digits are the title ID). switch2mac holds no decryption code (LEGAL.md).
+# whose first 16 hex digits are the title ID). Hermit holds no decryption code (LEGAL.md).
 DUMP_S1 = []   # the Switch 1 files the dump path names (read_dump), or [] for a Switch 2 dump
 S1_EXT = ('.nsp', '.nsz', '.xci', '.xcz')
 S1_PICK = None   # --title-id: which game of a cartridge with several (or of files of several games) to build
@@ -608,11 +608,14 @@ def s1_scan(files):   # (base game title ID or None, newest update version or 0,
 
 KEYS = None          # --keys: the player's prod.keys, for nxnative's own reader of files whose names do not say which game they are (builder_titles)
 BUILDER_IDS = {}     # file → title IDs that reader found (s1_ids takes them first)
-TITLES_CACHE = Path.home() / 'Library/Application Support/switch2mac/titles.json'   # what it found, by path, size and date: it reads each file once
+def app_folder():   # the app's own folder: Hermit's, or switch2mac's (the app's name before it became Hermit) where an app from before the rename still runs
+    s = Path.home() / 'Library/Application Support'
+    return s / 'Hermit' if (s / 'Hermit').exists() or not (s / 'switch2mac').exists() else s / 'switch2mac'
+TITLES_CACHE = app_folder() / 'titles.json'   # what it found, by path, size and date: it reads each file once
 
 
 def builder_titles(paths):   # the title IDs inside Switch files whose names do not say, read by nxnative's own package reader (nx_extract --contents, with the player's
-    # keys: switch2mac holds no decryption code), into BUILDER_IDS. Needs the keys and .NET; the first read builds nx_extract (about a minute). Nothing when it cannot
+    # keys: Hermit holds no decryption code), into BUILDER_IDS. Needs the keys and .NET; the first read builds nx_extract (about a minute). Nothing when it cannot
     if not KEYS or not paths: return
     try: cache = json.loads(TITLES_CACHE.read_text())
     except (OSError, ValueError): cache = {}
@@ -651,7 +654,7 @@ def s1_title(d):   # the Switch 1 game a dump path is, or a stop that says what 
         base, _, ids = s1_scan(DUMP_S1)
         if base: return base
     names = ', '.join(p.name for p in DUMP_S1[:3]) + (' …' if len(DUMP_S1) > 3 else '')
-    if not ids: sys.exit(f'switch2mac can\'t tell which game {names} is' + ('' if KEYS else ' (choose your prod.keys and it opens the file to find out)') + ': name the files the way dump tools do, with the title ID in brackets, '
+    if not ids: sys.exit(f'Hermit can\'t tell which game {names} is' + ('' if KEYS else ' (choose your prod.keys and it opens the file to find out)') + ': name the files the way dump tools do, with the title ID in brackets, '
                          'e.g. "Game [0100F2C0115B6000][v0].nsp" and "Game [0100F2C0115B6800][v458752].nsp"')
     sys.exit(f'these files are more than one game ({", ".join(ids)}): keep one game (its base game, update and DLC) per folder')
 
@@ -733,7 +736,7 @@ def title_and_build(exefs):
 def own_engine(g): return g.get('engine', {}).get('kind') == 'switch2mac'   # built step by step here (Mario Kart World), not by another builder
 
 
-def use_engine(g):   # switch2mac's engine at the commit the game pins, fetched once: every step below reads it through NX
+def use_engine(g):   # Hermit's engine at the commit the game pins, fetched once: every step below reads it through NX
     global NX
     NX = engine_dir(g)
     return NX
@@ -783,7 +786,7 @@ def prune_engines():   # after a build
     if freed: print(f'  removed engine copies no build uses any more: {freed / 1e9:.1f} GB freed')
 
 
-BUILDS = Path.home() / 'Library/Application Support/switch2mac/builds'   # where the app builds each game (BuildStore+Switch2Mac.swift: builds/<title ID>)
+BUILDS = app_folder() / 'builds'   # where the app builds each game (BuildStore+Hermit.swift: builds/<title ID>)
 
 
 def storage(a):   # what building leaves behind, and --clean removes it: each game's build folder (a built app is whole without it: a rebuild only takes longer)
@@ -812,9 +815,23 @@ def storage(a):   # what building leaves behind, and --clean removes it: each ga
 # Every engine game is built as Mario Kart World is: the game starts at once (DM_LAUNCHER=0 in the app's switches: no settings window first, the saved choices apply),
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
+S2M_LAUNCHER = ROOT / 'tools/engine/s2m_launcher.swift'
+def launcher_window(nx):   # Hermit's "Ready to play" window in place of nxnative's settings window (dm/mac/Launcher.swift), shown when a game is opened outside Hermit
+    """Hermit's own Play starts games with DM_LAUNCHER=0 (its sheet is the window there), so the game's window shows only from Finder, the Dock or Spotlight. An engine
+    whose launcher model lacks what the window reads keeps nxnative's own window: a build never fails over this."""
+    lw, model = Path(nx) / 'dm/mac/Launcher.swift', Path(nx) / 'dm/ios/Sources/LauncherSettings.swift'
+    if not lw.is_file() or not model.is_file(): return
+    m = model.read_text(errors='replace')
+    need = ('struct SettingsFile', 'func sections(basic: Bool)', 'func rows(in section: String, basic: Bool)', 'func rangeLabel', 'var changed', 'func reset()', 'func apply()', 'let fixed: Set<String>', 'var basic: Bool', 'var onValue')
+    if not all(k in m for k in need) or 'dm_mac_launcher' not in lw.read_text(errors='replace'):
+        print("  settings window: nxnative's own (this engine's launcher model is older than Hermit's window needs)"); return
+    src = S2M_LAUNCHER.read_bytes()
+    if lw.read_bytes() != src: lw.write_bytes(src); print("  settings window: Hermit's Ready to play")
+
+
 def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested); a build's own "switches" in game.json follow (a port's recommended settings)
     b = g.get('build', {}); label = b.get('name', '') if not b.get('untested') else ''
-    return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if b.get('untested') else g["engine"]["commit"][:12])]
+    return '\n'.join([f'S2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if b.get('untested') else g["engine"]["commit"][:12])]
                      + ([f'S2M_BUILD={label}'] if re.fullmatch(r"[\w' .()-]{1,40}", label or '') else []) + b.get('switches', []))   # S2M_BUILD: the build's name for the overlay ("azmasm's build"); S2M_ENGINE stays <kind>-<commit> (the app matches builds by it)
 
 
@@ -843,7 +860,7 @@ def mng_args(args, vals):   # a MacNativeGames port's command line from game.jso
 
 
 MNG_LABEL = (r'@(TOTK_UI("版本 %s\n","build %s\n")),commit]', r'@"%s\n","MacNativeGames"]')
-def mng_label(d):   # the grey build line of MacNativeGames' overlay says "MacNativeGames" (as switch2mac's overlay names each build), not the commit.
+def mng_label(d):   # the grey build line of MacNativeGames' overlay says "MacNativeGames" (as Hermit's overlay names each build), not the commit.
     """Only that line's text changes: the app still records the commit (Info.plist MNGSourceCommit), which MacNativeGames' own update check,
     shader lists and reports use, and its settings panel still shows it. A port whose overlay has no such line is left as it is."""
     for f in Path(d).glob('games/*/runtime/frontend.m'):
@@ -855,7 +872,7 @@ def app_file(g):   # the built app's file name: the game's name, with ": " as " 
     return g['name'].replace(':', ' -') + '.app'
 
 
-def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fixes switch2mac adds to a MacNativeGames app after its builder, until MacNativeGames has them
+def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fixes Hermit adds to a MacNativeGames app after its builder, until MacNativeGames has them
     """Each fix names the game version it is for (its version folder and main's build ID), the bytes to find in that version's rewritten code and
     what they become. It is applied only where those bytes are found exactly once; bytes already as the fix makes them mean MacNativeGames fixed it
     (nothing to do); anything else leaves the app as it is, with a note. The app checks its code against a SHA-256 in runtime-tables.bin: that entry
@@ -868,13 +885,13 @@ def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fi
         code, table = game / f['file'].format(v=v), game / f['table'].format(v=v)
         old, new = bytes.fromhex(f['find']), bytes.fromhex(f['replace'])
         data = code.read_bytes()
-        at = int(f['at'], 16) if f.get('at') else None   # where the bytes are in the version switch2mac checked (the fix's own bytes may appear elsewhere too)
+        at = int(f['at'], 16) if f.get('at') else None   # where the bytes are in the version Hermit checked (the fix's own bytes may appear elsewhere too)
         if data.count(old) != 1:
             fixed = at is not None and data[at:at + len(new)] == new
-            print(f'  fix {f["id"]}: ' + ('already in MacNativeGames\' build, nothing to add' if fixed else 'its code is not where switch2mac knows it: not applied (the build is unchanged)'))
+            print(f'  fix {f["id"]}: ' + ('already in MacNativeGames\' build, nothing to add' if fixed else 'its code is not where Hermit knows it: not applied (the build is unchanged)'))
             continue
         t = table.read_bytes(); h0 = hashlib.sha256(data).hexdigest().encode()
-        if t.count(h0) != 1: print(f'  fix {f["id"]}: the app\'s check of its code is not the one switch2mac knows: not applied'); continue
+        if t.count(h0) != 1: print(f'  fix {f["id"]}: the app\'s check of its code is not the one Hermit knows: not applied'); continue
         data = data.replace(old, new); t = t.replace(h0, hashlib.sha256(data).hexdigest().encode())
         for p, d in ((code, data), (table, t)):   # a new file moved over the old one (never written in place)
             tmp = p.with_name(p.name + '.s2m'); tmp.write_bytes(d); os.replace(tmp, p)
@@ -898,10 +915,10 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         print('  QUICK TRY: only the shaders players have used (the game\'s shared shader list, its profile\'s playtests and what your last runs reported missing): about half the time. Places nobody has played yet may miss parts until a full build')
     if eng['kind'] == 'nxnative' or (untested and eng['kind'] == 'pokopia-native'):
         nx = d
-        P.plan(2); P.stage('engine', f'{eng["kind"]} {eng["commit"][:12]} with switch2mac\'s overlay and settings')
+        P.plan(2); P.stage('engine', f'{eng["kind"]} {eng["commit"][:12]} with Hermit\'s overlay and settings')
         if eng['kind'] == 'pokopia-native':   # its nxnative tree, patched with xFractals' Switch 2 changes: nxnative's own builder, which guesses a profile for any game
             run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=e, cwd=d); nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx))
-        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e)
+        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e); launcher_window(nx)
         if not untested:
             seed = w / f'{tid}-engine-seed.tsv'   # the engine's own seed list at its pinned commit, then the game's shared list after it
             seed.write_text(subprocess.run(['git', '-C', nx, 'show', f'HEAD:dm/games/{tid}/pso_manifest.tsv'], capture_output=True, text=True).stdout)
@@ -995,22 +1012,22 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         else:
             run([py314, d / 'build_app.py', base] + (['--update', upd] if upd else []) + [x for f in dlc for x in ('--dlc', f)]
                 + ['-k', Path(a.keys).expanduser().resolve(), '-o', app, '--work', w / tid] + fonts + eng.get('args', []), env=e, cwd=d, watch=mng_watch)
-        mng_fixes(app, g['build'].get('fixes', []))   # switch2mac's fixes for this build, on any MacNativeGames commit (game.json "fixes")
+        mng_fixes(app, g['build'].get('fixes', []))   # Hermit's fixes for this build, on any MacNativeGames commit (game.json "fixes")
     elif DUMP_S1: sys.exit(f'{g["name"]}: {KINDS[eng["kind"]]} builds Switch 2 games only')
     elif eng['kind'] == 'pokopia-native':
         nx = d / 'nxnative'; e = dict(e, NXNATIVE=str(nx)); P.plan(4)
-        P.stage('engine', f'pokopia-native {eng["commit"][:12]} with switch2mac\'s overlay and settings')
+        P.stage('engine', f'pokopia-native {eng["commit"][:12]} with Hermit\'s overlay and settings')
         run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=e, cwd=d)   # nxnative at its pinned commit with pokopia-native's Switch 2 patch, and its shader lowering
-        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e)
+        run([py(), ROOT / 'tools/engine/patch.py', nx], env=e); launcher_window(nx)
         ship_list(tid, d / f'profile/{tid}/pso_manifest.tsv')   # pokopia-native ships no list of its own: the game's shared list is the app's
-        script = d / 'nxs2.py'; t = script.read_text()   # once: its app's baked switches (APP_ENV) get switch2mac's, and its profile step copies the list
+        script = d / 'nxs2.py'; t = script.read_text()   # once: its app's baked switches (APP_ENV) get Hermit's, and its profile step copies the list
         if 'S2M_ENGINE=' not in t:
             k = "DM_NVN_SHDUMP=shdump\\n'\n"
-            if t.count(k) != 1: sys.exit(f'{script}: its APP_ENV line is not the one switch2mac knows')
+            if t.count(k) != 1: sys.exit(f'{script}: its APP_ENV line is not the one Hermit knows')
             t = t.replace(k, k[:-2] + app_switches(g).replace('\n', '\\n') + "\\n'   # (switch2mac)\n", 1)
         if "'shader_facts.seed.tsv', 'pso_manifest.tsv')" not in t:
             k = "'shader_facts.seed.tsv'):"
-            if t.count(k) != 1: sys.exit(f'{script}: its profile step is not the one switch2mac knows')
+            if t.count(k) != 1: sys.exit(f'{script}: its profile step is not the one Hermit knows')
             t = t.replace(k, "'shader_facts.seed.tsv', 'pso_manifest.tsv'):", 1)
         script.write_text(t)
         P.stage('build', 'game files, code, shaders (the long step) and host, by pokopia-native')
@@ -1018,7 +1035,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         P.stage('app')
         if app.exists(): shutil.rmtree(app)
         shutil.move(str(w / tid / 'out' / f'{g["name"]}.app'), app)
-    else: sys.exit(f'{g["name"]}: engine kind {eng["kind"]!r} is not one switch2mac builds with')
+    else: sys.exit(f'{g["name"]}: engine kind {eng["kind"]!r} is not one Hermit builds with')
     (w / 'title.txt').write_text(tid + '\n'); (w / 'build.txt').write_text(g['build']['id'] + '\n')
     P.end(summary=str(app))
     print(f'\nbuilt: {app}\n./switch2mac.py install moves it to /Applications.')
@@ -1137,6 +1154,7 @@ def host_and_app(a, tid, w, lib, e):
         run([py(), g['dir'] / 'launcher.py', NX, w / 'build/patched', w / 'build/launcher.json'], env=e)
         envf, marker = g['dir'] / 'env.txt', g['marker']
     app = w / app_file(g)
+    launcher_window(NX)
     run([py(), NX / 'dm/mac/pack_app.py', app, '--host', NX / 'dm/host/dmhost', '--patched', w / 'build/patched', '--romfs', w / 'extract/RomFS.img',
          '--msl', lib, '--tables', prof, '--font', font, '--env-file', envf, '--settings', w / 'build/launcher.json', '--launcher-window', 'off',
          '--title-id', tid, '--name', g['name'], '--version', g['version'] or 'untested', '--lang', 'en-US'] + (['--marker', marker] if marker else []), env=e)
@@ -1165,7 +1183,7 @@ def build(a):
         print(f'  {GAMES[tid]["name"]} ({tid})' + (f', {chosen["name"]}' + ('' if a.engine else f' ({recommend(GAMES[tid], this_mac(), ver)[1] or "this Mac"})') if len(builds(GAMES[tid])) > 1 else ''))
         if not fits(chosen, ver) and not (DUMP_NUP and chosen['engine']['kind'] == 'switch2mac'): print(f'  NOTE: {chosen["name"]} lists {", ".join(chosen["versions"])}, and this dump is {ver}: it may not build or start')
         if DUMP_NUP and ((not NUP_BASE and chosen.get('nup_needs_base')) or own_engine(GAMES[tid])):   # a builder that cannot read this .nup (one from before NUPs without a base
-            # game, nxnative 777a5f6c, or switch2mac's engine, which reads folders): switch2mac reads it itself into the dump folder layout, as it reads a Switch game's .xci
+            # game, nxnative 777a5f6c, or Hermit's engine, which reads folders): Hermit reads it itself into the dump folder layout, as it reads a Switch game's .xci
             print(f'  {chosen["name"]} reads dump folders' + (' or NUPs with a base game' if not own_engine(GAMES[tid]) else '') + f': unpacking {DUMP_NUP.name} into the build folder (once; every file checked)')
             sys.path.insert(0, str(ROOT / 'tools')); import nup
             try:
@@ -1184,7 +1202,7 @@ def build(a):
     if upd and not untested and title_and_build(upd[0])[1] not in profile_builds(GAMES[tid]['title_id']): upd = None
     exefs, romfs = upd or dump_dirs(a.dump)
     if untested:
-        print(f'  UNTESTED: {GAMES[tid]["name"]} on switch2mac\'s engine, with a profile guessed from the game\'s files. It may stop partway or not start.')
+        print(f'  UNTESTED: {GAMES[tid]["name"]} on Hermit\'s engine, with a profile guessed from the game\'s files. It may stop partway or not start.')
         ver = f'v{exefs.parent.name}' if upd and exefs.parent.name.isdigit() else 'v0'
         if (NX / f'dm/games/{tid}/game.tsv').is_file(): print(f'  the engine has a profile for this game: using it, not a guess')   # an experimental game's own engine
         else:
@@ -1207,7 +1225,7 @@ def build(a):
 def refresh(a):
     e = env(); w, ex, b, sh, cache = paths(a)
     tid = built_game(w)
-    if not own_engine(GAMES[tid]): sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on switch2mac\'s engine (build again instead)')
+    if not own_engine(GAMES[tid]): sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on Hermit\'s engine (build again instead)')
     use_engine(GAMES[tid])
     caps = w / 'captures'; caps.mkdir(exist_ok=True); new = []
     for saved in (Path.home() / f'Library/Application Support/nxnative/{tid}/shdump', w / 'run/shdump'):   # the installed app's captures, and run's
@@ -1249,7 +1267,7 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
         g = GAMES.get(tid); out.update(name=g['name'] if g else '', damaged=bad,
             problem=f'The dump is damaged: {", ".join(bad)} {"is" if len(bad) == 1 else "are"} cut short. Copy it off your Switch 2 again (over FTP, in binary mode).')
         print(json.dumps(out, ensure_ascii=False)); return
-    g = GAMES.get(tid) or unknown_game(tid)   # a game switch2mac has no folder for: offered with the untested builds only
+    g = GAMES.get(tid) or unknown_game(tid)   # a game Hermit has no folder for: offered with the untested builds only
     mac = this_mac(); ver = dump_version(a.dump); rec, why = recommend(g, mac, ver)
     s1_update = s1_base = None   # a Switch game's update file (its name tells players' version names: "v.1.2.0") and base file
     if DUMP_S1:
@@ -1289,7 +1307,7 @@ def identify(a):   # for the app: which game a dump folder is, as one JSON line 
                 out['parts'] = {'base': 'Base game' if base else '', 'update': f'Update {version_name(g, newest)}, inside {DUMP_NUP.name}' if newest else '',
                                 'dlc': [f'DLC {t:016X}, inside {DUMP_NUP.name}' for t in sorted(dlc)]}
                 if not base and newest: out['parts']['note'] = (f'No separate base game in {DUMP_NUP.name}: its update {version_name(g, newest)} holds the whole game. '
-                                                                'switch2mac unpacks it for builds that need a base game.')
+                                                                'Hermit unpacks it for builds that need a base game.')
         except nup.Error: pass
     else:   # a Switch 2 dump folder: its updates/<version> folders
         u = update_dirs(Path(a.dump).expanduser().resolve())
@@ -1387,7 +1405,7 @@ def main():
     bp.add_argument('--quick', action='store_true', help='nxnative builds: only the shaders the game\'s playtests used (its shader_seen.tsv), for testing a change in minutes; a full build afterwards fills in the rest')
     sp = sub.add_parser('builds'); sp.add_argument('dump', help='a dump folder, a title ID or a games/ folder name')
     rp = sub.add_parser('refresh'); rp.add_argument('--force', action='store_true', help='rebuild even with no new shaders')
-    for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the switch2mac app')
+    for x in (bp, rp): x.add_argument('--progress', choices=('lines', 'json'), default='lines', help='json: one event per line, for the Hermit app')
     ip = sub.add_parser('install'); ip.add_argument('--to', default='/Applications', help='the folder the app goes to (default /Applications)')
     stp = sub.add_parser('storage'); stp.add_argument('--clean', action='store_true'); stp.add_argument('--json', action='store_true'); stp.add_argument('--builds', action='append', help='a folder of build folders (default: the app\'s)')
     dp = sub.add_parser('identify'); dp.add_argument('dump'); dp.add_argument('--firmware', help='your unpacked firmware dump (else the one beside your prod.keys is looked for)')
@@ -1412,12 +1430,12 @@ def main():
     except (KeyboardInterrupt, SystemExit): raise
     except Exception as x:   # the details go to the log, the last line says what to do
         import traceback; traceback.print_exc()
-        if 'cut short or damaged' in str(x):   # a code file of the dump (nso.Error): the dump's problem, not switch2mac's
+        if 'cut short or damaged' in str(x):   # a code file of the dump (nso.Error): the dump's problem, not Hermit's
             P.end(False, 'the dump is damaged')
             sys.exit(f'The dump is damaged: {x}. Copy it off your Switch 2 again (over FTP, in binary mode).')
-        P.end(False, 'switch2mac stopped on a problem of its own')
-        sys.exit('switch2mac stopped on a problem of its own (a bug, not your dump). Copy the diagnostics in Settings and open an issue: '
-                 'https://github.com/azmasm/switch2mac/issues')
+        P.end(False, 'Hermit stopped on a problem of its own')
+        sys.exit('Hermit stopped on a problem of its own (a bug, not your dump). Copy the diagnostics in Settings and open an issue: '
+                 'https://github.com/azmasm/hermit/issues')
 
 
 if __name__ == '__main__':

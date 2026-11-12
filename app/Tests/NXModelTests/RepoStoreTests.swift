@@ -3,7 +3,7 @@ import XCTest
 @testable import NXCore
 
 /// `RepoStore` without SwiftUI: a fake `GitCheckout` answers for git, the checkouts are folders in a temporary directory and the
-/// defaults are a suite of their own. The model's wiring is tested in Switch2MacTests (RepoAutoUpdateTests, RepoToolsTests run the
+/// defaults are a suite of their own. The model's wiring is tested in HermitTests (RepoAutoUpdateTests, RepoToolsTests run the
 /// real git against local repositories).
 @MainActor final class RepoStoreTests: XCTestCase {
     private var temporary: URL!
@@ -32,12 +32,12 @@ import XCTest
     @discardableResult
     private func makeCheckout(_ name: String = "clone", isGit: Bool = true) throws -> String {
         let dir = temporary.appendingPathComponent(name)
-        try Self.makeSwitch2MacTree(dir)
+        try Self.makeHermitTree(dir)
         if isGit { try FileManager.default.createDirectory(at: dir.appendingPathComponent(".git"), withIntermediateDirectories: true) }
         return dir.path
     }
 
-    static func makeSwitch2MacTree(_ dir: URL) throws {
+    static func makeHermitTree(_ dir: URL) throws {
         try FileManager.default.createDirectory(at: dir.appendingPathComponent("games"), withIntermediateDirectories: true)
         try "x".write(to: dir.appendingPathComponent(RepoLayout.buildScript), atomically: true, encoding: .utf8)
     }
@@ -267,10 +267,10 @@ import XCTest
     // ---- Clone ----
 
     /// switch2mac clones into its own state folder, under the home (RepoStore.clone).
-    static let cloneDest = "Library/Application Support/switch2mac/repo"
+    static let cloneDest = "Library/Application Support/Hermit/repo"
 
     func testACloneIsSelectedAndTheEngineIsToldItMoved() async throws {
-        git.cloneMakes = { dest in try? Self.makeSwitch2MacTree(URL(fileURLWithPath: dest)) }
+        git.cloneMakes = { dest in try? Self.makeHermitTree(URL(fileURLWithPath: dest)) }
         let store = makeStore()
         let dest = temporary.path + "/" + Self.cloneDest
         let task = store.clone()

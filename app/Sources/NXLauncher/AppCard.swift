@@ -13,6 +13,7 @@ package struct AppCard: View {
     let returnAfterPlay: Binding<Bool>
     let closeWhilePlaying: Binding<Bool>
     let interfaceSounds: Binding<Bool>
+    @AppStorage(PlayFirst.defaultsKey) private var settingsBeforePlay = true   // Play shows the game's settings first (PlayFirst)
     let onRunSetup: (() -> Void)?   // the guided first-run setup, again (nil where there is none)
     let uninstallPlan: () -> Uninstall.Plan
     @EnvironmentObject var loc: Localizer
@@ -41,7 +42,7 @@ package struct AppCard: View {
         code.isEmpty ? loc.t("settings.language.system") : (Lang.find(code)?.name ?? code)
     }
 
-    /// One switch, as in the League client's "Close client during game": on, switch2mac closes while a game it started runs and opens again when
+    /// One switch, as in the League client's "Close client during game": on, Hermit closes while a game it started runs and opens again when
     /// the game quits; off, it stays open and comes to the front when the game quits (returnAfterPlay, on by default).
     private func setCloseWhilePlaying(_ on: Bool) {
         closeWhilePlaying.wrappedValue = on
@@ -77,7 +78,7 @@ package struct AppCard: View {
                 }
                 CardDivider()
             }
-            // Close switch2mac while a game it started runs, and open it again when the game quits (ReturnAfterPlay.swift)
+            // Close Hermit while a game it started runs, and open it again when the game quits (ReturnAfterPlay.swift)
             CardRow(loc.t("settings.whilePlaying"), detail: loc.t("settings.whilePlaying.note")) {
                 Toggle("", isOn: Binding(get: { closeWhilePlaying.wrappedValue }, set: { setCloseWhilePlaying($0) }))
                     .toggleStyle(LauncherSwitchStyle()).labelsHidden()
@@ -90,7 +91,12 @@ package struct AppCard: View {
                     .padTarget("set.interfaceSounds", scope: "main") { interfaceSounds.wrappedValue.toggle() }
             }
             CardDivider()
-            CardRow("switch2mac", detail: String(format: loc.t("app.version"), updates.version),
+            CardRow(loc.t("settings.settingsBeforePlay"), detail: loc.t("settings.settingsBeforePlayNote")) {
+                Toggle("", isOn: $settingsBeforePlay).toggleStyle(LauncherSwitchStyle()).labelsHidden()
+                    .padTarget("set.settingsBeforePlay", scope: "main") { settingsBeforePlay.toggle() }
+            }
+            CardDivider()
+            CardRow(AppIdentity.name, detail: String(format: loc.t("app.version"), updates.version),
                 dot: updates.staged != nil ? LauncherPalette.ready : nil) {
                 if updates.busy { ProgressView().controlSize(.small) }
                 if updates.staged != nil {

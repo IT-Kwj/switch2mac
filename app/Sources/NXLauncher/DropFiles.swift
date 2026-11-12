@@ -1,7 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import NXCore
-import NXLauncher
 
 // Game files dropped on the Builds page (issue #68): NSP, NSZ and XCI files or a folder, in any
 // mix. They are sorted into the slots by the same classification as Choose game folder

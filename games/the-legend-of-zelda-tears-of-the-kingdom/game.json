@@ -55,7 +55,7 @@
     "repo": "https://github.com/seedds/nxnative",
     "commit": "a2514d7def4e35f3c47f8792af9e6ad31c90ace9"
    },
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3.",
+   "about": "Upstream nxnative with Hermit's overlay and key-2 settings, for version 1.4.3.",
    "version_names": {
     "v720896": "1.4.3"
    },

@@ -11,8 +11,8 @@ final class UninstallTests: XCTestCase {
         home = FileManager.default.temporaryDirectory.appendingPathComponent("uninstall-" + UUID().uuidString)
         games = home.appendingPathComponent("Games")
         guard let home, let games else { throw XCTSkip("temporary folder unavailable") }
-        for dir in [games, home.appendingPathComponent("Library/Application Support/switch2mac/repo"),
-                    home.appendingPathComponent("Library/Application Support/switch2mac/engine/aaaaaaa"),
+        for dir in [games, home.appendingPathComponent("Library/Application Support/Hermit/repo"),
+                    home.appendingPathComponent("Library/Application Support/Hermit/engine/aaaaaaa"),
                     home.appendingPathComponent("switch2mac")] {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -34,7 +34,7 @@ final class UninstallTests: XCTestCase {
     private func originFixture(checkout: URL) throws {
         let git = "/usr/bin/git"
         _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "init", "-b", "main"], env: SystemGitCheckout.environment())
-        _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "remote", "add", "origin", "https://github.com/azmasm/switch2mac.git"], env: SystemGitCheckout.environment())
+        _ = SystemProcessRunner().runQuiet([git, "-C", checkout.path, "remote", "add", "origin", "https://github.com/azmasm/hermit.git"], env: SystemGitCheckout.environment())
     }
 
     func testThePlanTakesStateAndItsOwnCheckoutAndLeavesGamesAndKeys() throws {
@@ -42,8 +42,8 @@ final class UninstallTests: XCTestCase {
         try originFixture(checkout: URL(fileURLWithPath: checkout))
         let plan = Uninstall.plan(home: home.path, gamesFolder: games.path, checkouts: [checkout])
         // switch2mac: its state folder, which holds the checkout it clones itself (RepoStore.clone)
-        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/switch2mac"), true)
-        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/switch2mac"), true)
+        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/Hermit"), true)
+        XCTAssertEqual(plan.stateFolders.contains(home.path + "/Library/Application Support/Hermit"), true)
         XCTAssertEqual(plan.checkouts, [checkout])
 
         let result = Uninstall.run(plan, movingAppToTrash: false)
@@ -51,12 +51,12 @@ final class UninstallTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: games.appendingPathComponent("save.dat").path), "the games folder stays")
         XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("prod.keys").path), "the keys stay")
         XCTAssertFalse(FileManager.default.fileExists(atPath: checkout), "the launcher's own checkout goes")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: home.path + "/Library/Application Support/switch2mac/repo"), "and the clone in its state folder")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: home.path + "/Library/Application Support/Hermit/repo"), "and the clone in its state folder")
     }
 
     /// Everything switch2mac keeps goes, a leftover shell folder too; the games' saves and settings stay with the built games.
     func testEverythingOfSwitch2macGoesSavesStay() throws {
-        let support = home.appendingPathComponent("Library/Application Support/switch2mac")
+        let support = home.appendingPathComponent("Library/Application Support/Hermit")
         try FileManager.default.createDirectory(at: support.appendingPathComponent("shell"), withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: support.appendingPathComponent("boxart"), withIntermediateDirectories: true)
         let logs = home.appendingPathComponent("Library/Logs/nxnative"), saves = home.appendingPathComponent("Library/Application Support/nxnative/0100000000010000")

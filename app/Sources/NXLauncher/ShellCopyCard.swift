@@ -1,7 +1,6 @@
 import SwiftUI
 import NXCore
 import NXModel
-import NXLauncher
 
 /// Before the shared app's game data goes over USB or Wi-Fi: how much, over which connection, and what to do about it. A cable
 /// gets one short note. Wi-Fi gets an estimate with Continue and a way to wait for a cable (the copy then starts by itself when the

@@ -4,7 +4,7 @@ import Foundation
 /// game's banner into its framework, so the folder and the lookup are here, with no AppKit.
 package enum BannerCache {
     package static let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("switch2mac/artwork")
+        .appendingPathComponent(AppIdentity.folder + "/artwork")
 
     /// Where a title's banner is kept; nil while it has none.
     package static func cached(_ titleID: String, in directory: URL = BannerCache.directory) -> URL? {

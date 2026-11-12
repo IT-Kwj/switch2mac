@@ -17,7 +17,7 @@
     "commit": "6a16b7d3c52d40e8dd6c9d927da92fb943309609"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (2.2.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "about": "nxnative's profile (2.2.1) with Hermit's overlay and key-2 settings: see its notes for how far it plays.",
    "version_names": {
     "v720896": "2.2.1"
    }
@@ -171,7 +171,7 @@
    "watch": [
     "games/xc3"
    ],
-   "about": "MacNativeGames' Xenoblade Chronicles 3 port (community, playable; MIT): its own runtime and a settings window (screen, window size, MetalFX, frame rate overlay). The base game and the four Expansion Pass add-ons start, play and save; a 2.5-hour session had no glitches (Apple M5, 32 GB). 30 fps, as on the Switch. Neither story played to the end yet. Not built through switch2mac yet.",
+   "about": "MacNativeGames' Xenoblade Chronicles 3 port (community, playable; MIT): its own runtime and a settings window (screen, window size, MetalFX, frame rate overlay). The base game and the four Expansion Pass add-ons start, play and save; a 2.5-hour session had no glitches (Apple M5, 32 GB). 30 fps, as on the Switch. Neither story played to the end yet. Not built through Hermit yet.",
    "plays": "the base game 1.0.0 (.nsp) alone, or with update 2.2.1 and its add-ons",
    "update_versions": [
     "2.2.1"

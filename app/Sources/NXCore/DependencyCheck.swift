@@ -105,7 +105,7 @@ package enum DependencyCheck {
     package static func writeReport(_ deps: [Dep], appVersion: String) {
         let dir = (Toolchain.venvDir as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        var out = "switch2mac \(appVersion) dependency check\n"
+        var out = "Hermit \(appVersion) dependency check\n"
         out += "date: \(ISO8601DateFormatter().string(from: Date()))\n"
         out += "HOME: \(NSHomeDirectory())\n"
         out += "PATH: \(ProcessInfo.processInfo.environment["PATH"] ?? "(unset)")\n"

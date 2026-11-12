@@ -386,7 +386,7 @@ import XCTest
     private func moveStore() throws -> (BuildStore, cache: String) {
         let store = makeStore()
         store.home = temporary.path + "/home"
-        let cache = store.home + "/Library/Application Support/switch2mac/shell"
+        let cache = store.home + "/Library/Application Support/Hermit/shell"
         try FileManager.default.createDirectory(atPath: cache + "/frameworks/DmGame0100AAAA.framework", withIntermediateDirectories: true)
         try Data("shader".utf8).write(to: URL(fileURLWithPath: cache + "/frameworks/DmGame0100AAAA.framework/game.manifest.json"))
         let json: [String: Any] = ["bundleID": "org.nxnative.shell.TEAM", "team": "TEAM", "games": [["titleID": "0100AAAA", "name": "A", "framework": cache + "/frameworks/DmGame0100AAAA.framework"]]]

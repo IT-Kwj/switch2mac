@@ -1,7 +1,6 @@
 import SwiftUI
 import NXCore
 import NXModel
-import NXLauncher
 
 /// "A new version is out", with what it changes, shown when the app opens or Check for updates finds
 /// one. The app already had the update machinery (AppUpdateStore.checkForUpdate / performUpdate); what it lacked
@@ -54,7 +53,7 @@ package struct UpdateSheet: View {
             Divider().opacity(0.3)
             HStack(spacing: 12) {
                 if let u = update {
-                    Link(loc.t("update.openPage"), destination: URL(string: "https://github.com/azmasm/switch2mac/releases/tag/\(u.tag)")!)
+                    Link(loc.t("update.openPage"), destination: URL(string: "https://github.com/azmasm/hermit/releases/tag/\(u.tag)")!)
                         .font(.manrope(12.5))
                 }
                 Spacer(minLength: 8)

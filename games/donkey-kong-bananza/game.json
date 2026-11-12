@@ -10,7 +10,7 @@
     "v458752"
    ],
    "shader_list": "shader_list.tsv",
-   "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, kept up to date with nxnative's main branch.",
+   "about": "Upstream nxnative with Hermit's overlay and key-2 settings, kept up to date with nxnative's main branch.",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",

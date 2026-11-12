@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Keeps the games built with another engine on the newest version of their build, the way switch2mac builds them (overlay, key-2 settings, shared shader list).
+"""Keeps the games built with another engine on the newest version of their build, the way Hermit builds them (overlay, key-2 settings, shared shader list).
 
   tools/engine/update.py                    which games' builds have changed since the commit game.json pins (nothing is changed)
   tools/engine/update.py --apply [--compile]   move each changed game to its build's new commit, on the dev branch:
 
-    1. fetch the new commit into engines/ and add switch2mac's front end to it (tools/engine/patch.py); pokopia-native: its setup first, and its two lines
+    1. fetch the new commit into engines/ and add Hermit's front end to it (tools/engine/patch.py); pokopia-native: its setup first, and its two lines
        switch2mac.py build edits (the app's switches, the profile step) must still be there. Anything that no longer fits stops that game: it stays where it was.
     2. --compile: build the game's host (dmhost) with the front end, as a check (a minute or two each).
     3. game.json takes the new commit; the game's shader_list.tsv keeps its rows and names the new engine in its header (keys can change with an engine version:
        old rows a build does not have are skipped quietly, and contributions recorded with the old engine are refused by tools/shader_list.py from then on);
        the game's README and NOTICE.md name the new commit. One commit on dev per game; the old version's download in engines/ is deleted. Nothing is pushed.
 
-  tools/engine/update.py --new-games        also add the Switch 2 games nxnative has a profile for and switch2mac has no folder for yet (with --apply: a folder each,
+  tools/engine/update.py --new-games        also add the Switch 2 games nxnative has a profile for and Hermit has no folder for yet (with --apply: a folder each,
                                             made from nxnative's profile: game.json, a page that links its notes, an empty shader list and reports table, a README row)
   --check   only say whether anything is due (for the GitHub workflow: writes changed=true/false to $GITHUB_OUTPUT)
   --ci      on GitHub: commit on the branch checked out (main) instead of requiring dev
 
-A game's build is: for switch2mac-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
+A game's build is: for hermit-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
 of that repository. The newest such commit on the default branch (or the engine's "branch") is the one taken. Uses gh (signed in) or GitHub's public API.
 """
 import time, json, os, re, shutil, subprocess, sys, urllib.request
@@ -37,7 +37,7 @@ def api(path):   # GitHub REST, through gh when it is signed in (higher rate lim
         return json.load(f)
 
 
-def games():   # one entry a game and build (Mario Kart World has two: switch2mac's engine and nxnative's), each with its engine and shader list
+def games():   # one entry a game and build (Mario Kart World has two: Hermit's engine and nxnative's), each with its engine and shader list
     out = []
     for p in sorted((ROOT / 'games').glob('*/game.json')):
         g = json.loads(p.read_text())
@@ -53,7 +53,7 @@ def newest(g):   # (sha, date, subject) of the newest commit of the game's build
     paths = g.get('watch') or ([f'dm/games/{g["title_id"]}'] if e['kind'] == 'nxnative' else [''])   # switch2mac, pokopia-native: the whole repository
     best = None
     for p in paths:
-        c = api(f'repos/{slug}/commits?per_page=1' + (f'&sha={e["branch"]}' if e.get('branch') else '') + (f'&path={p}' if p else ''))[0]   # engine "branch": a build that follows a branch other than the repository's default (azmasm's Ocarina of Time build: switch2mac-engine's ocarina branch, whose default branch is Mario Kart World's engine)
+        c = api(f'repos/{slug}/commits?per_page=1' + (f'&sha={e["branch"]}' if e.get('branch') else '') + (f'&path={p}' if p else ''))[0]   # engine "branch": a build that follows a branch other than the repository's default (azmasm's Ocarina of Time build: hermit-engine's ocarina branch, whose default branch is Mario Kart World's engine)
         x = (c['sha'], c['commit']['committer']['date'], c['commit']['message'].split('\n')[0])
         if not best or x[1] > best[1]: best = x
     return best
@@ -90,7 +90,7 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
         say(run([py(), ROOT / 'tools/engine/patch.py', d]).rstrip())
         if not (d / f'dm/games/{g["title_id"]}/game.tsv').is_file(): raise RuntimeError(f'the new commit has no profile for {g["title_id"]}')
         host, genv = d / 'dm/host', env
-    elif e['kind'] == 'switch2mac':   # switch2mac's own engine carries its front end already
+    elif e['kind'] == 'switch2mac':   # Hermit's own engine carries its front end already
         if not (d / f'dm/games/{g["title_id"]}/game.tsv').is_file(): raise RuntimeError(f'the new commit has no profile for {g["title_id"]}')
         host, genv = d / 'dm/host', env
     elif e['kind'] == 'pokopia-native':
@@ -101,7 +101,7 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
         say(run([py(), ROOT / 'tools/engine/patch.py', nx]).rstrip())
         host = nx / 'dm/host'; prof = d / 'profile'
         genv = dict(env, DM_GAMES_DIR=str(prof), DM_GAMES_FIRST='1', DM_GAME=g['title_id'])
-    elif e['kind'] == 'macnativegames':   # its own runtime and builder (build_app.py), no switch2mac front end: the new commit must still have the builder and the game's runtime
+    elif e['kind'] == 'macnativegames':   # its own runtime and builder (build_app.py), no Hermit front end: the new commit must still have the builder and the game's runtime
         b = e.get('builder') or {}
         if b.get('steps'):   # a port built in steps (Xenoblade 3): its scripts and its Makefile's targets must still be there
             cwd = b.get('cwd', ''); files = [f'{cwd}/Makefile']; targets = set()
@@ -151,7 +151,7 @@ def slug(name):   # a folder name: letters and digits, accents dropped ("Pokémo
     return re.sub(r'[^a-z0-9]+', '-', unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().lower()).strip('-')
 
 
-def new_games():   # [(title ID, name, version, newest commit of its profile)]: nxnative's Switch 2 profiles switch2mac has no folder for
+def new_games():   # [(title ID, name, version, newest commit of its profile)]: nxnative's Switch 2 profiles Hermit has no folder for
     have = {g['title_id'] for g in games()} | {json.loads(p.read_text())['title_id'] for p in (ROOT / 'games').glob('*/game.json')}
     out = []
     for item in api('repos/seedds/nxnative/contents/dm/games?ref=main'):
@@ -183,7 +183,7 @@ def add_game(tid, name, version, sha):
 
 Title ID `{tid}`, {ver}. Added automatically when [nxnative]({NX_REPO}) added its profile: see [nxnative's notes on it]({notes}) for how far it plays and on which Mac.
 
-Built with nxnative's own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`): the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
+Built with nxnative's own builder at the commit `game.json` names (fetched once into `./engines`), with Hermit's front end added (`tools/engine/patch.py`): the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
 
 | What | |
 |---|---|
@@ -196,11 +196,11 @@ Built with nxnative's own builder at the commit `game.json` names (fetched once 
 
 ## How it runs on players' Macs
 
-[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form.
+[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/hermit/issues/new?template=how-it-ran.yml) form.
 
 ## Build
 
-In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
+In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
 ./switch2mac.py build "<your dump folder>"
@@ -230,7 +230,7 @@ def add_switch1_game(tid, name, versions, sha):
     shown = ', '.join(v or vid for vid, v in versions) or 'see its profile'
     (d / 'game.json').write_text(json.dumps({'title_id': tid, 'name': name, 'version': shown, 'console': 'switch', 'check': 'daily',
         'builds': [{'id': 'nxnative', 'name': 'nxnative', 'versions': [vid for vid, _ in versions], 'version_names': {vid: v for vid, v in versions if re.fullmatch(r'\d+(\.\d+)+', v or '')}, 'engine': {'kind': 'nxnative', 'repo': NX_REPO, 'commit': sha},
-                    'shader_list': 'shader_list.tsv', 'about': f"nxnative's profile ({shown}) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."}],
+                    'shader_list': 'shader_list.tsv', 'about': f"nxnative's profile ({shown}) with Hermit's overlay and key-2 settings: see its notes for how far it plays."}],
         'disk_gb': 30}, indent=1, ensure_ascii=False) + '\n')
     (d / 'shader_list.tsv').write_text(f'# switch2mac shared shader list\tgame={tid}\tengine=nxnative-{sha[:12]}\n# {name}, built with nxnative at {sha[:12]}. Added to nxnative\'s own seed list '
                                        '(its profile\'s pso_manifest.tsv) at build time.\n# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / '
@@ -242,7 +242,7 @@ def add_switch1_game(tid, name, versions, sha):
 
 Title ID `{tid}`. A **Switch** game: built from your own copy's `.xci` / `.nsp` files with your own `prod.keys` (see [LEGAL.md](../../LEGAL.md)). Versions: {shown}.
 
-Added automatically from [nxnative]({NX_REPO})'s profile: see [its notes]({notes}) for how far it plays and on which Mac. Built with nxnative's builder at the commit `game.json` names, with switch2mac's front end: the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
+Added automatically from [nxnative]({NX_REPO})'s profile: see [its notes]({notes}) for how far it plays and on which Mac. Built with nxnative's builder at the commit `game.json` names, with Hermit's front end: the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
 
 ## Shared shader list
 
@@ -250,11 +250,11 @@ Added automatically from [nxnative]({NX_REPO})'s profile: see [its notes]({notes
 
 ## How it runs on players' Macs
 
-[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/switch2mac/issues/new?template=how-it-ran.yml) form.
+[`reports.tsv`](reports.tsv): every report that names the Mac. Tell others how it ran with the [How it ran](https://github.com/azmasm/hermit/issues/new?template=how-it-ran.yml) form.
 
 ## Build
 
-In the switch2mac app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
+In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
 
 ```bash
 ./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
@@ -288,7 +288,7 @@ def main():
         old = ENGINES / f'{e["kind"]}-{e["commit"][:12]}'   # the replaced version's download (hundreds of MB): no game pins it any more
         if old.is_dir() and not any(x['engine']['commit'][:12] == e['commit'][:12] for x in games() if x['engine']['kind'] == e['kind']): shutil.rmtree(old)
         git('-C', str(ROOT), 'add', '-A', 'games', 'NOTICE.md')
-        msg = f'{g["name"]}: {e["kind"]} {sha[:12]} ({subj})\n\nThe build moved from {e["commit"][:12]}; switch2mac\'s overlay, key-2 settings and shared shader list re-applied (tools/engine/update.py).\n{sign}'
+        msg = f'{g["name"]}: {e["kind"]} {sha[:12]} ({subj})\n\nThe build moved from {e["commit"][:12]}; Hermit\'s overlay, key-2 settings and shared shader list re-applied (tools/engine/update.py).\n{sign}'
         subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', msg], env=dict(os.environ, TZ='UTC'), check=True)
         say(f'  updated: {git("-C", str(ROOT), "log", "--oneline", "-1")}')
     if '--new-games' in sys.argv:
@@ -302,7 +302,7 @@ def main():
             except RuntimeError as x: say(f'  NOT added: {x}'); continue
             d = add_switch1_game(tid, name, version, sha) if tid.startswith('01') else add_game(tid, name, version, sha)
             git('-C', str(ROOT), 'add', '-A', str(d), 'README.md')
-            subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); switch2mac builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
+            subprocess.run(['git', '-C', str(ROOT), 'commit', '-q', '-m', f'New game: {name} (nxnative {sha[:12]})\n\nnxnative added its profile ({subj}); Hermit builds it with nxnative\'s builder and its front end (tools/engine/update.py --new-games).\n{sign}'],
                            env=dict(os.environ, TZ='UTC'), check=True)
             say(f'  added: {git("-C", str(ROOT), "log", "--oneline", "-1")}')
     if not changed: say('all builds up to date, no new games')

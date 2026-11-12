@@ -78,9 +78,9 @@ func hop(_ body: @escaping @MainActor () -> Void) {
     @Published package var s1NoUpdate = false   // a Switch game: built without the update found beside it (switch2mac.py --no-update)
     @Published package var s1Extra: [String] = []   // a Switch game: update and DLC files the player added (switch2mac.py --add)
     @Published package var s1Pick = ""   // a Switch cartridge with several games: the one to build (switch2mac.py --title-id), "" for its first
-    @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Switch2Mac.swift)
+    @Published package var dumpInfo: DumpInfo?   // what switch2mac.py identify said about gameDir (BuildStore+Hermit.swift)
     @Published package var identifying = false
-    /// The build picked for each game this time (the Build card's menu); a game chosen again starts on its recommended build (BuildStore+Switch2Mac.swift).
+    /// The build picked for each game this time (the Build card's menu); a game chosen again starts on its recommended build (BuildStore+Hermit.swift).
     @Published package var buildChoices: [String: String] = [:]
     @Published package var slots: [Slot] = [
         Slot(id: "base", kind: .base, title: "data.base", optional: false),
@@ -242,7 +242,7 @@ func hop(_ body: @escaping @MainActor () -> Void) {
 
     /// A build may start: the repository is usable, the base game and the keys are there (a game folder needs no keys), the tools
     /// are all present and none runs.
-    package var canBuild: Bool { repo.isRepo && dumpInfo?.ok == true && keysReady && deps.allPresent && !running }   // switch2mac: one identified dump, and a Switch 1 game's keys
+    package var canBuild: Bool { repo.isRepo && dumpInfo?.ok == true && keysReady && deps.allPresent && !running }   // Hermit: one identified dump, and a Switch 1 game's keys
 
     /// A line for the build card's note, from a store that has no card of its own (the dependency store's failed install).
     package func note(_ text: String) { doneNote = text }

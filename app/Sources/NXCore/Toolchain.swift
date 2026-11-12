@@ -57,7 +57,7 @@ package enum Toolchain {
     /// `binary` is the file the formula puts in the Homebrew bin folder (glslang installs glslangValidator, which the
     /// NSP script's environment check requires).
     package static let brewDeps: [(formula: String, binary: String, key: String)] = [
-        // switch2mac: what its engines' shader steps run (xcodegen, for iPhone projects, and glslang, for OpenGL games, are not needed)
+        // Hermit: what its engines' shader steps run (xcodegen, for iPhone projects, and glslang, for OpenGL games, are not needed)
         ("zstd", "zstd", "dep.zstd"),
         ("spirv-cross", "spirv-cross", "dep.spirv"),
     ]
@@ -83,7 +83,7 @@ package enum Toolchain {
     /// rather than `pip install --user`: Homebrew's Python is externally managed (PEP 668) and
     /// refuses --user, and this leaves the user's environment untouched. Injectable so tests can
     /// use a scratch directory.
-    package static var venvDir = NSHomeDirectory() + "/Library/Application Support/switch2mac/venv"
+    package static var venvDir = NSHomeDirectory() + "/Library/Application Support/\(AppIdentity.folder)/venv"
 
     package static func venvPython() -> String { venvDir + "/bin/python3" }
 
@@ -119,7 +119,7 @@ package enum Toolchain {
     /// nsz is always installed: NSZ / XCZ dumps are accepted by the pipeline now, and a player who
     /// downloads one should not have to run pip by hand (it is a few hundred KB).
     package static func pipPackages(_ version: (Int, Int)) -> [String] {
-        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "zstandard"]   // switch2mac: no nsz (console keys); zstandard for switch2mac.py
+        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "zstandard"]   // Hermit: no nsz (console keys); zstandard for switch2mac.py
                           : ["lz4", "capstone", "fonttools", "zbic", "zstandard"]
     }
 

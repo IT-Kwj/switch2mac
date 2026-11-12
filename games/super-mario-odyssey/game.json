@@ -17,7 +17,7 @@
     "commit": "36e6e4aec4c78516e2bca6a2eabe6110587712d5"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (1.4.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "about": "nxnative's profile (1.4.1) with Hermit's overlay and key-2 settings: see its notes for how far it plays.",
    "version_names": {
     "v393216": "1.4.1"
    }
@@ -58,7 +58,7 @@
    "watch": [
     "games/odyssey"
    ],
-   "about": "MacNativeGames' Odyssey port (community, early; MIT): its own runtime with the TotK settings panel (key 1: FPS graph, render size, MetalFX), 60 fps in the Wooded Kingdom at 2560x1440 on an M1 Max in its own tests; Cap, Bonneton and Wooded Kingdoms played, later ones not yet. The app ends a session after 20 minutes on purpose (longer runs of its renderer once crashed macOS's graphics driver; set 'session-minutes.txt' in 'Odyssey Data' beside the app to change it). Saves go to 'Odyssey Data' next to the app. Not built through switch2mac yet.",
+   "about": "MacNativeGames' Odyssey port (community, early; MIT): its own runtime with the TotK settings panel (key 1: FPS graph, render size, MetalFX), 60 fps in the Wooded Kingdom at 2560x1440 on an M1 Max in its own tests; Cap, Bonneton and Wooded Kingdoms played, later ones not yet. The app ends a session after 20 minutes on purpose (longer runs of its renderer once crashed macOS's graphics driver; set 'session-minutes.txt' in 'Odyssey Data' beside the app to change it). Saves go to 'Odyssey Data' next to the app. Not built through Hermit yet.",
    "plays": "the base game with update 1.3.0 or 1.4.1 (a card image or NSP holding both, or the base NSP and the update NSP)",
    "update_versions": [
     "1.3.0",

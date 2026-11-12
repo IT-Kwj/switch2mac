@@ -1,6 +1,6 @@
 # The Python packages bundled into the launcher (bundle_tools.sh installs them with --only-binary into the bundled CPython).
 # The first six are what Toolchain.pipPackages names (BundledToolsTests keeps them equal); backports.zstd is for Python before 3.14 and
-# the bundled one is 3.13. switch2mac leaves out nsz and its dependencies (pycryptodome among them): it is only for compressed packages opened with console keys, which switch2mac never uses.
+# the bundled one is 3.13. Hermit leaves out nsz and its dependencies (pycryptodome among them): it is only for compressed packages opened with console keys, which Hermit never uses.
 # Every release file of each version is hashed (pip install --require-hashes --only-binary :all:). To raise a pin, change the version
 # and its hashes together (pip hash, or the hashes PyPI lists for every file of that version), then run tools/bundle_tools.sh and check_bundle.sh.
 backports.zstd==1.8.0 \

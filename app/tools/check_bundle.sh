@@ -1,7 +1,7 @@
 #!/bin/bash
 # Checks an assembled launcher bundle the way a player's Mac uses it: every bundled tool starts from the bundle with a clean PATH (nothing of
 # Homebrew or the system Python), nothing links into /opt/homebrew or /usr/local, and the code signature holds.
-# Usage: check_bundle.sh <switch2mac.app or a folder that holds tools/ and python/> [--sign]   (--sign: also ad-hoc sign the app and verify it)
+# Usage: check_bundle.sh <Hermit.app or a folder that holds tools/ and python/> [--sign]   (--sign: also ad-hoc sign the app and verify it)
 set -uo pipefail
 APP=${1:?usage: check_bundle.sh <app> [--sign]}
 if [ -d "$APP/Contents/Resources" ]; then RES="$APP/Contents/Resources"; else RES="$APP"; fi
@@ -22,7 +22,7 @@ for t in zstd glslangValidator spirv-cross xcodegen; do
 done
 PY="$RES/python/bin/python3"
 v=$(clean "$PY" -I -B -c "import sys, lz4.block, capstone, fontTools, zbic, zstandard; from compression import zstd" 2>&1 \
-    || clean "$PY" -I -B -c "import lz4.block, capstone, fontTools, zbic, zstandard; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, zstandard, zstd (switch2mac: no nsz)" || bad "python imports: $v"
+    || clean "$PY" -I -B -c "import lz4.block, capstone, fontTools, zbic, zstandard; from backports import zstd" 2>&1) && ok "python imports lz4, capstone, fontTools, zbic, zstandard, zstd (Hermit: no nsz)" || bad "python imports: $v"
 v=$(clean "$PY" -I -B -c "import sys; print(sys.version.split()[0], sys.prefix)" 2>&1); echo "$v" | grep -q "$RES/python" && ok "python runs from the bundle: $v" || bad "python prefix is not the bundle: $v"
 
 # load paths: only the system's (a library's or extension's own install name is not a dependency)
@@ -40,13 +40,13 @@ done < <(find "$RES/tools" "$RES/python" -type f -print0)
 # the icon: Assets.car (macOS 26 and later) and AppIcon.icns (13 to 25), and the two Info.plist keys that point at them
 if [ -d "$APP/Contents" ]; then
     for f in LICENSE LICENSE-NX2Apple NOTICE-NX2Apple Manrope-OFL.txt NOTICE.md LEGAL.md; do   # licences that must travel with every copy (make_app.sh)
-        [ -s "$RES/licenses/switch2mac/$f" ] && ok "licenses/switch2mac/$f is in the bundle" || bad "licenses/switch2mac/$f is missing"
+        [ -s "$RES/licenses/Hermit/$f" ] && ok "licenses/Hermit/$f is in the bundle" || bad "licenses/Hermit/$f is missing"
     done
-    for f in AppIcon.icns; do   # switch2mac: the icon is an .icns (tools/make_app.sh), no asset catalog
+    for f in AppIcon.icns; do   # Hermit: the icon is an .icns (tools/make_app.sh), no asset catalog
         [ -s "$RES/$f" ] && ok "$f is in the bundle" || bad "$f is missing from Resources"
     done
     # the launcher's texts (#388): Contents/Resources/l10n, one JSON file per language, each a JSON object with an English text of its own
-    for c in en; do   # switch2mac: English only for now
+    for c in en; do   # Hermit: English only for now
         v=$(clean "$PY" -I -B -c "import json, sys; d = json.load(open(sys.argv[1], encoding='utf-8')); assert isinstance(d, dict) and len(d) > 1 and '_language' in d" "$RES/l10n/$c.json" 2>&1) \
             && ok "l10n/$c.json is in the bundle and reads as JSON" || bad "l10n/$c.json is missing or broken: $v"
     done

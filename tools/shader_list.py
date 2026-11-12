@@ -41,8 +41,8 @@ def lists():   # one entry a game and build (a game with one "engine" has one bu
         wip = [{'id': f'{k}-untested', 'engine': e, 'shader_list': f'shader_list-{k}.tsv'} for k, e in g.get('wip', {}).items()]   # a port still in progress (switch2mac.py untested_builds)
         for b in bs + wip:
             e = b['engine']
-            # engine_id: what a list and a contribution name. switch2mac's own engine keeps "switch2mac" across its commits (its shader keys change only with its translator,
-            # which switch2mac controls); another engine is named with its commit. engine_dir: where switch2mac.py build fetched it (engines/<kind>-<commit>)
+            # engine_id: what a list and a contribution name. Hermit's own engine keeps "switch2mac" across its commits (its shader keys change only with its translator,
+            # which Hermit controls); another engine is named with its commit. engine_dir: where switch2mac.py build fetched it (engines/<kind>-<commit>)
             out.append(dict(g, engine=e, build=b['id'], multi=len(bs + wip) > 1, dir=p.parent, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
                             engine_dir=ROOT / f'engines/{e["kind"]}-{e["commit"][:12]}', engine_id='switch2mac' if e['kind'] == 'switch2mac' else f'{e["kind"]}-{e["commit"][:12]}'))
     return out
@@ -80,7 +80,7 @@ def header(text):   # (title ID, engine) from the first header line, or None. An
 
 
 def known_keys(g):   # the game's shader keys, or None when its table is not at hand (its rows are then checked by form only)
-    m = g['engine_dir'] / f'dm/games/{g["title_id"]}/shader_map.tsv'   # switch2mac's and nxnative's engines carry the game's shader map
+    m = g['engine_dir'] / f'dm/games/{g["title_id"]}/shader_map.tsv'   # Hermit's and nxnative's engines carry the game's shader map
     text = m.read_text() if m.exists() else remote_map(g)   # no engine fetched here (GitHub's runner): the map from the engine's repository at its pinned commit
     if text is None: return None
     keys = set(re.findall(r'^\S+\t\d+\t\w+\t([0-9a-f]{16})\b', text, re.M))
@@ -108,7 +108,7 @@ def check(g, text, drop_unknown):   # (rows to add, problems): problems refuse t
     if keys is not None:
         unknown = [r for r in got if any(k not in keys for k in row_keys(r))]
     # Another commit of the same engine kind: nxnative keys a shader by the game's own code, so the keys hold across its commits; the file is taken when every shader it names
-    # (pipeline rows included) is in this build's map. Another kind (or no map to check against) is refused: switch2mac's engine and nxnative key shaders differently
+    # (pipeline rows included) is in this build's map. Another kind (or no map to check against) is refused: Hermit's engine and nxnative key shaders differently
     other = h and h[1] != g['engine_id']
     same_kind = other and g['engine_id'] != 'switch2mac' and h[1].rsplit('-', 1)[0] == g['engine_id'].rsplit('-', 1)[0]
     if other and not (same_kind and keys is not None):
@@ -201,7 +201,7 @@ def main():
             texts = posts + [fetch(u) for u in dict.fromkeys(u for t in posts for u in ATTACH.findall(t))]
             blob = '\n'.join(texts); h = header(blob)
             tid = h[0] if h else next((t for t in gs if t in blob.upper()), None) or next((g['title_id'] for n, g in byname.items() if n in (i['title'] or '').lower()), None)
-            if tid not in gs: print(f'#{i["number"]}: no game this repository has (left open)'); out(i, False, problem='It names no game switch2mac has.'); continue
+            if tid not in gs: print(f'#{i["number"]}: no game this repository has (left open)'); out(i, False, problem='It names no game Hermit has.'); continue
             kind = lambda e: e.rsplit('-', 1)[0] if e != 'switch2mac' else e
             g = next((x for x in gs[tid] if h and x['engine_id'] == h[1]), None) or next((x for x in gs[tid] if h and kind(x['engine_id']) == kind(h[1])), gs[tid][0])   # the build whose engine the file names, else one of its kind (none: the first, and check refuses it)
             got, bad, unknown = check(g, blob, drop)
@@ -218,7 +218,7 @@ def main():
         g = game(a[1], build)
         bt = Path(base).read_text() if base and Path(base).exists() else ''
         have = rows(bt); seen = set(have); mine = [r for r in rows(g['list'].read_text()) if r not in seen]
-        Path(a[2]).write_text(f'# Prewarm seed list (shipped in the app, next to shader_map.tsv): switch2mac\'s shared shader list for {g["name"]} ({g["engine_id"]})'
+        Path(a[2]).write_text(f'# Prewarm seed list (shipped in the app, next to shader_map.tsv): Hermit\'s shared shader list for {g["name"]} ({g["engine_id"]})'
                               + (', after the engine\'s own' if have else '') + '\n' + ''.join(r + '\n' for r in have + mine))
         print(f'{label(g)}: {len(have) + len(mine)} rows shipped ({len(mine)} from games/{g["dir"].name}/{g["list"].name})')
     else: sys.exit(__doc__)

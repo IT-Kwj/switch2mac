@@ -1,7 +1,6 @@
 import SwiftUI
 import NXCore
 import NXModel
-import NXLauncher
 
 /// Under the build button after a stop the script's early checks explain: what happened in plain words, the next step, and the
 /// button that does it (a dependency's own install command, or "Build anyway" for the three stops that have an override).

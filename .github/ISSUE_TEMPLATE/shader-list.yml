@@ -10,7 +10,7 @@ body:
 
         <details><summary>What's in the file?</summary>
 
-        Each line is a short code (letters and numbers) that names a shader or a render setup, like a library book number instead of the book. Other players' apps look those codes up in their own copy of the game and prepare them before they play. Nobody can rebuild anything from the codes, and only lines of that form are ever read: anything else is thrown away. [More in the README](https://github.com/azmasm/switch2mac#is-sending-safe).
+        Each line is a short code (letters and numbers) that names a shader or a render setup, like a library book number instead of the book. Other players' apps look those codes up in their own copy of the game and prepare them before they play. Nobody can rebuild anything from the codes, and only lines of that form are ever read: anything else is thrown away. [More in the README](https://github.com/azmasm/hermit#is-sending-safe).
         </details>
   - type: input
     id: game

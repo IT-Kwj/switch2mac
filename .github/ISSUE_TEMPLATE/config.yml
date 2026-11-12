@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: What switch2mac does and does not do
-    url: https://github.com/azmasm/switch2mac/blob/main/LEGAL.md
+  - name: What Hermit does and does not do
+    url: https://github.com/azmasm/hermit/blob/main/LEGAL.md
     about: No games, keys or firmware are shared or found here; read this first.

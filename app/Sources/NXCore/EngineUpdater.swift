@@ -13,7 +13,7 @@ package enum EngineChannel: String, CaseIterable {
     /// never changes. The assets inside are uploaded again with each publish.
     package static let experimentalTag = "engine-experimental"
     /// Where this repository's release assets live.
-    package static let releaseBase = "https://github.com/azmasm/switch2mac/releases/download/"
+    package static let releaseBase = "https://github.com/azmasm/hermit/releases/download/"
 
     /// The manifest for this channel. `version` is the running app's release version, which names the
     /// stable tag (`v0.7.2`); the experimental channel ignores it.

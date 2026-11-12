@@ -7,8 +7,8 @@ package enum RepoLayout {
     /// (the build script in startBuild, the RomFS archive in the archive step). A copy older than this app lacks some of
     /// them (#87: romfs_image.py exists since v0.4.8, so a build ran 70 minutes and failed at its last step). A new
     /// tool the launcher calls goes into this list and is then checked before every build.
-    package static let buildScript = "switch2mac.py"   // switch2mac: its one entry point (identify, build --progress json, install --to)
-    package static let romfsImageTool = "dm/tools/romfs_image.py"   // the original launcher's archive step (unused by switch2mac's builds)
+    package static let buildScript = "switch2mac.py"   // Hermit: its one entry point (identify, build --progress json, install --to)
+    package static let romfsImageTool = "dm/tools/romfs_image.py"   // the original launcher's archive step (unused by Hermit's builds)
     package static let requiredTools = [buildScript]
 
     /// Home shown as ~ (shorter in a one-line row, and it keeps the account name out of screenshots).
@@ -16,7 +16,7 @@ package enum RepoLayout {
         path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
     }
 
-    /// A switch2mac checkout: switch2mac.py beside its games/ folder.
+    /// A Hermit checkout: switch2mac.py beside its games/ folder.
     package static func isRepo(_ dir: String) -> Bool {
         let fm = FileManager.default
         return !dir.isEmpty && fm.fileExists(atPath: dir + "/" + buildScript) && fm.fileExists(atPath: dir + "/games")
@@ -52,9 +52,9 @@ package enum RepoLayout {
         // (the report's build log). The fork check is the script's own argparse, not a name match,
         // so a checkout under any folder name ranks correctly.
         let saved = defaults.string(forKey: "repoPath").flatMap { isRepo($0) ? $0 : nil }
-        // switch2mac: only the app's own download. A checkout found by walking up from the app or the current folder (a developer's working
+        // Hermit: only the app's own download. A checkout found by walking up from the app or the current folder (a developer's working
         // copy) is never picked by itself: the automatic update would pull into it. A player can still choose one in Settings.
-        var seeds: [String] = [home + "/Library/Application Support/switch2mac/repo"]
+        var seeds: [String] = [home + "/Library/Application Support/\(AppIdentity.folder)/repo"]
         _ = (bundleURL, currentDirectory)
         var seen = Set<String>()
         var repos: [String] = []

@@ -186,7 +186,7 @@ package struct LauncherSecondaryButtonStyle: ButtonStyle {
     }
 }
 
-/// The launcher's switch: switch2mac's green when on, red when off, with a black knob (green, red and black).
+/// The launcher's switch: Hermit's green when on, red when off, with a black knob (green, red and black).
 package struct LauncherSwitchStyle: ToggleStyle {
     package init() {}
     @Environment(\.isEnabled) private var enabled
@@ -225,7 +225,7 @@ package struct LauncherHeroActionLabel: View {
     }
     package let title: String
     package let symbol: String
-    package let fill: Color   // switch2mac: Play is red, Build stays green
+    package let fill: Color   // Hermit: Play is red, Build stays green
 
     package var body: some View {
         HStack(spacing: LauncherHeroAction.iconSpacing) {
