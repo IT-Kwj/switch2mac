@@ -1,6 +1,6 @@
 # Mario Kart World
 
-Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in hermit-engine](https://github.com/azmasm/hermit-engine/tree/switch2mac/dm/games/0400C3F00006E000).
+Title ID `0400C3F00006E000`. Profile: [`dm/games/0400C3F00006E000` in hermit-builds](https://github.com/azmasm/hermit-builds/tree/switch2mac/dm/games/0400C3F00006E000).
 
 | Version | Title version | Status |
 |---|---|---|
@@ -15,7 +15,7 @@ Mario Kart World can be built four ways. Same game, same save; each has its own 
 
 | Build (`--engine`) | Engine | Game version | Suits | Why |
 |---|---|---|---|---|
-| `switch2mac` (in the app: azmasm's build) | [hermit-engine](https://github.com/azmasm/hermit-engine) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
+| `switch2mac` (in the app: azmasm's build) | [hermit-builds](https://github.com/azmasm/hermit-builds) | 1.0.0 | M1 and M2 with 24 GB or more | Faster there (about 58 fps against 47 on an M1 Max); Performance mode; the run-time shaders taken from the dump |
 | `nxnative` | upstream nxnative (commit in `game.json`) | 1.0.0 | M3 and newer, and Macs with 17-23 GB | nxnative's own Switch 2 shader translator runs better on newer chips; shares terrain tiles, so it needs less memory |
 | `mkw-neo` | [MenAtCafe/mkw-neo](https://github.com/MenAtCafe/mkw-neo) (MIT) | 1.0.0 | 16 GB or less, and every MacBook Air | Tuned to fit 8 GB: a race holds about 4 GB (40-58 fps on a MacBook Neo, every course played) |
 | `nxnative-mkw` | [Thijs2004/nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (MIT) | 1.8.0 (update v917504) | any Mac whose dump has the 1.8.0 update | The only build here with a 1.8.0 profile |
@@ -24,7 +24,7 @@ Mario Kart World can be built four ways. Same game, same save; each has its own 
 
 ## Build
 
-azmasm's build uses [hermit-engine](https://github.com/azmasm/hermit-engine), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
+azmasm's build uses [hermit-builds](https://github.com/azmasm/hermit-builds), fetched at the commit `game.json` names. Your dump of 1.0.0: a folder with `exefs/` (main, main.npdm, sdk, subsdk0, rtld) and `romfs/`, or `base/exefs` and `base/romfs`. About 50 GB free disk during the build (the game image is 22 GB; on the same APFS disk the app shares it instead of copying it). The shader step takes 10-20 minutes the first time, on every core.
 
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
 
@@ -106,6 +106,6 @@ An update has other build IDs, and from 1.8.0 on also a `subsdk1` module and a n
 
 1. Pack the update's own `exefs/` and `romfs/` (an update dump's RomFS is the full patched tree) as the dump folder.
 2. Add a `build` line for it in `game.tsv` (the IDs are printed when `build` stops) and the modules in its `modules` line, then run `build` again.
-3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in hermit-engine's `dm/host`).
+3. Expect differences: the update may move functions the rewriter patches, and the original 1.8.0 patch series found the movie player changed (1.8.0 decodes through `movie::VideoDecoder`, 1.0.0 through `nn::codec`; both are handled in hermit-builds' `dm/host`).
 
 Please report what happens (log + screenshots, no game files). Mark such builds as untested. For 1.8.0 there is now a tested build, `nxnative-mkw` (above).

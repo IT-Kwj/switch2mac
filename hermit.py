@@ -12,7 +12,7 @@
 The dump folder holds exefs/ (main, main.npdm, sdk, ...) and romfs/, or base/exefs and base/romfs; or the dump is one .nup file (a NUP container: base, updates and DLC),
 which the nxnative-based builds open themselves (tools/nup.py reads its title ID and version first).
 Everything the build writes goes to ./work (--work names another folder). Nothing of the game is in this repository.
-Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: hermit-engine's dm/games/<title ID>).
+Each supported game has a folder in games/ (game.json names it); its profile is in its engine (Mario Kart World: hermit-builds' dm/games/<title ID>).
 A game whose game.json names an "engine" (upstream nxnative or pokopia-native) is built by that engine's own builder at the pinned commit (fetched once into ./engines),
 with Mario Kart World's overlay and key-2 settings panel added (tools/engine/patch.py); refresh and run are not for those.
 A game can have several builds (game.json "builds", each with its own engine and shader list): game.json "choose" picks one for this Mac (its chip and memory),

@@ -3,7 +3,7 @@
 ## 2026-11-12 (2)
 
 - **`switch2mac.py` is now `hermit.py`** for people who build in Terminal: `./hermit.py build "<your dump>"`. The old command still works (it runs `hermit.py`), so nothing changes for the app or for older guides.
-- **The engine repository has a front page:** [hermit-engine](https://github.com/azmasm/hermit-engine) opens on a `builds` folder with a page for each of azmasm's builds (Mario Kart World, Ocarina of Time) and the branch its code is on.
+- **azmasm's builds have their own home:** [hermit-builds](https://github.com/azmasm/hermit-builds) (it was switch2mac-engine) opens on a `builds` folder with a page for each build (Mario Kart World, Ocarina of Time) and the branch its code is on. nxnative's own code, kept up to date, is in the fork [azmasm/nxnative](https://github.com/azmasm/nxnative).
 
 ## 2026-11-12 (1): Hermit 0.5.0
 

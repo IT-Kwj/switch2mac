@@ -1,7 +1,7 @@
 MIT License
 
 Copyright (c) 2026 azmasm (Hermit, formerly switch2mac)
-Copyright (c) 2026 seedds (nxnative, on which this project and hermit-engine are built)
+Copyright (c) 2026 seedds (nxnative, on which this project and hermit-builds are built)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 The engines this project builds with are separate repositories with their own
-licences (hermit-engine: MIT, except dm/gfx/tools/nx2_lower/, GPL-3.0-or-later,
+licences (hermit-builds: MIT, except dm/gfx/tools/nx2_lower/, GPL-3.0-or-later,
 holding code from Eglantine, and dm/third_party/, where each component keeps its own
 licence). See NOTICE.md.

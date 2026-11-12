@@ -8,7 +8,7 @@ Hermit exists so that you can play **games you bought, from your own console, on
 
 ## Games and keys
 
-- This repository contains **no game content**: no game code, no game files, no shader code from a game, no keys, no Nintendo artwork. Everything game-specific in it is either written by hand (patches, settings) or a table of names, hashes and layout facts (the shader lists and run-time shader locations in `games/`; the game profiles live in the engines, such as hermit-engine's `dm/games/`).
+- This repository contains **no game content**: no game code, no game files, no shader code from a game, no keys, no Nintendo artwork. Everything game-specific in it is either written by hand (patches, settings) or a table of names, hashes and layout facts (the shader lists and run-time shader locations in `games/`; the game profiles live in the engines, such as hermit-builds' `dm/games/`).
 - To build an app you need **your own dump** of a game you own, made from your own console. Hermit itself decrypts nothing and contains no decryption code.
   - **Switch 2 games** need no keys: Hermit reads an already extracted dump (folders, or a `.nup` file), as dump tools produce it.
   - **Switch games** come as their encrypted `.nsp` / `.xci` files. The builder you choose (nxnative's or MacNativeGames') opens them with **your own `prod.keys`, dumped from your own Switch**. Hermit only passes the file's path to that builder while it builds: it keeps where the file is, never a copy or what is in it, never uploads it, and writes `<your prod.keys>` in place of its path in build logs, diagnostics, reports and shader lists. Settings → Forget my keys file drops even the path. Which game the files are is read from their names, as dump tools write them, not from their contents.
@@ -44,7 +44,7 @@ No account, no tracking, no analytics. The app connects only to:
 
 ## Licences and credits
 
-Hermit is MIT licensed ([LICENSE](LICENSE)); the app began from NX2Apple (MIT, `app/LICENSE-NX2Apple`). The app carries these licences, the font's (OFL) and NOTICE.md inside it (`Contents/Resources/licenses`), with the licences of the tools it bundles. Every other project it builds on, with its licence, is in [NOTICE.md](NOTICE.md). The engines are not copied here: each build fetches its engine from that engine's own repository, under that engine's licence. One tool of hermit-engine, `nx2_lower` (from Eglantine), is GPL-3.0-or-later; it runs while building and is not part of the apps it builds.
+Hermit is MIT licensed ([LICENSE](LICENSE)); the app began from NX2Apple (MIT, `app/LICENSE-NX2Apple`). The app carries these licences, the font's (OFL) and NOTICE.md inside it (`Contents/Resources/licenses`), with the licences of the tools it bundles. Every other project it builds on, with its licence, is in [NOTICE.md](NOTICE.md). The engines are not copied here: each build fetches its engine from that engine's own repository, under that engine's licence. One tool of hermit-builds, `nx2_lower` (from Eglantine), is GPL-3.0-or-later; it runs while building and is not part of the apps it builds.
 
 ## Trademarks
 

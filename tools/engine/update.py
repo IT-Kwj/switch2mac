@@ -16,7 +16,7 @@
   --check   only say whether anything is due (for the GitHub workflow: writes changed=true/false to $GITHUB_OUTPUT)
   --ci      on GitHub: commit on the branch checked out (main) instead of requiring dev
 
-A game's build is: for hermit-engine, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
+A game's build is: for hermit-builds, every commit; for nxnative, the commits that change its profile (dm/games/<title ID>; game.json "watch" lists other paths); for pokopia-native, every commit
 of that repository. The newest such commit on the default branch (or the engine's "branch") is the one taken. Uses gh (signed in) or GitHub's public API.
 """
 import time, json, os, re, shutil, subprocess, sys, urllib.request
@@ -53,7 +53,7 @@ def newest(g):   # (sha, date, subject) of the newest commit of the game's build
     paths = g.get('watch') or ([f'dm/games/{g["title_id"]}'] if e['kind'] == 'nxnative' else [''])   # switch2mac, pokopia-native: the whole repository
     best = None
     for p in paths:
-        c = api(f'repos/{slug}/commits?per_page=1' + (f'&sha={e["branch"]}' if e.get('branch') else '') + (f'&path={p}' if p else ''))[0]   # engine "branch": a build that follows a branch other than the repository's default (azmasm's Ocarina of Time build: hermit-engine's ocarina branch, whose default branch is Mario Kart World's engine)
+        c = api(f'repos/{slug}/commits?per_page=1' + (f'&sha={e["branch"]}' if e.get('branch') else '') + (f'&path={p}' if p else ''))[0]   # engine "branch": a build that follows a branch other than the repository's default (azmasm's Ocarina of Time build: hermit-builds' ocarina branch, whose default branch is Mario Kart World's engine)
         x = (c['sha'], c['commit']['committer']['date'], c['commit']['message'].split('\n')[0])
         if not best or x[1] > best[1]: best = x
     return best

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hermit's additions in another nxnative checkout (upstream nxnative for Donkey Kong Bananza, pokopia-native's for Pokémon Pokopia), as hermit.py build applies them:
 
-  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (tools/engine/s2m_share.m, a copy of hermit-engine's dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
+  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (tools/engine/s2m_share.m, a copy of hermit-builds' dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
   - the overlay's data: mtl_cur_frame (nvn_mtl.m) and nvn_game_size (hle_nvn.c), when the checkout lacks them
   - the "Performance overlay" row in the app's settings list (dm/games/settings.py)
 

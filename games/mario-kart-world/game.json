@@ -10,7 +10,7 @@
    "name": "azmasm's build",
    "engine": {
     "kind": "switch2mac",
-    "repo": "https://github.com/azmasm/hermit-engine",
+    "repo": "https://github.com/azmasm/hermit-builds",
     "branch": "switch2mac",
     "commit": "1eb222e2aec7368d3aa4113229607ee7970fc962"
    },

@@ -27,7 +27,7 @@ In the Hermit app: choose your dump folder on the **Builds** page and press **Bu
 
 ## azmasm's build
 
-[hermit-engine's `ocarina` branch](https://github.com/azmasm/hermit-engine/tree/ocarina) (MIT) is nxnative with Ocarina of Time pull requests merged ahead of upstream, played on an M1 Max until it ran well there:
+[hermit-builds' `ocarina` branch](https://github.com/azmasm/hermit-builds/tree/ocarina) (MIT) is nxnative with Ocarina of Time pull requests merged ahead of upstream, played on an M1 Max until it ran well there:
 
 - **Faster foliage:** large mesh stage memory in a device slice (#2308) and compute work moved ahead of the scene pass (#1952), on top of bmjask's playability checkpoint (#1663).
 - **Fewer stutters:** plant pipelines built in the background when the game sets its shaders (#2307), 171 more prepared before play (#2324), area loads that no longer freeze late in a session (#2344) or stay at 20 fps afterwards (#2367), and the next frame translated while the game is still finishing it (#2341).

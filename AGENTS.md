@@ -8,7 +8,7 @@ Hermit is a Mac app (`app/`, released as `Hermit-<version>.pkg` for new installs
 
 Each game in `games/<game>/` is built with the engine its port was made with, pinned to a commit in its `game.json`, and fetched into `engines/<kind>-<commit>/` by `build`:
 
-- **Hermit's own engine**, [hermit-engine](https://github.com/azmasm/hermit-engine) (a fork of [nxnative](https://github.com/seedds/nxnative) with NVN2 on Metal, mesh / task shaders, movies, translator fixes and performance work): Mario Kart World 1.0.0, built step by step by `hermit.py`.
+- **Hermit's own engine**, [hermit-builds](https://github.com/azmasm/hermit-builds) (a fork of [nxnative](https://github.com/seedds/nxnative) with NVN2 on Metal, mesh / task shaders, movies, translator fixes and performance work): Mario Kart World 1.0.0, built step by step by `hermit.py`.
 - **upstream nxnative**: Donkey Kong Bananza, Yoshi and the Mysterious Book, Splatoon Raiders, Hyrule Warriors: Age of Imprisonment, Fire Emblem Fortune's Weave, Mario Tennis Fever, Star Fox, and the second builds of Mario Kart World and Pokopia, built by nxnative's own builder.
 - **xFractals' pokopia-native**: Pokémon Pokopia's default build.
 
@@ -53,12 +53,12 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 | The app | `app/` (`app/ARCHITECTURE.md`; `app/tools/make_app.sh`, `--bundle-tools` for a release) |
 | A game's builds, which Mac gets which, players' reports | `games/<game>/game.json`, `games/<game>/reports.tsv` |
 | A game built with another engine, and the front end added to it (overlay, key-2 settings, no launch window) | `games/<game>/game.json` "engine", `tools/engine/patch.py`, `tools/engine/s2m_ui.m`; moving it to its build's newest commit: `tools/engine/update.py` |
-| Game profile (build IDs, memory, flags, shader tables) | the engine's `dm/games/<title ID>/` (hermit-engine's for Mario Kart World, nxnative's for the others) |
-| NVN2 → Metal | hermit-engine's `dm/gfx/nvn/nvn_mtl.m`, hermit-engine's `dm/host/hle_nvn.c` |
-| Switch 2 system stubs, movies | hermit-engine's `dm/host/hle_nx2*.c` |
-| Shader split / lowering / translation | hermit-engine's `dm/gfx/tools/nx2_split.py`, `nx2_lower/`, `dmsh_build.py`, hermit-engine's `dm/third_party/ryujinx/` |
+| Game profile (build IDs, memory, flags, shader tables) | the engine's `dm/games/<title ID>/` (hermit-builds' for Mario Kart World, nxnative's for the others) |
+| NVN2 → Metal | hermit-builds' `dm/gfx/nvn/nvn_mtl.m`, hermit-builds' `dm/host/hle_nvn.c` |
+| Switch 2 system stubs, movies | hermit-builds' `dm/host/hle_nx2*.c` |
+| Shader split / lowering / translation | hermit-builds' `dm/gfx/tools/nx2_split.py`, `nx2_lower/`, `dmsh_build.py`, hermit-builds' `dm/third_party/ryujinx/` |
 | Diagnostic switches and control commands | `docs/porting.md` § 5 |
 | Adding a game another port already runs | `docs/porting.md`, first section |
 | Known Switch 2 pitfalls | `docs/porting.md` § 6, `docs/mario-kart-world.md` |
 
-After changing translator tools (`dmsh_xlate_bin`, `dmsh_build.py`, `nx2_split.py`, ...), run hermit-engine's `dm/gfx/tools/dmsh_chain.py --header` (in that repository: commit there, then move Mario Kart World's `game.json` to the new commit), then rebuild (`build` or `refresh --force`). Otherwise the host refuses the libraries.
+After changing translator tools (`dmsh_xlate_bin`, `dmsh_build.py`, `nx2_split.py`, ...), run hermit-builds' `dm/gfx/tools/dmsh_chain.py --header` (in that repository: commit there, then move Mario Kart World's `game.json` to the new commit), then rebuild (`build` or `refresh --force`). Otherwise the host refuses the libraries.
