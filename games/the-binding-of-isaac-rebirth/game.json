@@ -1,0 +1,27 @@
+{
+ "title_id": "01009BC00C38A000",
+ "name": "The Binding of Isaac: Rebirth",
+ "version": "1.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative",
+   "versions": [
+    "v0"
+   ],
+   "version_names": {
+    "v0": "1.0"
+   },
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "8fb5ffeb1f093d0afec87a193cad99e1e388488b"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0) with switch2mac's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

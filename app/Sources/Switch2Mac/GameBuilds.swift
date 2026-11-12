@@ -47,3 +47,11 @@ enum GameBuilds {
 }
 
 private extension String { var nilIfEmpty: String? { isEmpty ? nil : self } }
+
+/// What a player reads for a build. The id "switch2mac" (game.json, reports, built apps, the update bot) stays as it is; its name is "azmasm's build", so it is not taken for the app itself.
+enum BuildName {
+    /// azmasm's builds: Mario Kart World's own engine ("switch2mac") and Ocarina of Time's nxnative branch ("azmasm").
+    static func shown(_ id: String) -> String { id == "switch2mac" || id == "azmasm" ? "azmasm's build" : id }
+    /// A row in What's New for a game with several builds: "azmasm's build", "nxnative build".
+    static func row(_ id: String) -> String { id == "switch2mac" || id == "azmasm" ? shown(id) : "\(id) build" }
+}

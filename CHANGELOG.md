@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-11-11 (3): switch2mac app 0.4.6
+
+- **New build of The Legend of Zelda: Ocarina of Time: azmasm's build.** nxnative with Ocarina pull requests merged ahead of upstream: faster foliage, fewer stutters (including area loads that froze late in a session or stayed at 20 fps), a first start in seconds, the leaf, mist and flower-bush picture fixes, and settings for Frame generation (30 drawn, 60 shown), Fast mode, Render scale and the Switch 2's full docked picture. On an M1 Max it plays at about 50-55 fps, or a steady 30 drawn / 60 shown with Frame generation at 1920x1080. The app recommends it on M1 and M2 Macs with 32 GB or more; other Macs keep their build, and **Build with…** offers it everywhere. Thanks to seedds and to everyone whose pull requests it carries (NOTICE.md names them).
+- **The overlay names the build** you're playing (key 1), for example "azmasm's build" or "kid-with-sword-remake", after the game's next build.
+- **Game names show properly in Finder:** a game whose name has a colon ("The Legend of Zelda: Tears of the Kingdom") showed with a "/" in Finder, because macOS can't show a colon in a file name. Built games are now named with a dash ("The Legend of Zelda - Tears of the Kingdom"); building a game again replaces its old copy, so you don't end up with two.
+- **MacNativeGames builds name themselves in the overlay:** the grey line under the frame rate now says "MacNativeGames" instead of a commit code, like the overlay of the other builds. Its settings are unchanged. Build the game again to get it.
+- **What's New is easier to read:** build updates show three lines with **More** / **Less** (nxnative's change notes now run to a page each), and hovering over text no longer pops up a box repeating it.
+- **Ready for what's next:** switch2mac's next big release comes under a new name, and this version can update itself to it.
+
+## 2026-11-11 (2): switch2mac app 0.4.5
+
+- **The window moves only by its header:** a press and drag anywhere in switch2mac used to move the whole window, which got in the way of swiping through the game cases on the 3D shelves. A drag there now swipes the cases; the bar at the top (with the tabs) still moves the window, and a double-click on it still does what your Mac's title-bar setting says.
+- **"azmasm's build" everywhere:** What's New, Performance and Share now use Mario Kart World's new build name too (the build menu got it earlier today).
+
+## 2026-11-11 (1)
+
+- **Mario Kart World's own build is now called "azmasm's build":** it was named "switch2mac", the same as the app, which confused players. Only the name changes: your installed game, saves and reports carry on, and `--engine switch2mac` still works. The game's overlay shows the new name after its next rebuild; What's New and Performance show it from the next app release.
+
 ## 2026-11-10 (4)
 
 - **Two more MacNativeGames builds:** Super Mario Odyssey (1.3.0 / 1.4.1; 60 fps at 2560x1440 on an M1 Max in its own tests, sessions end after 20 minutes as MacNativeGames ships it) and Xenoblade Chronicles 3 (1.0.0 / 2.2.1 with its add-ons; 2.5 hours without glitches in its own tests), next to nxnative's builds under **Build with…**. Both need your Switch's firmware for the system fonts. Not built through switch2mac yet: tell us how they go.

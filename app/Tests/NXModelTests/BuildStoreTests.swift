@@ -486,4 +486,10 @@ import XCTest
         store.gameDir = "/x/Other.nsp"
         XCTAssertEqual(store.switchChoices, [], "another game starts without the last one's pick and files")
     }
+
+    func testInstalledAppComesFromTheInstallLine() {
+        let out = "something\ninstalled: /Applications/The Legend of Zelda - Tears of the Kingdom.app\nThe first start after each install waits\n"
+        XCTAssertEqual(BuildStore.installedApp(out), "/Applications/The Legend of Zelda - Tears of the Kingdom.app")
+        XCTAssertNil(BuildStore.installedApp("no such line\n"), "an older switch2mac.py: the app falls back to <name>.app")
+    }
 }

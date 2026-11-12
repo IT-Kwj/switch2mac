@@ -71,7 +71,8 @@ package enum AppUpdate {
         guard let data = try? Data(contentsOf: contents.appendingPathComponent("Info.plist")),
               let info = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
         else { return .noInfo }
-        guard !expectedID.isEmpty, info["CFBundleIdentifier"] as? String == expectedID else { return .wrongIdentifier }
+        guard !expectedID.isEmpty, let id = info["CFBundleIdentifier"] as? String,
+              id == expectedID || successorIDs[expectedID, default: []].contains(id) else { return .wrongIdentifier }
         guard let exe = info["CFBundleExecutable"] as? String, !exe.isEmpty, !exe.contains("/"),
               FileManager.default.isExecutableFile(atPath: contents.appendingPathComponent("MacOS/" + exe).path)
         else { return .noExecutable }
@@ -245,7 +246,13 @@ package enum AppUpdate {
     /// The download names this build accepts, newest first. Every release must carry at least one of
     /// them or an install from that era cannot update itself: the original launcher is current, nxnative is for
     /// installs from before the rename to the original launcher, NS-Port-Builder for installs before that.
-    package static let assetNames = ["switch2mac-macOS-arm64.zip"]
+    /// Hermit's name comes first: the release that renames switch2mac carries both zips (the same app), and later ones only Hermit's.
+    package static let assetNames = ["Hermit-macOS-arm64.zip", "switch2mac-macOS-arm64.zip"]
+
+    /// The app identifiers a release may move to from the running one: switch2mac is being renamed Hermit, and a release under
+    /// Hermit's identifier must be able to replace switch2mac, or every switch2mac install would refuse it as "not our app".
+    /// Nothing else is accepted (a zip of another app still cannot take this one's place).
+    package static let successorIDs = ["io.github.azmasm.switch2mac": ["io.github.azmasm.hermit"]]
 
     /// `tag` ("v0.4.10") is a later version than `current` ("0.4.8"), compared number by number.
     package static func isNewer(_ tag: String, than current: String) -> Bool {

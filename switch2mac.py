@@ -127,10 +127,10 @@ def recommend(g, mac, ver=None):   # (build id, why): the first game.json "choos
 
 S1_KINDS = ('nxnative', 'macnativegames')   # the engines whose builders take a Switch 1 game's NSP / XCI files and the player's prod.keys
 NO_UNTESTED = ('macnativegames',)   # builders made for their own games only (MacNativeGames' build_app.py: Tears of the Kingdom and Breath of the Wild): never offered as a guess for others
-KINDS = {'macnativegames': 'MacNativeGames', 'switch2mac': 'switch2mac', 'nxnative': 'nxnative', 'pokopia-native': 'pokopia-native'}   # a build's name in the app: the project it comes from
+KINDS = {'macnativegames': 'MacNativeGames', 'switch2mac': "azmasm's build", 'nxnative': 'nxnative', 'pokopia-native': 'pokopia-native'}   # a build's name in the app: the project it comes from
 RISK = ' Nobody has built the game this way yet: it may stop partway, or build and not start. Try it at your own risk; Stop ends it at any time.'
 ABOUT = {
-    'switch2mac': "Untested: switch2mac's engine with a profile guessed from this game's own files." + RISK,
+    'switch2mac': "Untested: azmasm's build with a profile guessed from this game's own files." + RISK,
     'nxnative': "Untested: nxnative's builder guesses a profile from this game's own files (it may boot the game for a few seconds to size its memory)." + RISK,
     'pokopia-native': "Untested: pokopia-native's engine (nxnative with xFractals' Switch 2 changes) with a profile guessed from this game's own files." + RISK,
 }
@@ -813,7 +813,9 @@ def storage(a):   # what building leaves behind, and --clean removes it: each ga
 # with the performance overlay top right (key 1) and the engine's own launch settings on key 2 in the Mario Kart style (tools/engine/patch.py adds them to the engine's host)
 # S2M_ENGINE names the engine in the shader list contribution the app writes, so a game's list only ever takes rows from its own build (tools/shader_list.py)
 def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested); a build's own "switches" in game.json follow (a port's recommended settings)
-    return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if g.get('build', {}).get('untested') else g["engine"]["commit"][:12])] + g.get('build', {}).get('switches', []))
+    b = g.get('build', {}); label = b.get('name', '') if not b.get('untested') else ''
+    return '\n'.join([f'DM_LAUNCHER=0\nS2M_ENGINE={g["engine"]["kind"]}-' + ('untested' if b.get('untested') else g["engine"]["commit"][:12])]
+                     + ([f'S2M_BUILD={label}'] if re.fullmatch(r"[\w' .()-]{1,40}", label or '') else []) + b.get('switches', []))   # S2M_BUILD: the build's name for the overlay ("azmasm's build"); S2M_ENGINE stays <kind>-<commit> (the app matches builds by it)
 
 
 def mng_args(args, vals):   # a MacNativeGames port's command line from game.json: "--flag?" "{value}" is the pair only when the value is there,
@@ -838,6 +840,19 @@ def mng_args(args, vals):   # a MacNativeGames port's command line from game.jso
             out.append(re.sub(r'\{(\w+)\}', lambda m: str(vals[m[1]]), x))
         else: out.append(x)
     return out
+
+
+MNG_LABEL = (r'@(TOTK_UI("版本 %s\n","build %s\n")),commit]', r'@"%s\n","MacNativeGames"]')
+def mng_label(d):   # the grey build line of MacNativeGames' overlay says "MacNativeGames" (as switch2mac's overlay names each build), not the commit.
+    """Only that line's text changes: the app still records the commit (Info.plist MNGSourceCommit), which MacNativeGames' own update check,
+    shader lists and reports use, and its settings panel still shows it. A port whose overlay has no such line is left as it is."""
+    for f in Path(d).glob('games/*/runtime/frontend.m'):
+        t = f.read_text(encoding='utf-8')
+        if MNG_LABEL[0] in t: f.write_text(t.replace(MNG_LABEL[0], MNG_LABEL[1]), encoding='utf-8')
+
+
+def app_file(g):   # the built app's file name: the game's name, with ": " as " - " (Finder shows a ":" in a file name as "/")
+    return g['name'].replace(':', ' -') + '.app'
 
 
 def mng_fixes(app, fixes, sign=True):   # game.json build "fixes": small code fixes switch2mac adds to a MacNativeGames app after its builder, until MacNativeGames has them
@@ -873,7 +888,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
     if sys.version_info < (3, 12): sys.exit(f'{eng["kind"]}\'s builder needs Python 3.12 or later: make .venv again with a newer python3 (./switch2mac.py setup)')
     print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}')
     e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
-    w.mkdir(parents=True, exist_ok=True); app = w / f'{g["name"]}.app'
+    w.mkdir(parents=True, exist_ok=True); app = w / app_file(g)
     untested = g['build'].get('untested')
     if untested: print(f'  UNTESTED: {g["name"]} on {KINDS[eng["kind"]]}, with a profile it guesses from the game\'s files. It may stop partway or not start.')
     if getattr(a, 'quick', False):
@@ -928,6 +943,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         if not fonts and not eng.get('builder') and (base.suffix.lower() in ('.nsp', '.nsz') or tid == '01007EF00011E000'):
             print('  NOTE: from an .nsp, and always for Breath of the Wild, MacNativeGames needs the Switch\'s system fonts: --firmware <your firmware dump> or --shared-fonts <a TotK build\'s fonts>')
         print(f'  base {base.name}' + (f', update {upd.name}' if upd else '') + (f', {len(dlc)} DLC' if dlc else ''))
+        mng_label(d)
         P.plan(P.k + 4); P.order = list(MNG_STEPS)   # its four steps as our stages, so the bar and the time left follow them (mng_watch)
         P.stage('game code', 'MacNativeGames\' builder: the game\'s code for Apple silicon')
         b = eng.get('builder')
@@ -1123,7 +1139,7 @@ def host_and_app(a, tid, w, lib, e):
     else:
         run([py(), g['dir'] / 'launcher.py', NX, w / 'build/patched', w / 'build/launcher.json'], env=e)
         envf, marker = g['dir'] / 'env.txt', g['marker']
-    app = w / f'{g["name"]}.app'
+    app = w / app_file(g)
     run([py(), NX / 'dm/mac/pack_app.py', app, '--host', NX / 'dm/host/dmhost', '--patched', w / 'build/patched', '--romfs', w / 'extract/RomFS.img',
          '--msl', lib, '--tables', prof, '--font', font, '--env-file', envf, '--settings', w / 'build/launcher.json', '--launcher-window', 'off',
          '--title-id', tid, '--name', g['name'], '--version', g['version'] or 'untested', '--lang', 'en-US'] + (['--marker', marker] if marker else []), env=e)
@@ -1324,9 +1340,13 @@ def switched_build(g):
 
 def install(a):
     w = paths(a)[0]; tid = built_game(w)
-    g = GAMES[tid]; app = w / f'{g["name"]}.app'; dst = Path(a.to).expanduser() / app.name
+    g = GAMES[tid]; app = w / app_file(g); dst = Path(a.to).expanduser() / app.name
     if subprocess.run(['pgrep', '-f', f'{dst}/Contents/MacOS'], capture_output=True).returncode == 0: sys.exit(f'{g["name"]} is running: quit it first')
     if dst.exists(): shutil.rmtree(dst)
+    old = dst.with_name(f'{g["name"]}.app')   # the same game installed under its name from before app_file (":" in it): replaced, not kept twice
+    if old != dst and old.is_dir() and (old / 'Contents/Info.plist').exists():
+        if subprocess.run(['pgrep', '-f', f'{old}/Contents/MacOS'], capture_output=True).returncode == 0: sys.exit(f'{g["name"]} is running: quit it first')
+        shutil.rmtree(old)
     shutil.move(str(app), dst); Path(str(app) + '.key').unlink(missing_ok=True)
     switched_build(g)
     print(f'installed: {dst}\nThe first start after each install waits 1-3 minutes while macOS scans the app (no window, no Dock icon yet): wait, do not open it twice.')

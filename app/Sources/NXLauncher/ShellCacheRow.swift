@@ -113,7 +113,7 @@ package struct ShellCacheRow: View {
         GridRow {
             Text(loc.t(key)).font(.manrope(12.5)).foregroundStyle(.secondary)
             Text(value).font(path ? .mono(12) : .manrope(12.5, .semibold)).monospacedDigit()
-                .lineLimit(1).truncationMode(.middle).help(value)
+                .lineLimit(1).truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }

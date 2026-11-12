@@ -91,6 +91,16 @@ final class AppUpdateTests: XCTestCase {
         XCTAssertEqual(AppUpdate.bundleProblem(temporary.appendingPathComponent("Missing.app"), expectedID: bundleID, tag: "v0.4.8"), .noInfo)
     }
 
+    func testSwitch2macMayMoveToHermitOnly() throws {
+        let hermit = try makeApp("Hermit", id: "io.github.azmasm.hermit")
+        XCTAssertNil(AppUpdate.bundleProblem(hermit, expectedID: "io.github.azmasm.switch2mac", tag: "v0.4.8"), "switch2mac takes the renamed release")
+        XCTAssertEqual(AppUpdate.bundleProblem(hermit, expectedID: bundleID, tag: "v0.4.8"), .wrongIdentifier, "only switch2mac's own successor")
+        XCTAssertEqual(AppUpdate.bundleProblem(try makeApp("Other", id: "com.example.Other"), expectedID: "io.github.azmasm.switch2mac", tag: "v0.4.8"), .wrongIdentifier)
+        let both: [String: Any] = ["tag_name": "v0.5.0", "assets": [["name": "switch2mac-macOS-arm64.zip", "browser_download_url": "https://x/old.zip"],
+                                                                  ["name": "Hermit-macOS-arm64.zip", "browser_download_url": "https://x/new.zip"]]]
+        XCTAssertEqual(AppUpdate.release(fromJSON: both)?.url, "https://x/new.zip")
+    }
+
     private func os(_ major: Int, _ minor: Int, _ patch: Int = 0) -> OperatingSystemVersion {
         OperatingSystemVersion(majorVersion: major, minorVersion: minor, patchVersion: patch)
     }
@@ -362,6 +372,6 @@ final class UpdateCheckTests: XCTestCase {
     func testTheAssetNamesCoverEveryInstallThatCanStillUpdate() {
         let names = AppUpdate.assetNames
         // switch2mac: one name since its first release (0.1.0), and none of the original launcher's, so it never installs the original launcher over itself
-        XCTAssertEqual(names, ["switch2mac-macOS-arm64.zip"])
+        XCTAssertEqual(names, ["Hermit-macOS-arm64.zip", "switch2mac-macOS-arm64.zip"])   // Hermit's first when a release carries both
     }
 }

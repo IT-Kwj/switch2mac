@@ -103,19 +103,19 @@ package struct CardRow<Trailing: View>: View {
                     // too long. Everything else is prose in Manrope and wraps, so no word is ever cut.
                     if detail.hasPrefix("/") || detail.hasPrefix("~") {
                         Text(detail).font(.mono(12)).foregroundStyle(.secondary)
-                            .lineLimit(1).truncationMode(.middle).help(help.isEmpty ? detail : help)
+                            .lineLimit(1).truncationMode(.middle).help(help)
                     } else {
                         Text(detail).font(.manrope(12.5)).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true).help(help.isEmpty ? detail : help)
+                            .fixedSize(horizontal: false, vertical: true).help(help)
                     }
                 }
                 if !detail2.isEmpty {   // the same rule as detail: a path on one line, cut in the middle; a sentence (a warning) wraps, never cut
                     if detail2.hasPrefix("/") || detail2.hasPrefix("~") {
                         Text(detail2).font(.mono(12, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
-                            .lineLimit(1).truncationMode(.middle).help(detail2)
+                            .lineLimit(1).truncationMode(.middle)
                     } else {
                         Text(detail2).font(.manrope(12.5, detail2Bold ? .bold : .regular)).foregroundStyle(detail2Bold ? .primary : .secondary)
-                            .fixedSize(horizontal: false, vertical: true).help(detail2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }

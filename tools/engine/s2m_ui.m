@@ -15,13 +15,14 @@ static NSWindow *s_win; static CAMetalLayer *s_layer; static void (*s_release)(v
 // Performance overlay: a small box in the window's top-right corner, refreshed twice a second. Key 1 cycles it: compact (frame rate + the game's resolution) → detailed (the frame-rate
 // graph, frame time, GPU, CPU, memory, the game's pacing, the window's output size) → off → compact. DM_OVERLAY=compact | detailed | off picks the mode at start (default compact; the settings window writes it)
 uint64_t mtl_cur_frame(void); double mtl_gpu_ms(uint64_t f); int nvn_game_fps(void); void nvn_game_size(int *w, int *h);
+uint64_t s2m_fg_shown(void);   // pictures shown after a generated frame (frame generation; 0 on an engine without it): patch.py adds it to nvn_mtl.m
 #define OV_N 60   // graph samples: 30 s
 static int g_ov_mode = 1;   // 0 off, 1 compact, 2 detailed
 @interface DmOverlay : NSView
 @property(strong) NSTextField *label, *build;
 @end
 @implementation DmOverlay {
-    float _fps[OV_N]; int _n; uint64_t _f0; double _t0, _cpu0; NSString *_lines; double _fpsNow, _gpu;
+    float _fps[OV_N]; int _n; uint64_t _f0; double _t0, _cpu0; NSString *_lines; double _fpsNow, _gpu, _fgNow; uint64_t _fg0;   // _fgNow: generated frames a second (frame generation), shown on top of the game's own
 }
 - (instancetype)initWithFrame:(NSRect)r {
     if (!(self = [super initWithFrame:r])) return nil;
@@ -40,6 +41,7 @@ static double footprint_gb(void) { task_vm_info_data_t vi; mach_msg_type_number_
     double t = CACurrentMediaTime(), dt = t - _t0, cpu = cpu_seconds(); uint64_t f = mtl_cur_frame();
     if (dt <= 0) return;
     _fpsNow = f >= _f0 ? (f - _f0) / dt : 0;
+    uint64_t fg = s2m_fg_shown(); _fgNow = fg >= _fg0 ? (fg - _fg0) / dt : 0; _fg0 = fg;
     double g = 0; int gn = 0;   // GPU busy time per frame: the frames of the last half second that have completed
     for (uint64_t k = f > 3 ? f - 3 : 0; k > _f0 && gn < 30; k--) { double v = mtl_gpu_ms(k); if (v >= 0) { g += v; gn++; } }
     if (gn) _gpu = g / gn;
@@ -55,6 +57,8 @@ static void engine_name(NSString **name, NSString **version) {
     NSRange dash = [s rangeOfString:@"-" options:NSBackwardsSearch]; NSString *tail = dash.location != NSNotFound ? [s substringFromIndex:dash.location + 1] : @"";
     BOOL hex = tail.length >= 7 && [tail rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"] invertedSet]].location == NSNotFound;
     *name = hex ? [s substringToIndex:dash.location] : s; *version = hex ? [tail substringToIndex:MIN(8u, tail.length)] : @"";
+    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when switch2mac.py baked one in
+    if (b && *b) *name = @(b);
 }
 - (void)refreshWithCPU:(double)cpuPct {
     self.hidden = g_ov_mode == 0; if (!g_ov_mode) return;
@@ -67,7 +71,10 @@ static void engine_name(NSString **name, NSString **version) {
     NSString *gpu = _gpu >= 0 ? [NSString stringWithFormat:@"%.1f ms", _gpu] : @"--";
     int gw0, gh0; nvn_game_size(&gw0, &gh0);
     NSString *eng, *engVer; engine_name(&eng, &engVer);
-    NSString *fpsText = [NSString stringWithFormat:@"FPS %.0f", _fpsNow];
+    // With frame generation the screen shows the game's frames and one generated between each two: the figure is what is shown, with what the game draws beside it
+    double shown = _fpsNow + _fgNow; int fgOn = _fgNow >= 1;
+    if (fgOn) fc = shown >= 55 ? green : shown >= 30 ? yellow : red;
+    NSString *fpsText = fgOn ? [NSString stringWithFormat:@"FPS %.0f (%.0f drawn)", shown, _fpsNow] : [NSString stringWithFormat:@"FPS %.0f", _fpsNow];
     line(fpsText, fc);
     line(gw0 > 0 ? [NSString stringWithFormat:@"\n%dx%d", gw0, gh0] : @"\n--", green);
     if (g_ov_mode == 2) {

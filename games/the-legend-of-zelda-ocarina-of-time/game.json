@@ -4,12 +4,33 @@
  "version": "update v131072",
  "builds": [
   {
+   "id": "azmasm",
+   "name": "azmasm's build",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/azmasm/switch2mac-engine",
+    "branch": "ocarina",
+    "commit": "e5de1ecebbca76fd2dd85d17a9887f3340d1169c",
+    "args": [
+     "--prebake"
+    ]
+   },
+   "shader_list": "shader_list-azmasm.tsv",
+   "watch": [
+    ""
+   ],
+   "about": "azmasm's build (switch2mac-engine's ocarina branch, MIT, nxnative with fixes that are still pull requests upstream): faster foliage on M1 and M2 GPUs (mesh stage memory, compute work moved ahead of the scene), fewer stutters (plant pipelines prepared in the background, 171 more prepared before play, area loads that no longer freeze late in a session or stay at 20 fps), about 3 GB less memory than its earlier versions, and settings for Frame generation (30 drawn, 60 shown), Fast mode, Render scale and Full docked picture (1920x1080). Its first start takes seconds: the pipelines are prepared while it builds. Played on an M1 Max (64 GB, macOS 27.2.1): about 50-55 fps in Kokiri Forest and Hyrule Field at 1536x864, a steady 30 drawn / 60 shown with Frame generation at 1920x1080, 17-20 GB peak. Known: Ocarina of Time can still crash entering a new area after a long session (nxnative issue 1445, every build; the game saves first).",
+   "versions": [
+    "v131072"
+   ]
+  },
+  {
    "id": "nxnative",
    "name": "nxnative",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "f20f650781d3a50710645d2bc4d54e675eba5576"
+    "commit": "09a91c5c3d6b54ff067385e6c90d6a5e24849be4"
    },
    "shader_list": "shader_list.tsv",
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings: nxnative's own Ocarina of Time profile, kept up to date with its main branch.",
@@ -23,7 +44,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/cheemu21/kid-with-sword-remake",
-    "commit": "a758ea2d6abc03bd6ba79cab07565e9e319e9599"
+    "commit": "c73064ee3bbb00615d09af9461f165879f25ed92"
    },
    "shader_list": "shader_list-kid-with-sword.tsv",
    "watch": [
@@ -50,6 +71,12 @@
    "memory_max": 16,
    "build": "kid-with-sword",
    "why": "16 GB or less: cheemu21's port was made on a 16 GB Mac and releases texture memory (about 7.5 GB in Kokiri Forest)"
+  },
+  {
+   "chip_max": 2,
+   "memory_min": 32,
+   "build": "azmasm",
+   "why": "M1 and M2 Macs with 32 GB or more: azmasm's build was made and played on an M1 Max, with the foliage and stutter fixes those GPUs need most"
   },
   {
    "build": "nxnative",
