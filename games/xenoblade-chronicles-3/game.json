@@ -28,7 +28,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "3da42ce293bd9dfd27e29bbe349e6ac5a781d5c2",
+    "commit": "94f107e58498cfa608fdbf829f6b7cf8b1def01b",
     "builder": {
      "cwd": "games/xc3",
      "pip": [
