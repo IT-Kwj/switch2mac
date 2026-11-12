@@ -53,7 +53,7 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "f02d0474cf1ed1de32ccee1313e1448d4f7da401"
+    "commit": "a2514d7def4e35f3c47f8792af9e6ad31c90ace9"
    },
    "about": "Upstream nxnative with switch2mac's overlay and key-2 settings, for version 1.4.3.",
    "version_names": {
