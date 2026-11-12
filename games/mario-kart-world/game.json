@@ -12,7 +12,7 @@
     "kind": "switch2mac",
     "repo": "https://github.com/azmasm/hermit-engine",
     "branch": "switch2mac",
-    "commit": "54c5cfddb071449e7af07c384e278290b1ff2a1b"
+    "commit": "1eb222e2aec7368d3aa4113229607ee7970fc962"
    },
    "shader_list": "shader_list.tsv",
    "about": "azmasm's fork of nxnative: Performance mode, the preparing screen, the run-time shaders taken from the dump. Fastest on M1 and M2 so far.",
