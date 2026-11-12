@@ -2,7 +2,7 @@
 
 Title ID `010061D00DB74000`. A **Switch** game: built from your own copy's `.xci` / `.nsp` files with your own `prod.keys` (see [LEGAL.md](../../LEGAL.md)). Version 1.0.1.
 
-Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/ori`](https://github.com/ly05010419/MacNativeGames/tree/df1e321d4a9304855f81de3c9a3d471c4c748af5/games/ori) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port. The card image (.xci) that holds the 1.0.1 update, or a base game with the 1.0.1 update; your firmware for the system fonts. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
+Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly05010419 (MIT): its [`games/ori`](https://github.com/ly05010419/MacNativeGames/tree/94f107e58498cfa608fdbf829f6b7cf8b1def01b/games/ori) port, at the commit `game.json` names, run through that port's own builder as its README describes. Community port. The card image (.xci) that holds the 1.0.1 update, or a base game with the 1.0.1 update; your firmware for the system fonts. It has its own runtime, so switch2mac's overlay and key-2 settings are not added: the port has its own. Needs Homebrew's `python@3.14`, `opus` and `libvpx`.
 
 ## Build
 
