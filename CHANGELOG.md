@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-12 (3)
+
+- **Ready to play, in games built by Hermit, looks like Hermit:** the app's typeface, a compact header with the X beside the title, and a setting a switch takes over shows the value it sets (Frame rate under Frame generation; Render scale and the upscaler under Fast mode). Games get it at their next build.
+- **Pokémon Pokopia:** pokopia-native is no longer available, so the game's other builds are offered instead.
+- **Tidier repository:** texts and screens left from the app Hermit grew out of, old icon drafts, and Ocarina of Time's unfinished first build on Hermit's own engine are gone.
+
 ## 2026-11-12 (2)
 
 - **`switch2mac.py` is now `hermit.py`** for people who build in Terminal: `./hermit.py build "<your dump>"`. The old command still works (it runs `hermit.py`), so nothing changes for the app or for older guides.

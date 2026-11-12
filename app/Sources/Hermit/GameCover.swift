@@ -51,21 +51,3 @@ extension LauncherView {
     func cardCover(_ game: LibraryGame) -> some View { GameCover(name: game.name, titleID: game.titleID) }
 }
 
-/// Hermit's flat mark for the header: a screen outline between a green and a red grip, on a slim laptop base (the app icon's idea, flat).
-struct S2MMark: View {
-    var body: some View {
-        GeometryReader { g in
-            let w = g.size.width, h = g.size.height, baseH = max(2.2, h * 0.11), lidH = h - baseH - max(1.5, h * 0.07)
-            let grip = w * 0.17, gap = w * 0.03, inset = w * 0.06
-            ZStack(alignment: .topLeading) {
-                UnevenRoundedRectangle(topLeadingRadius: lidH / 2, bottomLeadingRadius: lidH / 2, bottomTrailingRadius: 1.5, topTrailingRadius: 1.5)
-                    .fill(LauncherPalette.ready).frame(width: grip, height: lidH).offset(x: inset)
-                RoundedRectangle(cornerRadius: lidH * 0.14).strokeBorder(Color.white, lineWidth: max(1.5, lidH * 0.1))
-                    .frame(width: w - 2 * (inset + grip + gap), height: lidH).offset(x: inset + grip + gap)
-                UnevenRoundedRectangle(topLeadingRadius: 1.5, bottomLeadingRadius: 1.5, bottomTrailingRadius: lidH / 2, topTrailingRadius: lidH / 2)
-                    .fill(LauncherPalette.building).frame(width: grip, height: lidH).offset(x: w - inset - grip)
-                Capsule().fill(Color.white.opacity(0.85)).frame(width: w, height: baseH).offset(y: h - baseH)   // the laptop's base
-            }
-        }
-    }
-}

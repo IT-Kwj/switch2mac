@@ -8,11 +8,13 @@ import XCTest
 ///   store or helper that takes a `defaults`, so nothing reads or writes the shared domain.
 /// - The shared domain is emptied once per process, so a leftover of an earlier run is gone before the first test.
 /// - After each test the shared domain must be as it was before: a test that leaves a key there fails, and the key is put back.
+/// - The preferences daemon can write a suite's file after the test removed it, so files of earlier runs are swept once per
+///   process (`TestPreferenceFiles`): without it ~/Library/Preferences gathered thousands of them.
 class IsolatedDefaultsTestCase: XCTestCase {
     /// The suite of this test, created on first use.
     var testDefaults: UserDefaults {
         if let suite = isolatedSuite { return suite.defaults }
-        let name = "switch2mac-test-" + UUID().uuidString
+        let name = TestPreferenceFiles.prefix + UUID().uuidString
         let defaults = UserDefaults(suiteName: name)!
         isolatedSuite = (name, defaults)
         return defaults
@@ -24,6 +26,7 @@ class IsolatedDefaultsTestCase: XCTestCase {
 
     private static let sharedDomainCleared: Void = {
         UserDefaults.standard.removePersistentDomain(forName: sharedDomain)
+        TestPreferenceFiles.sweep()
     }()
 
     static func sharedKeys() -> [String: Any] { UserDefaults.standard.persistentDomain(forName: sharedDomain) ?? [:] }
@@ -68,5 +71,58 @@ final class SharedDefaultsGuardTests: IsolatedDefaultsTestCase {
 
     func testTheSharedDomainIsEmptyBeforeTheTest() {
         XCTAssertTrue(Self.sharedKeys().isEmpty, "left over: \(Self.sharedKeys().keys.sorted())")
+    }
+}
+
+/// The preference files test suites leave behind. A run's own files are removed after each test; a file the daemon wrote late,
+/// or one of a killed run, is removed by the next run once it is a few minutes old (a parallel run's live files are younger).
+enum TestPreferenceFiles {
+    static let prefix = "hermit-test-"
+    /// The other names the app's test suites use (each followed by a UUID), and names earlier versions used.
+    static let oldPrefixes = ["switch2mac-test-", "hermit-identity-tests-", "nxmodel-", "onboarding.tests.", "nspb-", "nx2apple-test-",
+                              "org.nxnative.frontendtests.", "ConsoleLiveTests-", "ConsolePadTests.", "nxnative-tests-",
+                              "engine-selection-", "uninstall-test-"]
+    private static let uuid = try! NSRegularExpression(pattern: "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}")
+
+    /// A test suite's file: one of the names above with a UUID in it.
+    static func isTestFile(_ name: String) -> Bool {
+        name.hasSuffix(".plist") && ([prefix] + oldPrefixes).contains(where: { name.hasPrefix($0) })
+            && uuid.firstMatch(in: name, range: NSRange(name.startIndex..., in: name)) != nil
+    }
+
+    static var folder: String { NSHomeDirectory() + "/Library/Preferences" }
+
+    /// Removes test preference files older than `age` seconds; returns how many went.
+    @discardableResult
+    static func sweep(in folder: String = folder, olderThan age: TimeInterval = 600, now: Date = Date()) -> Int {
+        let fm = FileManager.default
+        guard let names = try? fm.contentsOfDirectory(atPath: folder) else { return 0 }
+        var removed = 0
+        for name in names where isTestFile(name) {
+            let path = folder + "/" + name
+            guard let date = (try? fm.attributesOfItem(atPath: path))?[.modificationDate] as? Date,
+                  now.timeIntervalSince(date) > age else { continue }
+            if (try? fm.removeItem(atPath: path)) != nil { removed += 1 }
+        }
+        return removed
+    }
+}
+
+final class TestPreferenceFilesTests: XCTestCase {
+    func testOnlyOldTestFilesAreSwept() throws {
+        let fm = FileManager.default, dir = NSTemporaryDirectory() + "prefs-sweep-" + UUID().uuidString
+        try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(atPath: dir) }
+        let old = Date().addingTimeInterval(-3600)
+        let id = "0B523C81-793A-4221-AE7F-F768992D39FD"
+        for name in ["hermit-test-\(id).plist", "switch2mac-test-\(id).plist", "nxmodel-repo-tests-\(id).plist",
+                     "io.github.azmasm.hermit.plist", "nxmodel-settings.plist"] {
+            fm.createFile(atPath: dir + "/" + name, contents: Data())
+            try fm.setAttributes([.modificationDate: old], ofItemAtPath: dir + "/" + name)
+        }
+        let fresh = "hermit-test-11111111-2222-3333-4444-555555555555.plist"
+        fm.createFile(atPath: dir + "/" + fresh, contents: Data())   // a running test's file
+        XCTAssertEqual(TestPreferenceFiles.sweep(in: dir), 3)
+        XCTAssertEqual(Set(try fm.contentsOfDirectory(atPath: dir)), ["io.github.azmasm.hermit.plist", "nxmodel-settings.plist", fresh])
     }
 }

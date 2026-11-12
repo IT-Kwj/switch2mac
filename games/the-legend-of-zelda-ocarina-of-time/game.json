@@ -87,12 +87,5 @@
  "marker": "Event/Movie/Dm_StaffCredit_0000.webm",
  "shader_env": {
   "EDEN_NX2_TENSOR": "1"
- },
- "wip": {
-  "switch2mac": {
-   "kind": "switch2mac",
-   "repo": "https://github.com/azmasm/hermit-builds",
-   "commit": "0656fd1b326ba7d26ec1654d79009c50af8891da"
-  }
  }
 }

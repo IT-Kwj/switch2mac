@@ -5,21 +5,6 @@
  "disk_gb": 20,
  "builds": [
   {
-   "id": "pokopia-native",
-   "name": "pokopia-native (xFractals)",
-   "engine": {
-    "kind": "pokopia-native",
-    "repo": "https://github.com/xFractals/pokopia-native",
-    "commit": "9cb7f07a663f78f92b0015d49ea49f8c73968b8e"
-   },
-   "shader_list": "shader_list.tsv",
-   "about": "xFractals' Pokopia builder: builds only the ~3,800 shaders the game needs (about an hour), takes update v327680 or 2.0.1. The default.",
-   "versions": [
-    "v327680",
-    "v655360"
-   ]
-  },
-  {
    "id": "nxnative",
    "name": "nxnative",
    "engine": {
@@ -36,7 +21,7 @@
   },
   {
    "id": "horizon-nx2",
-   "name": "horizon-nx2 (MacBook Air)",
+   "name": "horizon-nx2",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/joaoalvess/horizon-nx2",
@@ -54,18 +39,8 @@
  ],
  "choose": [
   {
-   "model": "MacBook Air",
    "build": "horizon-nx2",
-   "why": "MacBook Air with Pokopia 2.0.1: horizon-nx2 was tuned on a fanless 16 GB MacBook Air"
-  },
-  {
-   "memory_max": 16,
-   "build": "horizon-nx2",
-   "why": "16 GB or less with Pokopia 2.0.1: horizon-nx2 was tuned to fit a 16 GB Mac"
-  },
-  {
-   "build": "pokopia-native",
-   "why": "pokopia-native builds in about an hour and has more player reports; nxnative's full build takes hours and over 200 GB of disk"
+   "why": "horizon-nx2 is Pokopia's own build now that pokopia-native is no longer available (tuned on a fanless 16 GB MacBook Air); nxnative's full build takes hours and over 200 GB of disk"
   }
  ]
 }

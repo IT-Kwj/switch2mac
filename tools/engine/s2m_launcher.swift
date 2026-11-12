@@ -5,10 +5,50 @@
 // writes too), launcher.c's handling of 0 / 1 / 2, "hold Option at launch" when the window is switched off. Play (Return) starts the game; the X (Esc, ⌘Q) quits
 // without it. The window never takes focus by itself: an app opened in the background (open -g) keeps it behind until the player switches to it
 import AppKit
+import CoreText
 import QuartzCore
 import SwiftUI
 
 private func info(_ key: String) -> String? { Bundle.main.object(forInfoDictionaryKey: key) as? String }
+
+// Hermit's interface face, Manrope (SIL OFL 1.1, app/fonts), as base64: hermit.py's launcher_window writes the font into this line when it puts the window in
+// place, so the game's window is set as Hermit's sheet is. Left empty (this file on its own), the window uses the system face.
+let s2mManrope = ""
+
+private enum S2MFont {   // as Hermit's Typography: the variable font at the weight SwiftUI names, each size and weight made once
+    private static let face: CTFontDescriptor? = Data(base64Encoded: s2mManrope).flatMap { $0.isEmpty ? nil : CTFontManagerCreateFontDescriptorFromData($0 as CFData) }
+    private struct Key: Hashable { let size: CGFloat; let weight: Font.Weight }
+    private static var made: [Key: Font] = [:]
+    private static func axis(_ w: Font.Weight) -> CGFloat {
+        switch w {
+        case .ultraLight: return 200
+        case .thin, .light: return 300
+        case .medium: return 500
+        case .semibold: return 600
+        case .bold: return 700
+        case .heavy, .black: return 800
+        default: return 400
+        }
+    }
+    static func f(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
+        let key = Key(size: size, weight: weight)
+        if let font = made[key] { return font }
+        var font = Font.system(size: size, weight: weight)
+        if let face {
+            let v = CTFontDescriptorCreateCopyWithAttributes(face, [kCTFontVariationAttribute: [0x7767_6874: axis(weight)]] as CFDictionary)
+            font = Font(CTFontCreateWithFontDescriptor(v, size, nil))
+        }
+        made[key] = font
+        return font
+    }
+}
+
+// A switch that sets other settings while it is on (launcher.c's presets): those rows show the value it sets and can't be changed, so the window never says 60 fps
+// while frame generation runs the game at 30
+private let s2mPresets: [(on: String, sets: [String: String])] = [
+    ("DM_FRAMEGEN", ["DM_FPS_TARGET": "30"]),                                // framegen_preset
+    ("DM_FAST_720", ["DM_RENDER_SCALE": "0.82", "DM_UPSCALER": "metalfx"]),  // fast_preset
+]
 
 private enum S2M {   // Hermit's colours (app/Sources/NXLauncher/LauncherPalette.swift)
     static let background = Color(red: 0.055, green: 0.055, blue: 0.06)
@@ -42,7 +82,7 @@ private struct S2MSegmented: View {   // a choice of a few short options: one pi
             ForEach(options, id: \.self) { o in
                 let on = o[0] == selection
                 Button { pick(o[0]) } label: {
-                    Text(o.count > 1 ? o[1] : o[0]).font(.system(size: 13, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                    Text(o.count > 1 ? o[1] : o[0]).font(S2MFont.f(13, .semibold)).lineLimit(1).minimumScaleFactor(0.8)
                         .foregroundStyle(on ? Color.black : Color.primary)
                         .frame(maxWidth: .infinity).padding(.vertical, 7)
                         .background(on ? S2M.green : Color.clear, in: Capsule()).contentShape(Capsule())
@@ -64,7 +104,7 @@ private struct S2MDropdown: View {   // a longer choice: a pill with the current
             ForEach(options, id: \.self) { o in Button(o.count > 1 ? o[1] : o[0]) { pick(o[0]) } }
         } label: {
             HStack {
-                Text(current).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                Text(current).font(S2MFont.f(13, .semibold)).lineLimit(1)
                 Spacer(minLength: 6)
                 Image(systemName: "chevron.down").font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
             }
@@ -85,24 +125,28 @@ struct LauncherView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Button { done(false) } label: {   // the X: quit without the game (Esc and ⌘Q too)
-                Image(systemName: "xmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
-                    .frame(width: 30, height: 30).background(Color.white.opacity(0.08), in: Circle()).contentShape(Circle())
-            }
-            .buttonStyle(.plain).keyboardShortcut(.cancelAction).accessibilityLabel("Quit")
-            .padding(.leading, 18).padding(.top, 18)
+            // the header in one compact row: the game's icon, the title and the game's name, the X (quit without the game; Esc and ⌘Q too) on the right;
+            // the note under it. No row of its own for the X, so nothing above the title but the window's margin
             HStack(alignment: .center, spacing: 14) {
-                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 52, height: 52).accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Ready to play").font(.system(size: 26, weight: .heavy)).tracking(-0.6)
-                    Text(info("CFBundleName") ?? "Game").font(.system(size: 14)).foregroundStyle(.secondary)
+                Image(nsImage: NSApp.applicationIconImage).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
+                    .frame(width: 48, height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Ready to play").font(S2MFont.f(24, .heavy)).tracking(-0.5).lineLimit(1)
+                    Text(info("CFBundleName") ?? "Game").font(S2MFont.f(14)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
                 }
-                Spacer()
+                Spacer(minLength: 8)
+                Button { done(false) } label: {
+                    Image(systemName: "xmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
+                        .frame(width: 30, height: 30).background(Color.white.opacity(0.08), in: Circle()).contentShape(Circle())
+                }
+                .buttonStyle(.plain).keyboardShortcut(.cancelAction).accessibilityLabel("Quit")
             }
-            .padding(.horizontal, 30).padding(.top, 10)
+            .padding(.horizontal, 30).padding(.top, 24)
             Text("Check this game's settings before it starts. You can change them in the game with key 2.")
-                .font(.system(size: 12.5)).foregroundStyle(.tertiary).fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 30).padding(.top, 8).padding(.bottom, 18)
+                .font(S2MFont.f(12.5)).foregroundStyle(.tertiary).fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 30).padding(.top, 12).padding(.bottom, 18)
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     sections(basic: true)
@@ -110,11 +154,11 @@ struct LauncherView: View {
                         card {
                             Button { withAnimation(.easeInOut(duration: 0.18)) { advanced.toggle() } } label: {
                                 HStack(spacing: 8) {
-                                    Text("Advanced settings").font(.system(size: 14, weight: .medium))
+                                    Text("Advanced settings").font(S2MFont.f(14, .medium))
                                     Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
                                         .rotationEffect(.degrees(advanced ? 90 : 0))
                                     Spacer()
-                                    Text("\(m.settings.filter { !$0.basic }.count)").font(.system(size: 12)).foregroundStyle(.secondary)
+                                    Text("\(m.settings.filter { !$0.basic }.count)").font(S2MFont.f(12)).foregroundStyle(.secondary)
                                 }
                                 .padding(.horizontal, 18).frame(minHeight: 52).contentShape(Rectangle())
                             }
@@ -130,11 +174,11 @@ struct LauncherView: View {
             HStack(spacing: 14) {
                 Toggle("", isOn: $show).toggleStyle(S2MSwitch()).labelsHidden()
                 Text(show ? "Show before playing" : "Show before playing (hold Option at launch to see it again)")
-                    .font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(2)
+                    .font(S2MFont.f(12)).foregroundStyle(.secondary).lineLimit(2)
                 Spacer(minLength: 8)
                 if m.changed {
                     Button { m.reset() } label: {
-                        Text("Reset to tested defaults").font(.system(size: 13, weight: .semibold)).lineLimit(1).fixedSize()
+                        Text("Reset to tested defaults").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
                             .padding(.horizontal, 16).padding(.vertical, 9)
                             .background(Color.white.opacity(0.06), in: Capsule()).overlay(Capsule().strokeBorder(Color.white.opacity(0.1)))
                     }
@@ -143,7 +187,7 @@ struct LauncherView: View {
                 Button { done(true) } label: {   // Play: red, as Hermit's Play
                     HStack(spacing: 7) {
                         Image(systemName: "play.fill").font(.system(size: 12, weight: .bold))
-                        Text("Play").font(.system(size: 13.5, weight: .bold))
+                        Text("Play").font(S2MFont.f(13.5, .bold))
                     }
                     .lineLimit(1).fixedSize()
                     .foregroundStyle(.black).padding(.horizontal, 26).padding(.vertical, 9)
@@ -154,6 +198,7 @@ struct LauncherView: View {
             .padding(.horizontal, 30).padding(.vertical, 16)
         }
         .frame(minWidth: 560, idealWidth: 600, minHeight: 480)
+        .ignoresSafeArea(.container, edges: .top)
         .background(S2M.background)
         .tint(S2M.green)
         .preferredColorScheme(.dark)
@@ -164,7 +209,7 @@ struct LauncherView: View {
             let rows = m.rows(in: section, basic: basic)
             if !rows.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(section).font(.system(size: 15, weight: .semibold)).foregroundStyle(.secondary).padding(.leading, 2)
+                    Text(section).font(S2MFont.f(15, .semibold)).foregroundStyle(.secondary).padding(.leading, 2)
                     card {
                         ForEach(Array(rows.enumerated()), id: \.element.id) { i, s in
                             if i > 0 { Divider().opacity(0.25).padding(.leading, 18) }
@@ -182,18 +227,29 @@ struct LauncherView: View {
             .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color.white.opacity(0.06)))
     }
 
+    /// The value a preset that is on sets for this row, and the preset's name ("Frame generation"), or nil.
+    private func preset(_ env: String) -> (value: String, by: String)? {
+        for p in s2mPresets {
+            guard let v = p.sets[env], let s = m.settings.first(where: { $0.env == p.on }), (m.values[p.on] ?? s.def) == s.onValue else { continue }
+            return (v, s.label.components(separatedBy: " (").first ?? s.label)
+        }
+        return nil
+    }
+
     @ViewBuilder private func row(_ s: Setting) -> some View {
-        let value = m.values[s.env] ?? s.def
-        let fixed = m.fixed.contains(s.env)
+        let set = preset(s.env)
+        let value = set?.value ?? m.values[s.env] ?? s.def
+        let fixed = m.fixed.contains(s.env) || set != nil
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 3) {
-                Text(s.label).font(.system(size: 14, weight: .medium))
+                Text(s.label).font(S2MFont.f(14, .medium))
                 if s.kind == "range" {
-                    Text(m.rangeLabel(s, Double(value) ?? 1)).font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text(m.rangeLabel(s, Double(value) ?? 1)).font(S2MFont.f(12)).foregroundStyle(.secondary)
                 } else if !s.note.isEmpty {
-                    Text(s.note).font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(s.note).font(S2MFont.f(12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
-                if fixed { Text("Set where the game is started, so it can't be changed here").font(.system(size: 11.5)).foregroundStyle(.tertiary) }
+                if let set { Text("Set by \(set.by) while it is on").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
+                else if fixed { Text("Set where the game is started, so it can't be changed here").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
             }
             Spacer(minLength: 12)
             control(s, value).frame(width: S2M.controlWidth, alignment: .trailing).disabled(fixed)
@@ -231,15 +287,15 @@ private struct CloudSavesCard: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Cloud saves").font(.system(size: 14, weight: .medium))
+                Text("Cloud saves").font(S2MFont.f(14, .medium))
                 Text(fixed.map { "\(Self.shown($0)) (env.txt)" } ?? (folder.isEmpty ? "Off: the save stays on this Mac" : Self.shown(folder)))
-                    .font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
+                    .font(S2MFont.f(12)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
             }
             Spacer(minLength: 12)
             if fixed == nil {
-                if !folder.isEmpty { Button("Turn off") { folder = "" }.buttonStyle(.plain).font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary) }
+                if !folder.isEmpty { Button("Turn off") { folder = "" }.buttonStyle(.plain).font(S2MFont.f(13, .semibold)).foregroundStyle(.secondary) }
                 Button { choose() } label: {
-                    Text(folder.isEmpty ? "Choose a folder…" : "Change…").font(.system(size: 13, weight: .semibold)).lineLimit(1).fixedSize()
+                    Text(folder.isEmpty ? "Choose a folder…" : "Change…").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
                         .padding(.horizontal, 16).padding(.vertical, 8)
                         .background(Color.white.opacity(0.06), in: Capsule()).overlay(Capsule().strokeBorder(Color.white.opacity(0.1)))
                 }

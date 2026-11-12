@@ -8,10 +8,19 @@ final class AppIdentityTests: XCTestCase {
         home = NSTemporaryDirectory() + "hermit-identity-" + UUID().uuidString
         try FileManager.default.createDirectory(atPath: home + "/Library/Application Support", withIntermediateDirectories: true)
     }
-    override func tearDownWithError() throws { try? FileManager.default.removeItem(atPath: home) }
+    private var suites: [String] = []
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(atPath: home)
+        for name in suites {   // the suites' files too (the test target's shared sweep removes any the daemon writes late)
+            UserDefaults().removePersistentDomain(forName: name)
+            try? FileManager.default.removeItem(atPath: NSHomeDirectory() + "/Library/Preferences/\(name).plist")
+        }
+        suites = []
+    }
 
     private func defaults() -> UserDefaults {
-        let name = "hermit-identity-tests-" + UUID().uuidString
+        let name = "hermit-test-" + UUID().uuidString
+        suites.append(name)
         let d = UserDefaults(suiteName: name)!
         d.removePersistentDomain(forName: name)
         return d

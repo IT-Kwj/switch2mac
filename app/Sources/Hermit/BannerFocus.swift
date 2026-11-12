@@ -45,23 +45,3 @@ struct FullBanner: View {
         .frame(width: width, height: height).clipped()
     }
 }
-
-/// A banner filling `width` × `height`, moved so its title (BannerFocus) sits at the frame's centre as far as the picture allows; centred without one.
-struct FocusedBanner: View {
-    let image: NSImage
-    let focus: CGPoint?
-    let width: CGFloat
-    let height: CGFloat
-
-    var body: some View {
-        let size = image.size, scale = max(width / max(size.width, 1), height / max(size.height, 1))
-        let w = size.width * scale, h = size.height * scale
-        let f = focus ?? CGPoint(x: 0.5, y: 0.5)
-        let x = min(max(f.x * w - width / 2, 0), w - width), y = min(max(f.y * h - height / 2, 0), h - height)
-        Image(nsImage: image).resizable().interpolation(.high)
-            .frame(width: w, height: h)
-            .offset(x: -x, y: -y)
-            .frame(width: width, height: height, alignment: .topLeading)
-            .clipped()
-    }
-}

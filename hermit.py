@@ -18,7 +18,7 @@ with Mario Kart World's overlay and key-2 settings panel added (tools/engine/pat
 A game can have several builds (game.json "builds", each with its own engine and shader list): game.json "choose" picks one for this Mac (its chip and memory),
 from what players reported (games/<game>/reports.tsv); --engine overrides it.
 """
-import collections, argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys, time
+import base64, collections, argparse, datetime, hashlib, json, os, re, shutil, struct, subprocess, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -137,11 +137,11 @@ ABOUT = {
 PROFILE = None   # an untested build on Hermit's engine: the profile guessed from the game's files (<work>/guessed/<title ID>); None: the engine's own
 
 
-def engine_pins():   # each engine's pin that an untested build uses: the ones the updater keeps current (Mario Kart World's two, Pokopia's pokopia-native)
+def engine_pins():   # each engine's pin that an untested build uses: the ones the updater keeps current (Mario Kart World's two)
     pins = {}
     for g in GAMES.values():
         for b in builds(g): pins.setdefault(b['engine']['kind'], b['engine'])
-    for tid, kind in (('0400C3F00006E000', 'switch2mac'), ('0400C3F00006E000', 'nxnative'), ('0400A3A01EE4C000', 'pokopia-native')):
+    for tid, kind in (('0400C3F00006E000', 'switch2mac'), ('0400C3F00006E000', 'nxnative')):
         for b in builds(GAMES.get(tid, {})):
             if b['engine']['kind'] == kind: pins[kind] = b['engine']
     return pins
@@ -825,8 +825,16 @@ def launcher_window(nx):   # Hermit's "Ready to play" window in place of nxnativ
     need = ('struct SettingsFile', 'func sections(basic: Bool)', 'func rows(in section: String, basic: Bool)', 'func rangeLabel', 'var changed', 'func reset()', 'func apply()', 'let fixed: Set<String>', 'var basic: Bool', 'var onValue')
     if not all(k in m for k in need) or 'dm_mac_launcher' not in lw.read_text(errors='replace'):
         print("  settings window: nxnative's own (this engine's launcher model is older than Hermit's window needs)"); return
-    src = S2M_LAUNCHER.read_bytes()
+    src = launcher_source()
     if lw.read_bytes() != src: lw.write_bytes(src); print("  settings window: Hermit's Ready to play")
+
+
+S2M_FONT = ROOT / 'app/fonts/Manrope.ttf'   # Hermit's interface face (SIL OFL 1.1, app/fonts/Manrope-OFL.txt)
+def launcher_source():   # the window's source with Manrope written into its empty `let s2mManrope = ""` line (the system face when the font is missing)
+    src = S2M_LAUNCHER.read_text()
+    if S2M_FONT.is_file():
+        src = src.replace('let s2mManrope = ""', 'let s2mManrope = "' + base64.b64encode(S2M_FONT.read_bytes()).decode() + '"', 1)
+    return src.encode()
 
 
 def app_switches(g):   # an untested build says so in the overlay (S2M_ENGINE=<kind>-untested); a build's own "switches" in game.json follow (a port's recommended settings)
