@@ -22,7 +22,7 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 | `nxnative` (default) | upstream [nxnative](https://github.com/seedds/nxnative) (commit in `game.json`) | Macs with more than 16 GB, other than a MacBook Air |
 | `horizon-nx2` | [joaoalvess/horizon-nx2](https://github.com/joaoalvess/horizon-nx2) (MIT), tuned on a fanless 16 GB MacBook Air M4: the opening, the mining tunnel and the areas after it at 60 fps | every MacBook Air, and Macs with 16 GB or less |
 
-Both take update v458752. `./switch2mac.py build` picks the one for your Mac; `--engine <id>` builds the other (the app has a Build menu for it). Its shader list is [`shader_list-horizon-nx2.tsv`](shader_list-horizon-nx2.tsv).
+Both take update v458752. `./hermit.py build` picks the one for your Mac; `--engine <id>` builds the other (the app has a Build menu for it). Its shader list is [`shader_list-horizon-nx2.tsv`](shader_list-horizon-nx2.tsv).
 
 ## Shared shader list
 
@@ -37,7 +37,7 @@ Both take update v458752. `./switch2mac.py build` picks the one for your Mac; `-
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
-Then `./switch2mac.py install`. `refresh` and `run` are for Mario Kart World only.
+Then `./hermit.py install`. `refresh` and `run` are for Mario Kart World only.

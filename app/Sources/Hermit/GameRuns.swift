@@ -8,7 +8,7 @@ import Combine
 //   [dm] [nvn] frame interval up to frame N: ... p99 26.34 ms
 //   [dm] [nvn] timing up to frame N: ... GPU p50 8.90 / ...
 //   [dm] [nvn-mtl] memory up to frame N: resident 9606 MB, ...
-//   launcher: env S2M_ENGINE=nxnative-84dea6983541 (the build: switch2mac.py's app_switches)
+//   launcher: env S2M_ENGINE=nxnative-84dea6983541 (the build: hermit.py's app_switches)
 // A run is known by its game and its log's creation date, which the launcher keeps when it renames the log to .prev.log at the next
 // start, so a run is read once and both logs can be looked at every time. The summaries stay on this Mac (runs.json in the app's
 // folder); Share puts one into the How it ran form, which the player sends themself.

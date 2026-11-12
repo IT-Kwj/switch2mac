@@ -50,14 +50,14 @@ static double footprint_gb(void) { task_vm_info_data_t vi; mach_msg_type_number_
     if (_n < OV_N) _fps[_n++] = (float)_fpsNow; else { memmove(_fps, _fps + 1, (OV_N - 1) * sizeof *_fps); _fps[OV_N - 1] = (float)_fpsNow; }
     [self refreshWithCPU:cpuPct];
 }
-// The engine this app was built with (S2M_ENGINE, baked in by switch2mac.py: "nxnative-84dea6983541", "pokopia-native-160604df414b", "switch2mac"):
+// The engine this app was built with (S2M_ENGINE, baked in by hermit.py: "nxnative-84dea6983541", "pokopia-native-160604df414b", "switch2mac"):
 // its name, and the commit's first 8 characters when it has one.
 static void engine_name(NSString **name, NSString **version) {
     const char *e = getenv("S2M_ENGINE"); NSString *s = e && *e ? @(e) : @"";
     NSRange dash = [s rangeOfString:@"-" options:NSBackwardsSearch]; NSString *tail = dash.location != NSNotFound ? [s substringFromIndex:dash.location + 1] : @"";
     BOOL hex = tail.length >= 7 && [tail rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"] invertedSet]].location == NSNotFound;
     *name = hex ? [s substringToIndex:dash.location] : s; *version = hex ? [tail substringToIndex:MIN(8u, tail.length)] : @"";
-    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when switch2mac.py baked one in
+    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when hermit.py baked one in
     if (b && *b) *name = @(b);
 }
 - (void)refreshWithCPU:(double)cpuPct {

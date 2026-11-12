@@ -15,7 +15,7 @@ Each new form is read by .github/workflows/shader-lists.yml (collect --issue <n>
   tools/shader_list.py collect [--issue <n>] [--apply] [--close] [--drop-unknown] [--json]  the open "shader list" issues on GitHub (gh), or one: read each
                                                             file (attached to the issue or to a comment), check it, report; --apply adds the rows to the lists,
                                                             --close then thanks and closes each issue it took; --json ends with one JSON line for the workflow
-  tools/shader_list.py ship <game> <out pso_manifest.tsv> [--base <engine's own list>]   the list a build ships (switch2mac.py build runs it)
+  tools/shader_list.py ship <game> <out pso_manifest.tsv> [--base <engine's own list>]   the list a build ships (hermit.py build runs it)
 
 --build <id> picks one of a game's builds (Mario Kart World: switch2mac, nxnative) for new, merge and ship; new takes the installed one by default (s2m_build.txt
 in the game's data folder), the others the first. collect sends each contribution to the build whose engine its header names.
@@ -38,11 +38,11 @@ def lists():   # one entry a game and build (a game with one "engine" has one bu
     for p in sorted((ROOT / 'games').glob('*/game.json')):
         g = json.loads(p.read_text())
         bs = g.get('builds') or [{'id': g['engine']['kind'], 'engine': g['engine'], 'shader_list': 'shader_list.tsv'}]
-        wip = [{'id': f'{k}-untested', 'engine': e, 'shader_list': f'shader_list-{k}.tsv'} for k, e in g.get('wip', {}).items()]   # a port still in progress (switch2mac.py untested_builds)
+        wip = [{'id': f'{k}-untested', 'engine': e, 'shader_list': f'shader_list-{k}.tsv'} for k, e in g.get('wip', {}).items()]   # a port still in progress (hermit.py untested_builds)
         for b in bs + wip:
             e = b['engine']
             # engine_id: what a list and a contribution name. Hermit's own engine keeps "switch2mac" across its commits (its shader keys change only with its translator,
-            # which Hermit controls); another engine is named with its commit. engine_dir: where switch2mac.py build fetched it (engines/<kind>-<commit>)
+            # which Hermit controls); another engine is named with its commit. engine_dir: where hermit.py build fetched it (engines/<kind>-<commit>)
             out.append(dict(g, engine=e, build=b['id'], multi=len(bs + wip) > 1, dir=p.parent, list=p.parent / b.get('shader_list', 'shader_list.tsv'),
                             engine_dir=ROOT / f'engines/{e["kind"]}-{e["commit"][:12]}', engine_id='switch2mac' if e['kind'] == 'switch2mac' else f'{e["kind"]}-{e["commit"][:12]}'))
     return out
@@ -60,7 +60,7 @@ def label(g): return g['name'] + (f' ({g["build"]} build)' if g['multi'] else ''
 def game(name, build=None, installed=False):   # installed: no --build means the build the player has, not the first
     for t, gs in games().items():
         if name.upper() == t or name == gs[0]['dir'].name:
-            note = Path.home() / f'Library/Application Support/nxnative/{t}/s2m_build.txt'   # the build the player has (switch2mac.py install notes it)
+            note = Path.home() / f'Library/Application Support/nxnative/{t}/s2m_build.txt'   # the build the player has (hermit.py install notes it)
             if not build: build = note.read_text().strip() if installed and note.exists() else gs[0]['build']
             for g in gs:
                 if g['build'] == build: return g

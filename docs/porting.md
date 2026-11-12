@@ -13,7 +13,7 @@ Most of Hermit's games were added this way, in a few minutes each and without a 
 3. **`games/<game>/shader_list.tsv`**: the header only (`game=<title ID>`, `engine=nxnative-<commit, 12 characters>`).
 4. **`games/<game>/reports.tsv`**: every report that names the Mac, from the profile's README and from nxnative's GitHub issues (search the game's name), with its source. Leave out reports without a Mac model.
 5. **The README's game table and dump-folder table**, and **NOTICE.md** (the game in nxnative's line, its trademarks).
-6. Check: `./switch2mac.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
+6. Check: `./hermit.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
 
 A game with a second port (Pokopia: pokopia-native and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
 
@@ -49,13 +49,13 @@ Updates: an update dump's RomFS is the full patched tree. Build from the update'
    - `tex_flush_upload on` and `tex_dirty_upload on`: keep these. Nintendo's own engines fill textures from the CPU, sometimes before the texture is created (see "Lessons" below).
    - Empty shader tables (`shader_map.tsv`, `shader_facts.tsv`, `shader_pairs.tsv`, `shader_map.tsv.conflicts.tsv`, each with only its header). The first build fills them in `work/profile/`; copy the results back into the profile when they are good.
 3. `games/<game>/launcher.py` and `env.txt`: copy Mario Kart World's and change the title ID and its game-specific rows (its Performance mode toggle names one of Mario Kart World's own shaders).
-4. Run `./switch2mac.py build <dump>`.
+4. Run `./hermit.py build <dump>`.
 
 nxnative's `dm/games/README.md` ([in hermit-engine](https://github.com/azmasm/hermit-engine/blob/switch2mac/dm/games/README.md)) describes every profile file.
 
 ### A game another port already runs
 
-When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds Hermit's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `switch2mac.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
+When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds Hermit's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `hermit.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
 
 **Several builds of one game.** A game can list `builds` instead of one `engine`: each `{"id", "name", "engine": {...}, "shader_list": <file in the game folder>, "about"}`, and `choose`, rules read in order (`chip_min` / `chip_max`: the chip generation, 1 for M1; `memory_min` / `memory_max` in GB; `build`, `why`); the first the Mac meets wins, else the first build. Base the rules on `games/<game>/reports.tsv` (players' Macs and how each build ran). `build --engine <id>` overrides; `builds <game>` shows the choice. Mario Kart World is the example.
 
@@ -68,7 +68,7 @@ Keeping such a game current: `tools/engine/update.py` says whose build has a new
 Build, then run the game straight from `work/` with a log:
 
 ```bash
-./switch2mac.py run
+./hermit.py run
 ```
 
 `run` takes host switches as `VAR=value` arguments, and writes everything to the terminal and to `work/logs/run-<time>.log`. To match the app's defaults, add the switches from the game's `launcher.py` (Mario Kart World: `DM_NVN_ENC_THREAD=1`).
@@ -86,8 +86,8 @@ Milestones for a new game: boot → first NVN2 call → first frame → title sc
 
 Switch 2 games build some shaders while they run, so they are not in the BNSH containers the split reads. Mario Kart World has 321 of them (4 only in handheld console mode), including the final copy to the screen; without them the first launch is black. Their parts *are* in the dump, in BAHS containers (`Lib/agl`, `Lib/gsys`, `Lib/Terrain`, `Shader/*.sarc`) and loose in `main`.
 
-1. Play the game with `./switch2mac.py run` (or the installed app). The host saves every unknown shader to `work/run/shdump` (or the app's support folder) as `<key>.ctl` + `<key>.code`.
-2. `./switch2mac.py refresh` builds them in, so your own build is complete.
+1. Play the game with `./hermit.py run` (or the installed app). The host saves every unknown shader to `work/run/shdump` (or the app's support folder) as `<key>.ctl` + `<key>.code`.
+2. `./hermit.py refresh` builds them in, so your own build is complete.
 3. To make it complete for everyone, locate them in the game files:
 
 ```bash
@@ -108,7 +108,7 @@ Maintainers: `tools/shader_list.py collect` reads the open `shader-list` issues 
 
 ## 5. Finding graphics bugs
 
-All of these are host switches (`./switch2mac.py run VAR=value ...`). While the game runs, you can also write a command line into `work/run/ctl.txt`; the host reads it at the next frame.
+All of these are host switches (`./hermit.py run VAR=value ...`). While the game runs, you can also write a command line into `work/run/ctl.txt`; the host reads it at the next frame.
 
 | Switch / command | What it gives |
 |---|---|

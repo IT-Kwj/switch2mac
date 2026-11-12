@@ -5,7 +5,7 @@
   tools/engine/update.py --apply [--compile]   move each changed game to its build's new commit, on the dev branch:
 
     1. fetch the new commit into engines/ and add Hermit's front end to it (tools/engine/patch.py); pokopia-native: its setup first, and its two lines
-       switch2mac.py build edits (the app's switches, the profile step) must still be there. Anything that no longer fits stops that game: it stays where it was.
+       hermit.py build edits (the app's switches, the profile step) must still be there. Anything that no longer fits stops that game: it stays where it was.
     2. --compile: build the game's host (dmhost) with the front end, as a check (a minute or two each).
     3. game.json takes the new commit; the game's shader_list.tsv keeps its rows and names the new engine in its header (keys can change with an engine version:
        old rows a build does not have are skipped quietly, and contributions recorded with the old engine are refused by tools/shader_list.py from then on);
@@ -65,7 +65,7 @@ def git(*a, cwd=None, check=True):
     return r.stdout.strip()
 
 
-def fetch(repo, sha, kind):   # the engine at that commit in engines/<kind>-<sha12> (as switch2mac.py build fetches it)
+def fetch(repo, sha, kind):   # the engine at that commit in engines/<kind>-<sha12> (as hermit.py build fetches it)
     d = ENGINES / f'{kind}-{sha[:12]}'
     if (d / '.git').is_dir(): return d
     tmp = d.with_name(d.name + '.part'); shutil.rmtree(tmp, ignore_errors=True); tmp.mkdir(parents=True)
@@ -94,8 +94,8 @@ def prepare(g, sha, compile_host):   # the new engine with the front end added, 
         if not (d / f'dm/games/{g["title_id"]}/game.tsv').is_file(): raise RuntimeError(f'the new commit has no profile for {g["title_id"]}')
         host, genv = d / 'dm/host', env
     elif e['kind'] == 'pokopia-native':
-        t = (d / 'nxs2.py').read_text()   # the two lines switch2mac.py build edits
-        if t.count("DM_NVN_SHDUMP=shdump\\n'\n") != 1 or t.count("'shader_facts.seed.tsv'):") != 1: raise RuntimeError('nxs2.py changed where switch2mac.py build edits it (APP_ENV, the profile step)')
+        t = (d / 'nxs2.py').read_text()   # the two lines hermit.py build edits
+        if t.count("DM_NVN_SHDUMP=shdump\\n'\n") != 1 or t.count("'shader_facts.seed.tsv'):") != 1: raise RuntimeError('nxs2.py changed where hermit.py build edits it (APP_ENV, the profile step)')
         nx = d / 'nxnative'; env = dict(env, NXNATIVE=str(nx))
         run([py(), d / 'nxs2.py', 'setup', '--no-ios'], env=env, cwd=d)
         say(run([py(), ROOT / 'tools/engine/patch.py', nx]).rstrip())
@@ -203,7 +203,7 @@ Built with nxnative's own builder at the commit `game.json` names (fetched once 
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 """)
     r = ROOT / 'README.md'; t = r.read_text()
@@ -257,7 +257,7 @@ Added automatically from [nxnative]({NX_REPO})'s profile: see [its notes]({notes
 In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
 
 ```bash
-./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+./hermit.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
 ```
 """)
     return d

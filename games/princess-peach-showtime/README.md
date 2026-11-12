@@ -17,5 +17,5 @@ Added automatically from [nxnative](https://github.com/seedds/nxnative)'s profil
 In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
 
 ```bash
-./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+./hermit.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
 ```

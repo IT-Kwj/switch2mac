@@ -39,7 +39,7 @@ struct BuildPage: View {
     }
 }
 
-/// Hermit's input: one dump folder, as the dump tool wrote it. switch2mac.py identify names the game; the row says which game it is,
+/// Hermit's input: one dump folder, as the dump tool wrote it. hermit.py identify names the game; the row says which game it is,
 /// its version and what it is built with, or what is wrong with the folder (BuildStore+Hermit.swift).
 struct DumpCard: View {
     @ObservedObject var build: BuildStore
@@ -175,7 +175,7 @@ struct KeysCard: View {
 }
 
 /// A game with several builds (Mario Kart World: azmasm's build and nxnative's): which one this Mac gets and why, a menu to pick the other (with a warning),
-/// and how each ran on players' Macs. The choice is kept per game (BuildStore.buildChoice) and goes to switch2mac.py build --engine.
+/// and how each ran on players' Macs. The choice is kept per game (BuildStore.buildChoice) and goes to hermit.py build --engine.
 struct GameBuildCard: View {
     @ObservedObject var build: BuildStore
     let info: DumpInfo

@@ -1,6 +1,6 @@
 # The Hermit app
 
-The Mac app players download (`Hermit-macOS-arm64.zip` on Releases). It is a front end: the work happens in `switch2mac.py`, which the app runs from its own copy of this repository. It began from [NX2Apple](https://github.com/LNPANDY/NX2Apple)'s launcher (MIT; its licence and notice are kept in `LICENSE-NX2Apple` and `NOTICE-NX2Apple`, as the licence requires) and is its own app: its own name, bundle, folders and release channel, sharing nothing with NX2Apple on a player's Mac.
+The Mac app players download (`Hermit-macOS-arm64.zip` on Releases). It is a front end: the work happens in `hermit.py`, which the app runs from its own copy of this repository. It began from [NX2Apple](https://github.com/LNPANDY/NX2Apple)'s launcher (MIT; its licence and notice are kept in `LICENSE-NX2Apple` and `NOTICE-NX2Apple`, as the licence requires) and is its own app: its own name, bundle, folders and release channel, sharing nothing with NX2Apple on a player's Mac.
 
 ## The four parts
 
@@ -28,9 +28,9 @@ Everything the app keeps on a Mac is its own: `~/Library/Application Support/Her
 
 ## How it drives Hermit
 
-- **Its copy of the repository.** At first start the app clones `azmasm/hermit` into `~/Library/Application Support/Hermit/repo` and pulls `main` each time it opens (`RepoStore`). New games, builds and fixes in `games/`, `switch2mac.py` and `tools/` reach players this way, with no new app release.
-- **Identifying a dump.** The Builds page runs `switch2mac.py identify <folder>`, which answers with one JSON line: the game, its builds, the one this Mac gets and why, and players' reports (`DumpInfo`, `BuildStore+Hermit.swift`). A damaged dump is named here.
-- **Building.** `switch2mac.py build <folder> --progress json [--engine <id>]` writes one event per line (stage, step, progress, time left); `BuildStore` reads them into the progress card. Then `switch2mac.py install --to <Output folder>` (Settings, `/Applications` by default). Each game builds in its own work folder under `~/Library/Application Support/Hermit/builds/<title ID>`.
+- **Its copy of the repository.** At first start the app clones `azmasm/hermit` into `~/Library/Application Support/Hermit/repo` and pulls `main` each time it opens (`RepoStore`). New games, builds and fixes in `games/`, `hermit.py` and `tools/` reach players this way, with no new app release.
+- **Identifying a dump.** The Builds page runs `hermit.py identify <folder>`, which answers with one JSON line: the game, its builds, the one this Mac gets and why, and players' reports (`DumpInfo`, `BuildStore+Hermit.swift`). A damaged dump is named here.
+- **Building.** `hermit.py build <folder> --progress json [--engine <id>]` writes one event per line (stage, step, progress, time left); `BuildStore` reads them into the progress card. Then `hermit.py install --to <Output folder>` (Settings, `/Applications` by default). Each game builds in its own work folder under `~/Library/Application Support/Hermit/builds/<title ID>`.
 - **Several builds of a game.** The Build card (`BuildPage.swift`) shows the recommended build and its reports; the choice is kept per game and passed as `--engine`. The Library names the installed build, and Manage offers the others (`GameBuilds.swift`).
 - **Your Mac.** `MacSpecs.swift` reads the chip, cores, memory and macOS for the Your Mac card; nothing leaves the Mac.
 - **Banners.** Official eShop banners are downloaded onto the player's Mac at run time (`Artwork.swift`); `BannerFocus.swift` frames each around its title. Games without one get an original cover (`GameCover.swift`).

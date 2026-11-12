@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # The Legend of Zelda: Ocarina of Time's launcher settings (from Mario Kart World's) (Resources/dm/launcher.json): nxnative's generic list (dm/games/settings.py) plus this build's own rows.
-# The dump has no control.nacp, so the language list is fixed to en-US. Usage: launcher.py <nxnative folder> <rewritten modules dir> <out.json>   (switch2mac.py runs it)
+# The dump has no control.nacp, so the language list is fixed to en-US. Usage: launcher.py <nxnative folder> <rewritten modules dir> <out.json>   (hermit.py runs it)
 import json, os, sys
 repo, patched, out = sys.argv[1:4]
 sys.path[:0] = [os.path.join(repo, 'dm/games'), os.path.join(repo, 'dm/tools')]

@@ -1,11 +1,11 @@
 import Foundation
 import NXCore
 
-// Hermit's build: one dump folder, which `switch2mac.py identify` names (the game, its version, the engine it is built with), then
-// `switch2mac.py build --progress json` (its stage events are the ones nxnative's script writes, so ingest() reads them as they are),
-// then `switch2mac.py install --to` the library folder. Each game builds in a work folder of its own, so a later build reuses its files.
+// Hermit's build: one dump folder, which `hermit.py identify` names (the game, its version, the engine it is built with), then
+// `hermit.py build --progress json` (its stage events are the ones nxnative's script writes, so ingest() reads them as they are),
+// then `hermit.py install --to` the library folder. Each game builds in a work folder of its own, so a later build reuses its files.
 
-/// What `switch2mac.py identify` said about a dump folder (one JSON line).
+/// What `hermit.py identify` said about a dump folder (one JSON line).
 package struct DumpInfo: Equatable {
     package var folder: String
     package var ok: Bool
@@ -40,7 +40,7 @@ package struct DumpInfo: Equatable {
     /// The dump's form: "folder" (a Switch 2 dump folder), "nup" (one .nup file) or "switch1" (a Switch 1 game's NSP / XCI files, which need the player's own prod.keys).
     package var dumpForm: String
     package var needsKeys: Bool
-    /// What switch2mac.py made of the chosen prod.keys by its key names (nil when no keys file went with identify); the builder checks them properly when it opens the game.
+    /// What hermit.py made of the chosen prod.keys by its key names (nil when no keys file went with identify); the builder checks them properly when it opens the game.
     package var keysOK: Bool?
     package var keysNote: String
     /// A Switch game: the files that go to the builder (its base game, update and DLC, by name), and the games a cartridge holds when it holds several.
@@ -51,11 +51,11 @@ package struct DumpInfo: Equatable {
 
     package struct BuildOption: Equatable {
         package var id, name, engine, commit, about: String
-        package var fits = true   // plays this dump's files (switch2mac.py fits and fit_note)
+        package var fits = true   // plays this dump's files (hermit.py fits and fit_note)
         package var note = ""     // why not, in words ("plays update 1.4.3; your files are update 1.2.0")
         package var plays = ""    // the versions it plays, in words
         package var firmware = "" // "always" or "nsp": needs the Switch's system fonts (a firmware folder), always or from an .nsp base
-        package var quick = false  // can be a quick try (switch2mac.py --quick): nxnative's builder, and a list of the shaders players used
+        package var quick = false  // can be a quick try (hermit.py --quick): nxnative's builder, and a list of the shaders players used
     }
     package struct MacReport: Equatable { package var mac, chip, memoryGB, macOS, build, fps, peakGB, notes, source: String }
 
@@ -90,7 +90,7 @@ package struct DumpInfo: Equatable {
 
 extension BuildStore {
     /// Hermit's build script, in the checkout the app drives.
-    package var hermitScript: String { repo.path + "/switch2mac.py" }
+    package var hermitScript: String { RepoLayout.script(in: repo.path) }
     /// Where a game builds: its own work folder, kept for the next build.
     package func hermitWorkDir(_ titleID: String) -> String {
         NSHomeDirectory() + "/Library/Application Support/\(AppIdentity.folder)/builds/" + titleID
@@ -121,7 +121,7 @@ extension BuildStore {
     }
 
     // A Switch 1 game's files are encrypted: the builder opens them with the player's own prod.keys. The app keeps only where that file is (never its
-    // contents), passes the path to switch2mac.py identify and build alone, and writes "<your prod.keys>" for it wherever a command is shown or kept.
+    // contents), passes the path to hermit.py identify and build alone, and writes "<your prod.keys>" for it wherever a command is shown or kept.
     nonisolated package static let keysPathKey = "s2m.keysPath"
     nonisolated package static let keysExplainedKey = "s2m.keysExplained"
     nonisolated package static let keysPlaceholder = "<your prod.keys>"
@@ -148,7 +148,7 @@ extension BuildStore {
         return args.map { a in var a = a; if !k.isEmpty { a = a.replacingOccurrences(of: k, with: Self.keysPlaceholder) }; if !f.isEmpty { a = a.replacingOccurrences(of: f, with: "<your firmware>") }; return a }
     }
 
-    /// The dump folder the player chose: switch2mac.py says which game it is (in the background), and the card shows it.
+    /// The dump folder the player chose: hermit.py says which game it is (in the background), and the card shows it.
     /// Clear the Build page's game: no file or folder, nothing read from it, and the update, DLC and pick added for it go with it (the gameDir setter)
     package func clearDump() {
         guard !running else { return }
@@ -169,11 +169,11 @@ extension BuildStore {
                 self.identifying = false
                 self.dumpInfo = DumpInfo(json: line).map { var i = $0; i.folder = folder; return i } ?? {
                     var i = DumpInfo(json: "{}")!; i.folder = folder
-                    i.problem = r.started ? (r.err.split(separator: "\n").last.map(String.init) ?? "switch2mac.py did not answer") : "switch2mac.py could not be started"
+                    i.problem = r.started ? (r.err.split(separator: "\n").last.map(String.init) ?? "hermit.py did not answer") : "hermit.py could not be started"
                     return i
                 }()
                 // An update or DLC file chosen as the game (picked by hand, or a Library entry saved before add-ons were told apart): the game is its base
-                // file, which switch2mac.py found beside it; the card then names the game's own file, and the update is still found and used
+                // file, which hermit.py found beside it; the card then names the game's own file, and the update is still found and used
                 if let base = self.dumpInfo?.parts?.basePath, !base.isEmpty, base != folder, FileManager.default.fileExists(atPath: base),
                    !((try? URL(fileURLWithPath: folder).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false) {
                     self.chooseDump(base); return
@@ -189,7 +189,7 @@ extension BuildStore {
         }
     }
 
-    /// A Switch game's choices for switch2mac.py: which game of a cartridge, and the update and DLC files the player added.
+    /// A Switch game's choices for hermit.py: which game of a cartridge, and the update and DLC files the player added.
     package var switchChoices: [String] {
         (s1Pick.isEmpty ? [] : ["--title-id", s1Pick]) + s1Extra.flatMap { ["--add", $0] } + (s1NoUpdate ? ["--no-update"] : []) + (customBuild.isEmpty ? [] : ["--custom", customBuild])
             + (firmwarePath.isEmpty ? [] : ["--firmware", firmwarePath])
@@ -209,7 +209,7 @@ extension BuildStore {
     }
 
     // The Switch's system fonts for MacNativeGames' ports: the player's unpacked firmware folder (.nca files). Only its path is kept, as with the keys;
-    // without one switch2mac.py looks beside prod.keys
+    // without one hermit.py looks beside prod.keys
     nonisolated package static let firmwarePathKey = "s2m.firmwarePath"
     package var firmwarePath: String {
         let p = UserDefaults.standard.string(forKey: Self.firmwarePathKey) ?? ""
@@ -229,7 +229,7 @@ extension BuildStore {
     /// A cartridge with several games: build this one.
     package func pickSwitchGame(_ titleID: String) { guard s1Pick != titleID, !gameDir.isEmpty else { return }; s1Pick = titleID; chooseDump(gameDir) }
 
-    /// The build of the chosen dump: switch2mac.py build, then install into the library folder.
+    /// The build of the chosen dump: hermit.py build, then install into the library folder.
     package func startHermitBuild() {
         guard !running, let info = dumpInfo, info.ok else { return }
         guard FileManager.default.fileExists(atPath: hermitScript) else { fail(String(format: t("msg.repoInvalid"), shortPath(repo.path))); return }
@@ -262,7 +262,7 @@ extension BuildStore {
                     return
                 }
                 self.markAllDone()
-                // into the library folder (switch2mac.py install --to), off the main thread: a move across volumes copies tens of GB
+                // into the library folder (hermit.py install --to), off the main thread: a move across volumes copies tens of GB
                 try? FileManager.default.createDirectory(atPath: lib, withIntermediateDirectories: true)
                 let installArgs = [self.hermitScript, "--work", work, "install", "--to", lib]
                 let runner = self.runner
@@ -290,8 +290,8 @@ extension BuildStore {
 }
 
 extension BuildStore {
-    /// Where `switch2mac.py install` put the app (its "installed: <path>" line): the file name is the game's name with ":" as " -",
-    /// since Finder shows a ":" in a file name as "/". Nil when the line is missing (older switch2mac.py: the app is then `<name>.app`).
+    /// Where `hermit.py install` put the app (its "installed: <path>" line): the file name is the game's name with ":" as " -",
+    /// since Finder shows a ":" in a file name as "/". Nil when the line is missing (older hermit.py: the app is then `<name>.app`).
     package static func installedApp(_ out: String) -> String? {
         for line in out.split(separator: "\n") where line.hasPrefix("installed: ") {
             let path = line.dropFirst("installed: ".count).trimmingCharacters(in: .whitespaces)
@@ -303,7 +303,7 @@ extension BuildStore {
 
 // MARK: Storage (Settings → Storage)
 
-/// One thing building left behind (`switch2mac.py storage --json`): a game's build folder or an engine copy no build uses.
+/// One thing building left behind (`hermit.py storage --json`): a game's build folder or an engine copy no build uses.
 package struct StorageItem: Identifiable, Equatable {
     package var id: String { path }
     package let kind: String   // "build" or "engine"
@@ -313,7 +313,7 @@ package struct StorageItem: Identifiable, Equatable {
 }
 
 extension BuildStore {
-    /// What building left behind, or (clean) removes it: `switch2mac.py storage --json [--clean]`, in the background. The answer comes on the main
+    /// What building left behind, or (clean) removes it: `hermit.py storage --json [--clean]`, in the background. The answer comes on the main
     /// thread: the items (what was there before a clean) and the bytes freed, or nil when the script could not run. Refused while a build runs.
     package func storage(clean: Bool, done: @escaping ([StorageItem]?, Int64) -> Void) {
         guard !(clean && running) else { done(nil, 0); return }

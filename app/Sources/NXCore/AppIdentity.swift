@@ -1,7 +1,7 @@
 import Foundation
 
 /// The app's name and its own folder. The app was called switch2mac until it became Hermit: the repository is azmasm/hermit now, while
-/// switch2mac.py and the "switch2mac" build id keep their names; the app, its bundle id and its folder are Hermit's.
+/// hermit.py and the "switch2mac" build id keep their names; the app, its bundle id and its folder are Hermit's.
 package enum AppIdentity {
     package static let name = "Hermit"
     package static let bundleID = "io.github.azmasm.hermit"

@@ -556,7 +556,7 @@ enum OnboardingLaunch {
         case .python: return stores.dependencies.deps.filter { $0.id == "python" }
         case .dotnet: return stores.dependencies.deps.filter { $0.id == "dotnet" }
         // MacNativeGames' Homebrew packages (optional rows) come along when Homebrew is already there; without it they wait for a MacNativeGames
-        // build (switch2mac.py installs them then) or the Install button in Settings, since Homebrew's own install asks for the Mac's password
+        // build (hermit.py installs them then) or the Install button in Settings, since Homebrew's own install asks for the Mac's password
         case .tools: return stores.dependencies.deps.filter { !Self.handled.contains($0.id) && (!$0.optional || Self.hasBrew) }
         }
     }

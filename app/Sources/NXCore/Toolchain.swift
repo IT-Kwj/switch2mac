@@ -119,7 +119,7 @@ package enum Toolchain {
     /// nsz is always installed: NSZ / XCZ dumps are accepted by the pipeline now, and a player who
     /// downloads one should not have to run pip by hand (it is a few hundred KB).
     package static func pipPackages(_ version: (Int, Int)) -> [String] {
-        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "zstandard"]   // Hermit: no nsz (console keys); zstandard for switch2mac.py
+        version < (3, 14) ? ["lz4", "capstone", "fonttools", "zbic", "backports.zstd", "zstandard"]   // Hermit: no nsz (console keys); zstandard for hermit.py
                           : ["lz4", "capstone", "fonttools", "zbic", "zstandard"]
     }
 
@@ -409,7 +409,7 @@ package enum Toolchain {
 
     /// What MacNativeGames' builder needs from Homebrew (its build_app.py: `brew install opus libvpx python@3.14`): Python 3.14 (it reads zstd with the
     /// standard library) and the Opus and libvpx libraries (the game's audio and its movies). Only its builds need them, so the rows are optional; the build
-    /// also installs whatever is missing when one starts (switch2mac.py). `exists` looks for a file, `brew` is Homebrew's own command when it is there:
+    /// also installs whatever is missing when one starts (hermit.py). `exists` looks for a file, `brew` is Homebrew's own command when it is there:
     /// without it, the install puts Homebrew in first.
     package static let mngDeps: [(formula: String, probe: [String], key: String)] = [
         ("python@3.14", ["/opt/homebrew/bin/python3.14", "/usr/local/bin/python3.14"], "dep.mng.python"),

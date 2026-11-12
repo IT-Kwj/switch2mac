@@ -13,7 +13,7 @@ import importlib.util, json, re, subprocess, sys, unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-_s = importlib.util.spec_from_file_location('s2m', ROOT / 'switch2mac.py'); S2M = importlib.util.module_from_spec(_s); _s.loader.exec_module(S2M)
+_s = importlib.util.spec_from_file_location('s2m', ROOT / 'hermit.py'); S2M = importlib.util.module_from_spec(_s); _s.loader.exec_module(S2M)
 BUILD_LABELS = {'pokopia': 'pokopia-native', 'nxnative': 'nxnative', 'azmasm': 'switch2mac', 'switch2mac': 'switch2mac'}   # words in the Build answer, the more particular first
 
 

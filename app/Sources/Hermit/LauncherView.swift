@@ -556,7 +556,7 @@ struct LauncherView: View {
             // scan, or from the last build. Falling back to the base's folder would put the update and DLC out of reach.
             m.gameDir = game.sourceFolder.isEmpty ? (m.basePath as NSString).deletingLastPathComponent : game.sourceFolder
             // A Switch game found as a file goes to the build as that file, the one the library found: its folder may hold other games
-            // (a ROMs folder), and switch2mac.py takes the file's own update and DLC from beside it by title ID.
+            // (a ROMs folder), and hermit.py takes the file's own update and DLC from beside it by title ID.
             if let base = game.inputs["base"]?.first, ["nsp", "nsz", "xci", "xcz"].contains((base as NSString).pathExtension.lowercased()) { m.gameDir = base }
         }
         m.outDir = game.outputDirectory

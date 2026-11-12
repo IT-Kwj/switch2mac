@@ -55,4 +55,4 @@ About 320 shaders (the final screen copy, the movie colour conversion, the minim
 
 ## App
 
-`dm/mac/pack_app.py` packs the host, rewritten modules, Metal libraries, RomFS image and fonts into one app (APFS clones on the same disk). Hermit added the in-game overlay (key 1) and settings panel (key 2), a no-window launch that applies every setting, and run-time shader capture into the app's support folder for `switch2mac.py refresh`.
+`dm/mac/pack_app.py` packs the host, rewritten modules, Metal libraries, RomFS image and fonts into one app (APFS clones on the same disk). Hermit added the in-game overlay (key 1) and settings panel (key 2), a no-window launch that applies every setting, and run-time shader capture into the app's support folder for `hermit.py refresh`.

@@ -9,7 +9,7 @@ Built with [MacNativeGames](https://github.com/ly05010419/MacNativeGames) by ly0
 In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game), then your `prod.keys`. In Terminal:
 
 ```bash
-./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+./hermit.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
 ```
 
 Add `--firmware <your unpacked firmware dump>` (or `--shared-fonts <a Tears of the Kingdom build's fonts>`) when the port needs the Switch's system fonts (an `.nsp` carries none).

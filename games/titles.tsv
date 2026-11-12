@@ -1,5 +1,5 @@
 # Switch and Switch 2 games by title ID and name: nxnative's profiles (dm/games/<title ID>/game.tsv "name"), for recognising a game file named only after its game
-# (switch2mac.py title_by_name). Names only, no game data. Columns: title ID, name
+# (hermit.py title_by_name). Names only, no game data. Columns: title ID, name
 0100000000010000	Super Mario Odyssey
 0100000011D90000	Pokémon Brilliant Diamond
 010005501E68C000	Ace Attorney Investigations Collection

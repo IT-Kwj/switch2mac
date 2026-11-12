@@ -426,7 +426,7 @@ final class GameLibrary: ObservableObject {
             let named = TitleID.parse(url.lastPathComponent)
             guard let id = named ?? (SwitchTitles.looksLikeAddOn(url) ? nil : SwitchTitles.byName(url.lastPathComponent, repo: repo)) else {
                 // A game file whose name says no game Hermit knows: listed under its file name, so the player sees it was found. Building it reads its title
-                // from the file itself (switch2mac.py builder_titles, with the player's keys) and offers nxnative as an experimental build
+                // from the file itself (hermit.py builder_titles, with the player's keys) and offers nxnative as an experimental build
                 if named == nil, !SwitchTitles.looksLikeAddOn(url), result["file:" + url.path] == nil {
                     var game = LibraryGame(titleID: url.path, name: SwitchTitles.displayName(url.lastPathComponent))   // keyed by its path until a build learns its title ID (recordCompletedApp)
                     game.inputs = ["base": [url.path]]; game.sourceFolder = url.deletingLastPathComponent().path; game.outputDirectory = game.sourceFolder
@@ -717,7 +717,7 @@ final class GameLibrary: ObservableObject {
 
 
 /// A Switch game file named only after its game ("The Legend of Zelda Tears of the Kingdom.xci"): its title ID by name, from the repository's games/titles.tsv
-/// and the games' own pages, the longest name that fits (switch2mac.py title_by_name and norm_title do the same for a build). Read once per repository.
+/// and the games' own pages, the longest name that fits (hermit.py title_by_name and norm_title do the same for a build). Read once per repository.
 enum SwitchTitles {
     nonisolated(unsafe) private static var cache: (repo: String, names: [(key: String, id: UInt64)])?
     private static let lock = NSLock()

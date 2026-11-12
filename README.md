@@ -2,7 +2,7 @@
 
 **Play your Nintendo Switch and Switch 2 games natively on your Mac.** Hermit is a Mac app that turns **your own game dump** into a normal, double-clickable Mac game: choose your game, press Build, play.
 
-Hermit was called switch2mac until this release: older links still lead here, and `switch2mac.py` and a few names inside keep the old name for now.
+Hermit was called switch2mac until this release: older links still lead here, `./switch2mac.py` still works (it runs `hermit.py`), and a few names inside keep the old name.
 
 It is not an emulator, and it contains no game, key or Nintendo artwork: you bring your own copy, and what it builds stays on your Mac. Hermit is an independent, non-commercial fan project, not affiliated with Nintendo ([LEGAL.md](LEGAL.md)).
 
@@ -109,22 +109,22 @@ cd hermit
 ```
 
 ```bash
-./switch2mac.py setup
+./hermit.py setup
 ```
 
 ```bash
-./switch2mac.py build "/path/to/your/dump"
+./hermit.py build "/path/to/your/dump"
 ```
 
 ```bash
-./switch2mac.py install
+./hermit.py install
 ```
 
 - `setup` checks macOS, Xcode, Metal, .NET, Python and git, and stops with the exact fix for anything missing; then it makes a Python environment in `.venv` (it finds a new enough Python by itself: macOS's own is too old).
 - `build` writes only into `./work`. Mario Kart World is built step by step here ([its page](games/mario-kart-world/README.md#build)). The other games: their engine is fetched once into `./engines` at the version the game's `game.json` names, Hermit's front end (overlay and key-2 settings) is added to it, and the engine's own builder makes the app.
 - `build` first checks there is enough free disk space for that game.
 - `install` moves the app to `/Applications`, replacing an older one.
-- `./switch2mac.py builds <game>` shows a game's builds, the one your Mac gets and why, and how each ran on players' Macs; `build --engine <id>` builds another one.
+- `./hermit.py builds <game>` shows a game's builds, the one your Mac gets and why, and how each ran on players' Macs; `build --engine <id>` builds another one.
 
 ### The first start waits
 
@@ -159,7 +159,7 @@ Each game is built with the engine its port was made with, pinned in its `game.j
 
 | Path | What |
 |---|---|
-| `switch2mac.py` | what the app runs: setup, identify, build, install (and run, refresh, builds for developers) |
+| `hermit.py` | what the app runs: setup, identify, build, install (and run, refresh, builds for developers) |
 | `games/<game>/` | one folder per game: `game.json` (title ID, name, version; the engine and its commit for a game built with another engine, or several builds and which Mac gets which, as for Mario Kart World), its page (`README.md`: dump, build, settings, known issues) and, for Mario Kart World, the app's settings (`launcher.py`, `env.txt`) and the run-time shader list (`runtime_shaders.tsv`) |
 | `games/<game>/shader_list.tsv` | that game's shared shader list (see Contributing): one per game and build, for the engine its app is built with (a second build's: `shader_list-<build>.tsv`) |
 | `app/` | the Hermit app (SwiftPM; `app/tools/make_app.sh` makes `app/build/Hermit.app`, `--bundle-tools` the download with Python and tools inside), adapted from [NX2Apple](https://github.com/LNPANDY/NX2Apple) (MIT) |

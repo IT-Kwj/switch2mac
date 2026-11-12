@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Reading a NUP container (one .nup file: a Switch 2 game's base, updates and DLC, unencrypted; https://github.com/a55uka/nup SPEC v1) without unpacking it:
-# its packages, its title ID and the update versions it holds, every file checked against its SHA-256 as it is read. switch2mac.py uses it to identify a
+# its packages, its title ID and the update versions it holds, every file checked against its SHA-256 as it is read. hermit.py uses it to identify a
 # .nup dump before any engine is fetched; the build itself hands the .nup to nxnative's own builder, which packs it (scripts/pack_nup.py there).
 # Taken from nxnative (MIT, github.com/seedds/nxnative) scripts/pack_nup.py at 6bbdbbe25511: the container reader and scan(), unchanged; its packing steps
 # (exefs, pack, pack_version: they need nxnative's dm/tools) are left out. See NOTICE.md.

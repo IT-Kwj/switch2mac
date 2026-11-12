@@ -47,7 +47,7 @@ package struct ActionCard: View {
             Text(loc.t("status.installFirst")).font(.manrope(13)).foregroundStyle(LauncherPalette.building)
         } else if !repo.isRepo {
             Text(loc.t("status.chooseRepo")).font(.manrope(13)).foregroundStyle(LauncherPalette.building)
-        } else if build.identifying {   // Hermit: one dump folder, named by switch2mac.py identify
+        } else if build.identifying {   // Hermit: one dump folder, named by hermit.py identify
             Text("Reading your dump…").font(.manrope(13)).foregroundStyle(.secondary)
         } else if build.dumpInfo == nil {
             Text("Choose your game’s dump folder").font(.manrope(13)).foregroundStyle(.secondary)

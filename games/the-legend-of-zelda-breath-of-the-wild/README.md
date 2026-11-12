@@ -14,7 +14,7 @@ Two builds:
 In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
 
 ```bash
-./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+./hermit.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
 ```
 
 MacNativeGames builds from an `.nsp`, and always for Breath of the Wild, also need the Switch's system fonts: add `--firmware <your unpacked firmware dump>` or `--shared-fonts <the fonts an earlier Tears of the Kingdom build extracted>`.

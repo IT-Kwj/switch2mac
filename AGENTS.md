@@ -4,11 +4,11 @@ These notes are for an AI coding assistant (Claude Code, Codex, Cursor and other
 
 ## What this project is
 
-Hermit is a Mac app (`app/`, released as `Hermit-<version>.pkg` for new installs and `Hermit-macOS-arm64.zip` for its own updater) that builds native Mac apps of Nintendo Switch and Switch 2 games from the user's own dump. Players use the app; the app runs `switch2mac.py` from its own copy of this repository, which it updates from `main` when it opens. So a change to `games/`, `switch2mac.py` or `tools/` reaches players with a push; a change to `app/` needs a new release. The game's Arm code runs natively; it is not an emulator.
+Hermit is a Mac app (`app/`, released as `Hermit-<version>.pkg` for new installs and `Hermit-macOS-arm64.zip` for its own updater) that builds native Mac apps of Nintendo Switch and Switch 2 games from the user's own dump. Players use the app; the app runs `hermit.py` from its own copy of this repository, which it updates from `main` when it opens. So a change to `games/`, `hermit.py` or `tools/` reaches players with a push; a change to `app/` needs a new release. The game's Arm code runs natively; it is not an emulator.
 
 Each game in `games/<game>/` is built with the engine its port was made with, pinned to a commit in its `game.json`, and fetched into `engines/<kind>-<commit>/` by `build`:
 
-- **Hermit's own engine**, [hermit-engine](https://github.com/azmasm/hermit-engine) (a fork of [nxnative](https://github.com/seedds/nxnative) with NVN2 on Metal, mesh / task shaders, movies, translator fixes and performance work): Mario Kart World 1.0.0, built step by step by `switch2mac.py`.
+- **Hermit's own engine**, [hermit-engine](https://github.com/azmasm/hermit-engine) (a fork of [nxnative](https://github.com/seedds/nxnative) with NVN2 on Metal, mesh / task shaders, movies, translator fixes and performance work): Mario Kart World 1.0.0, built step by step by `hermit.py`.
 - **upstream nxnative**: Donkey Kong Bananza, Yoshi and the Mysterious Book, Splatoon Raiders, Hyrule Warriors: Age of Imprisonment, Fire Emblem Fortune's Weave, Mario Tennis Fever, Star Fox, and the second builds of Mario Kart World and Pokopia, built by nxnative's own builder.
 - **xFractals' pokopia-native**: Pokémon Pokopia's default build.
 
@@ -17,7 +17,7 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 ## Rules
 
 - **Never commit or upload game content**: RomFS / ExeFS files, shader dumps (`*.ctl`, `*.code`), Metal libraries, saves, built apps, or screenshots and logs with the user's paths or personal data. `work/` and `.venv/` are ignored; keep it that way.
-- **No keys or decryption here.** Hermit contains no decryption code and never reads key values, copies, stores or uploads keys (`check_keys` reads only the key names, to tell a wrong file). A Switch 1 game's files are opened by its builder with the player's own `prod.keys`, whose path only is passed to it (`switch2mac.py build --keys`); the path is hidden in every output (`HIDE` in switch2mac.py, `BuildStore.hidingKeys` in the app). Never add code that decrypts game files, even a header check: identify reads only the file names and NSP ticket names.
+- **No keys or decryption here.** Hermit contains no decryption code and never reads key values, copies, stores or uploads keys (`check_keys` reads only the key names, to tell a wrong file). A Switch 1 game's files are opened by its builder with the player's own `prod.keys`, whose path only is passed to it (`hermit.py build --keys`); the path is hidden in every output (`HIDE` in hermit.py, `BuildStore.hidingKeys` in the app). Never add code that decrypts game files, even a header check: identify reads only the file names and NSP ticket names.
 - **Never help anyone get games, keys or firmware**, in code, docs, issues or replies: no links, no names of sites, no "where to find". No console exploits, no online cheats. Hermit is non-commercial: no donation or payment links. See LEGAL.md; `tools/issue_guard.py` hides issues and comments that break this.
 - **Ask before launching the game.** It takes the screen and plays sound. Never send it scripted inputs unless the user asks for that.
 - **Ask before anything slow or large**: a build takes 20 minutes to hours (some games have over 100,000 shaders) and tens of GB of disk.
@@ -29,13 +29,13 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 ## Commands
 
 ```bash
-./switch2mac.py setup
-./switch2mac.py identify "<dump folder>"
-./switch2mac.py builds <game>
-./switch2mac.py build "<dump folder>" [--engine <id>]
-./switch2mac.py run [VAR=value ...]
-./switch2mac.py refresh
-./switch2mac.py install
+./hermit.py setup
+./hermit.py identify "<dump folder>"
+./hermit.py builds <game>
+./hermit.py build "<dump folder>" [--engine <id>]
+./hermit.py run [VAR=value ...]
+./hermit.py refresh
+./hermit.py install
 ```
 
 - **`identify`**: one JSON line for the app (the game, its builds, the one this Mac gets and why, players' reports).
@@ -49,7 +49,7 @@ A GitHub workflow (`.github/workflows/update-builds.yml`, every 5 minutes) moves
 
 | Need | Look at |
 |---|---|
-| Build steps | `switch2mac.py` |
+| Build steps | `hermit.py` |
 | The app | `app/` (`app/ARCHITECTURE.md`; `app/tools/make_app.sh`, `--bundle-tools` for a release) |
 | A game's builds, which Mac gets which, players' reports | `games/<game>/game.json`, `games/<game>/reports.tsv` |
 | A game built with another engine, and the front end added to it (overlay, key-2 settings, no launch window) | `games/<game>/game.json` "engine", `tools/engine/patch.py`, `tools/engine/s2m_ui.m`; moving it to its build's newest commit: `tools/engine/update.py` |

@@ -1,7 +1,7 @@
 import Foundation
 
 /// A game's builds as the repository lists them (games/<game>/game.json "builds": Mario Kart World has Hermit's engine and nxnative's), and the one
-/// installed on this Mac (s2m_build.txt in the game's data folder, written by switch2mac.py install). The Library shows the installed one and Manage offers the others.
+/// installed on this Mac (s2m_build.txt in the game's data folder, written by hermit.py install). The Library shows the installed one and Manage offers the others.
 enum GameBuilds {
     struct Build: Equatable { let id, name: String }
 
@@ -36,7 +36,7 @@ enum GameBuilds {
     nonisolated(unsafe) private static var pageCache: (repo: String, ids: Set<String>)?
     private static let pageLock = NSLock()
 
-    /// The build installed, by id; nil before switch2mac.py install noted one.
+    /// The build installed, by id; nil before hermit.py install noted one.
     static func installed(titleID: String) -> String? {
         let note = NSHomeDirectory() + "/Library/Application Support/nxnative/\(titleID)/s2m_build.txt"
         return (try? String(contentsOfFile: note, encoding: .utf8))?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty

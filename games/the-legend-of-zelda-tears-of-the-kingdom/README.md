@@ -14,14 +14,14 @@ Two builds:
 In the Hermit app: **+ Build game**, choose the game's file (or the folder with its base game, update and DLC), then your `prod.keys`. In Terminal:
 
 ```bash
-./switch2mac.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
+./hermit.py build "<the game's .xci or .nsp, or its folder>" --keys <path of prod.keys>
 ```
 
 MacNativeGames builds from an `.nsp`, and always for Breath of the Wild, also need the Switch's system fonts: add `--firmware <your unpacked firmware dump>` or `--shared-fonts <the fonts an earlier Tears of the Kingdom build extracted>`.
 
 ## Hermit's fix for MacNativeGames' build
 
-**Version 1.0.0: loading a save near some areas no longer crashes** (Zora's Domain and others; MacNativeGames issues [#1742](https://github.com/ly05010419/MacNativeGames/issues/1742) and [#1792](https://github.com/ly05010419/MacNativeGames/issues/1792)). The game keeps its merged area scenery in a 32 KB memory block of its own; with some saves it fills up, a request comes back empty and the game crashes (`main+0x855560`). Hermit makes that block 64 KB after MacNativeGames' builder has made the app: one instruction (`main+0xec1f78`, the fix lili2029 found and tested on #1742) and the app's check of its code. It is `fixes` in [`game.json`](game.json), done by `switch2mac.py` (`mng_fixes`) on every build, whatever MacNativeGames commit the build uses:
+**Version 1.0.0: loading a save near some areas no longer crashes** (Zora's Domain and others; MacNativeGames issues [#1742](https://github.com/ly05010419/MacNativeGames/issues/1742) and [#1792](https://github.com/ly05010419/MacNativeGames/issues/1792)). The game keeps its merged area scenery in a 32 KB memory block of its own; with some saves it fills up, a request comes back empty and the game crashes (`main+0x855560`). Hermit makes that block 64 KB after MacNativeGames' builder has made the app: one instruction (`main+0xec1f78`, the fix lili2029 found and tested on #1742) and the app's check of its code. It is `fixes` in [`game.json`](game.json), done by `hermit.py` (`mng_fixes`) on every build, whatever MacNativeGames commit the build uses:
 
 - applied only to 1.0.0 (main's build ID) and only where the original instruction is found;
 - once MacNativeGames makes the block bigger itself, Hermit sees it and adds nothing;

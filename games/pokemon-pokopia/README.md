@@ -12,7 +12,7 @@ Pokopia can be built three ways. Same game, same save; each has its own shared s
 | `nxnative` | upstream [nxnative](https://github.com/seedds/nxnative)'s Pokopia profile (commit in `game.json`) | 2.0.1 (v655360) only | hours: all ~131,000 shaders, and over 200 GB of disk while it builds ([#1174](https://github.com/seedds/nxnative/issues/1174)) |
 | `horizon-nx2` | [joaoalvess/horizon-nx2](https://github.com/joaoalvess/horizon-nx2) (MIT), tuned on a fanless 16 GB MacBook Air M4 | 2.0.1 (v655360) only | as nxnative's |
 
-`./switch2mac.py build` takes horizon-nx2's on a MacBook Air or a Mac with 16 GB or less when the dump is 2.0.1, and pokopia-native's otherwise; `--engine nxnative` builds the other (the app has a Build menu for it). `./switch2mac.py builds pokemon-pokopia` shows both and how each ran on players' Macs. Neither has been test-built in Hermit.
+`./hermit.py build` takes horizon-nx2's on a MacBook Air or a Mac with 16 GB or less when the dump is 2.0.1, and pokopia-native's otherwise; `--engine nxnative` builds the other (the app has a Build menu for it). `./hermit.py builds pokemon-pokopia` shows both and how each ran on players' Macs. Neither has been test-built in Hermit.
 
 ## pokopia-native's build
 
@@ -42,9 +42,9 @@ Built with [pokopia-native](https://github.com/xFractals/pokopia-native) by xFra
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
-Then `./switch2mac.py install`. `refresh` and `run` are for Mario Kart World only.
+Then `./hermit.py install`. `refresh` and `run` are for Mario Kart World only.
 
 A dump copied over FTP must be copied in **binary** mode: a text-mode copy damages the code files, and the build stops saying they are cut short or damaged.

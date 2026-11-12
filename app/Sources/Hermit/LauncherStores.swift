@@ -145,7 +145,7 @@ import NXModel
         return d
     }
 
-    /// The panel of the Build page's dump: a dump folder, one .nup file (a NUP container, which switch2mac.py reads and the nxnative-based builds open),
+    /// The panel of the Build page's dump: a dump folder, one .nup file (a NUP container, which hermit.py reads and the nxnative-based builds open),
     /// or a Switch 1 game: one of its .nsp / .nsz / .xci / .xcz files, or the folder holding its base game, update and DLC.
     static func dumpPanel() -> NSOpenPanel {
         let d = NSOpenPanel()

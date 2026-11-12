@@ -8,7 +8,7 @@ import Combine
 //     tools/engine/update.py) commits one line per change, "<game>[ (<build> build)]: <engine> <commit12> (<what the engine's commit says>)",
 //     and "New game: <name> (nxnative <commit12>)" for a game it adds;
 //   - CHANGELOG.md in the app's copy of the repository: the maintainer's own words for the bigger news.
-// A game's own build is read from the app it built: S2M_ENGINE=<engine>-<commit12> in Contents/Resources/dm/env.txt (switch2mac.py's
+// A game's own build is read from the app it built: S2M_ENGINE=<engine>-<commit12> in Contents/Resources/dm/env.txt (hermit.py's
 // app_switches); an app from before that has only the engine, and then the app's date says which updates came after it.
 
 enum WhatsNew {

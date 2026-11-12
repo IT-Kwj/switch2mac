@@ -22,7 +22,7 @@ Built with nxnative's own builder at the commit `game.json` names (fetched once 
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
 ## azmasm's build

@@ -20,7 +20,7 @@ Mario Kart World can be built four ways. Same game, same save; each has its own 
 | `mkw-neo` | [MenAtCafe/mkw-neo](https://github.com/MenAtCafe/mkw-neo) (MIT) | 1.0.0 | 16 GB or less, and every MacBook Air | Tuned to fit 8 GB: a race holds about 4 GB (40-58 fps on a MacBook Neo, every course played) |
 | `nxnative-mkw` | [Thijs2004/nxnative-mkw](https://github.com/Thijs2004/nxnative-mkw) (MIT) | 1.8.0 (update v917504) | any Mac whose dump has the 1.8.0 update | The only build here with a 1.8.0 profile |
 
-`./switch2mac.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac` (azmasm's build). `./switch2mac.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the Hermit app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
+`./hermit.py build` picks one for your dump and your Mac (`game.json` "choose", first rule that fits): a dump with the 1.8.0 update gets `nxnative-mkw`; otherwise 16 GB or less or a MacBook Air gets `mkw-neo`, less than 24 GB or an M3 and newer `nxnative`, and the rest `switch2mac` (azmasm's build). `./hermit.py builds <dump>` shows the choice, why, and how each ran on players' Macs (`reports.tsv`). `--engine <id>` builds another one; the Hermit app has a Build menu for it. Installing another build keeps your save; the old build's pipeline record is put aside, since the engines name shaders differently.
 
 ## Build
 
@@ -29,11 +29,11 @@ azmasm's build uses [hermit-engine](https://github.com/azmasm/hermit-engine), fe
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build** (it shows which of the [two builds](#two-builds) your Mac gets). In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
 ```bash
-./switch2mac.py install
+./hermit.py install
 ```
 
 `build` writes only into `./work`:
@@ -52,11 +52,11 @@ The repository also carries this game's **shared shader list** ([`shader_list.ts
 If something still looks missing after a while (a shader the list does not cover, e.g. in a mode not tested), the app saves it; then:
 
 ```bash
-./switch2mac.py refresh
+./hermit.py refresh
 ```
 
 ```bash
-./switch2mac.py install
+./hermit.py install
 ```
 
 ## Settings (key 2)
@@ -76,7 +76,7 @@ If something still looks missing after a while (a shader the list does not cover
 
 | File | What |
 |---|---|
-| `game.json` | title ID, name, version and RomFS marker: how `switch2mac.py` knows this game; its two builds (`builds`: engine, commit, shader list) and which Mac gets which (`choose`) |
+| `game.json` | title ID, name, version and RomFS marker: how `hermit.py` knows this game; its two builds (`builds`: engine, commit, shader list) and which Mac gets which (`choose`) |
 | `reports.tsv` | how the game ran on players' Macs, per build (Mac, chip, memory, macOS, fps, peak memory, notes, source): what `choose` is decided from. Only reports that name the Mac |
 | `shader_list.tsv`, `shader_list-nxnative.tsv` | the shared shader list of each build |
 | `launcher.py` | writes the app's settings list (`Resources/dm/launcher.json`): nxnative's generic settings plus Performance overlay, Performance mode and this game's defaults |

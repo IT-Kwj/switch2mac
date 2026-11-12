@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-12 (2)
+
+- **`switch2mac.py` is now `hermit.py`** for people who build in Terminal: `./hermit.py build "<your dump>"`. The old command still works (it runs `hermit.py`), so nothing changes for the app or for older guides.
+- **The engine repository has a front page:** [hermit-engine](https://github.com/azmasm/hermit-engine) opens on a `builds` folder with a page for each of azmasm's builds (Mario Kart World, Ocarina of Time) and the branch its code is on.
+
 ## 2026-11-12 (1): Hermit 0.5.0
 
 - **switch2mac is now Hermit.** A hermit crab moves into a new shell; your games move to your Mac. New name, new icon (a pixel crab with a terminal prompt in its shell), same app. Your library, settings, builds and saves carry over by themselves the first time Hermit opens. The repository is now `azmasm/hermit` (older links still lead here); `switch2mac.py` keeps its name for now.

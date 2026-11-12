@@ -28,7 +28,7 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
-Then `./switch2mac.py install`. `refresh` and `run` are for Mario Kart World only.
+Then `./hermit.py install`. `refresh` and `run` are for Mario Kart World only.
