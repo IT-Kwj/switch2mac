@@ -373,3 +373,22 @@ DM_FOCUS_KEEP=1
   `DM_FPS_HOLD` = 掉帧时保持帧。
 - App 23.1 GB，仍带 logo 图标；已安装到 `/Applications`。
 
+### 2026-11-12 重新构建（nxnative 6815810dfa37）
+
+- 引擎版本：nxnative `6815810dfa37`（从 `3304d6a0d7ed` 升级）
+- Shader chain：`8d9afacc48e2`（全新编译）
+- Shader 数量：11,560 个（0 个缓存命中）
+- Shader 编译时间：5 分 11 秒
+- Shader list：13,502 行（比上次 13,431 行多 71 行）
+- 最终 App：23.4 GB
+- 构建产物：28 GB
+- Pipeline archive：743.0 MB
+- 已带 logo 图标：`--icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
+- 关键更新：
+  - 帧步进慢帧规则修复（连续 3 个慢帧不再立刻降档，MKW 约 40 fps 抖动改善）
+  - MKW 1.8.0 补上 host 帧步进
+  - 动态分辨率目标加入堆回收，减少每帧新建 Metal 内存
+- 自定义修改全部应用：中文界面、poll 100ms、中文设置项、`--icon`
+- 闪退问题：`6815810d` 仍未修复，`DM_FOCUS_KEEP=1` 继续保留
+- 0fps 长卡顿：上游 issue #1859 仍 open，本次未修复
+
