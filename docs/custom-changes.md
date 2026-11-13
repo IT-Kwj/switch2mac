@@ -442,3 +442,19 @@ DM_FOCUS_KEEP=1
 - `hermit.py` 新增旧 builder 图标兼容：builder 不认识 `--icon` 时，自动
   生成 `work/<tid>/extract/v917504/icon.jpg`，仍使用同一个图标。
 
+#### 2026-11-14：按代码推荐切回 `nxnative-mkw` 1.8.0
+
+- `game.json` 的 `choose` 第一条明确推荐 1.8.0 使用
+  `nxnative-mkw`（Thijs2004 `b1c5e4e5`），新 `nxnative` 目前只注册 v0。
+- 构建结果：11,649 个 shader，11,648 成功，**同一个 Ampere instruction 481
+  仍然失败**；说明这是 translator 的能力缺口，不是新/旧 builder 的差异。
+- App 23.2 GB，已安装到 `/Applications`，图标正常，存档未动。
+- 旧 fork 的专用设置项已补汉化：`Graphics preset`、`Frame rate`、
+  `Frame rate lock`、`Dynamic resolution`、`Render scale`、`Texture quality`、
+  `Encode thread`、`Tile memory (TBDR)`、`Free texture memory`。
+- `patch.py` 已加入这些旧 fork 行的替换；当前已安装 App 的 `launcher.json`
+  也直接修正并重新 ad-hoc 签名。
+- **以后规则**：更新上游代码后，先看 `game.json` + `choose` 推荐的构建；
+  只有代码里正式注册/推荐了新 builder，才切换过去。`--engine` 只能作为
+  实验性覆盖，不作为默认。
+
