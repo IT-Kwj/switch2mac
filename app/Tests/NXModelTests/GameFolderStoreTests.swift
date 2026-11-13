@@ -108,7 +108,7 @@ import XCTest
     }
 
     func testTheScriptGetsTheFolderAndNoKeys() throws {
-        throw XCTSkip("the original launcher's NSP script (-o, --work-dir): switch2mac builds a dump folder through switch2mac.py (BuildStore+Switch2Mac.swift)")
+        throw XCTSkip("the original launcher's NSP script (-o, --work-dir): switch2mac builds a dump folder through switch2mac.py (BuildStore+Hermit.swift)")
         let (store, game) = makeStore()
         store.scan(folder: game)
         store.startBuild()
@@ -163,7 +163,7 @@ import XCTest
 
     /// A NUP file (seedds/nxnative 423a674): one game, no keys, the file is the script's input, the build folder beside it.
     func testANUPFileIsOneGameAndTheScriptGetsTheFile() throws {
-        throw XCTSkip("the original launcher's NSP script (-o, --work-dir): switch2mac builds a dump folder through switch2mac.py (BuildStore+Switch2Mac.swift)")
+        throw XCTSkip("the original launcher's NSP script (-o, --work-dir): switch2mac builds a dump folder through switch2mac.py (BuildStore+Hermit.swift)")
         let (store, _) = makeStore()
         let nup = root + "/Games/Bananza.nup"
         write(nup, nupData())

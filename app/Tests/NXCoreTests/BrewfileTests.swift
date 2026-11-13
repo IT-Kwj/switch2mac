@@ -4,7 +4,7 @@ import XCTest
 /// #111: the repo-root Brewfile is the one list of Homebrew tools, and the launcher's dependency check offers the same.
 final class BrewfileTests: XCTestCase {
     private func brewfileLines() throws -> [String] {
-        // frontend/Tests/Switch2MacTests/BrewfileTests.swift -> the repository root
+        // frontend/Tests/HermitTests/BrewfileTests.swift -> the repository root
         var url = URL(fileURLWithPath: #filePath)
         for _ in 0..<4 { url.deleteLastPathComponent() }
         let text = try String(contentsOf: url.appendingPathComponent("Brewfile"), encoding: .utf8)

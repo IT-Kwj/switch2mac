@@ -11,10 +11,10 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "36e6e4aec4c78516e2bca6a2eabe6110587712d5"
+    "commit": "a2514d7def4e35f3c47f8792af9e6ad31c90ace9"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's tested profile with switch2mac's overlay and key-2 settings: 1.0.0, 1.0.1 or 1.2.1. 60 fps on an M1 Max."
+   "about": "nxnative's tested profile with Hermit's overlay and key-2 settings: 1.0.0, 1.0.1 or 1.2.1. 60 fps on an M1 Max."
   },
   {
    "id": "macnativegames",
@@ -22,7 +22,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "df1e321d4a9304855f81de3c9a3d471c4c748af5",
+    "commit": "03954f7fd57d484688953cfd18167c34f9de5f1b",
     "builder": {
      "script": "games/wonder/scripts/build_wonder.py",
      "cwd": "games/wonder",
@@ -51,7 +51,7 @@
    "watch": [
     "games/wonder"
    ],
-   "about": "ly05010419's MacNativeGames (MIT), its community Wonder port (early): 1.0.0, or 1.2.1 with its update (not 1.0.1); an .nsp needs your firmware for the system fonts. Its own runtime: no switch2mac overlay.",
+   "about": "ly05010419's MacNativeGames (MIT), its community Wonder port (early): 1.0.0, or 1.2.1 with its update (not 1.0.1); an .nsp needs your firmware for the system fonts. Its own runtime: no Hermit overlay.",
    "plays": "the base game 1.0.0 alone, or with update 1.2.1",
    "update_versions": [
     "1.2.1"

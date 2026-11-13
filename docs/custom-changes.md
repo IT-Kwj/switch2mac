@@ -9,7 +9,7 @@
 | 类别 | 仓库内位置 | 内容 | 恢复方式 |
 |---|---|---|---|
 | 中文化 | `tools/engine/patch.py`、`tools/engine/s2m_ui.m` | 设置面板、通用设置、语言名中文 | 已提交 git；`build` 时 `patch.py` 幂等自动应用 |
-| 默认游戏语言 | `games/donkey-kong-bananza/game.json`、`switch2mac.py` | 打包时默认简体中文（`zh-Hans`） | `build` 自动应用；改 `game.json` 的 `language` 即可 |
+| 默认游戏语言 | `games/donkey-kong-bananza/game.json`、`hermit.py` | 打包时默认简体中文（`zh-Hans`） | `build` 自动应用；改 `game.json` 的 `language` 即可 |
 | poll 卡顿修复 | `tools/engine/patch.py`（`hle_net_poll()`） | 引擎 `hle_net.c` 的 poll 空等上限 100 ms | `build` 时 `patch.py` 自动应用 |
 | 游戏图标（每次构建必做） | 源 logo → `builds/<游戏>/<tid>/extract/v<版本>/icon.jpg` | 自定义 App 图标，构建后必须验证非空白 | 构建前手动生成 `icon.jpg`，见 §3 |
 | 存档迁移 | 旧 `work/run/save/` → nxnative App 存档目录 | 恢复旧进度 | 手动复制 `account.sav` |
@@ -152,7 +152,7 @@ switch2mac 引擎（`run` 模式）的存档在 `work/run/save/Play/account.sav`
 ### 打正式包
 
 ```bash
-./switch2mac.py install
+./hermit.py install
 ```
 
 把 `work/Mario Kart World.app` 移到 `/Applications/Mario Kart World.app`。首次启动 macOS 会扫描 1–3 分钟（无窗口无 Dock 图标），不要重复打开。
@@ -202,12 +202,12 @@ builds/
 
 ```bash
 # 马车世界
-./switch2mac.py --work builds/mkw build "<MKW dump>"
-./switch2mac.py --work builds/mkw install
+./hermit.py --work builds/mkw build "<MKW dump>"
+./hermit.py --work builds/mkw install
 
 # 大金刚（以后其它游戏同理，建 builds/<名字>/）
-./switch2mac.py --work builds/dk build "<DK dump>"
-./switch2mac.py --work builds/dk install
+./hermit.py --work builds/dk build "<DK dump>"
+./hermit.py --work builds/dk install
 ```
 
 ### 注意
@@ -226,7 +226,7 @@ builds/
 "language": "zh-Hans"
 ```
 
-`switch2mac.py` 的 `engine_build()` 会把该值作为 `--language zh-Hans` 传给 nxnative 的 `build_ipa_from_nsp.py`。构建器会把它写进：
+`hermit.py` 的 `engine_build()` 会把该值作为 `--language zh-Hans` 传给 nxnative 的 `build_ipa_from_nsp.py`。构建器会把它写进：
 
 - `Contents/Info.plist` 的 `DMLanguage`（没有 env.txt 或保存的选择覆盖时，启动器用它作为默认语言）
 - `launcher.json` 里“游戏语言”的默认值（`DM_LANG`）
@@ -245,7 +245,7 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 
 ### 恢复
 
-这些改动在 switch2mac 仓库的 git 里；合并上游后保留 `game.json` 的 `language` 字段和 `switch2mac.py` 里把 `language` 传给 `--language` 的代码即可。
+这些改动在 Hermit 仓库的 git 里；合并上游后保留 `game.json` 的 `language` 字段和 `hermit.py` 里把 `language` 传给 `--language` 的代码即可。
 
 ## 6. 构建历史
 
@@ -297,9 +297,9 @@ defaults delete org.nxnative.040074a01bf12000 launcher.DM_LANG
 ### 马车世界 (Mario Kart World)
 
 - Logo 文件位置：`/Users/amid031799/Downloads/MKWROM/Mario Kart World.png`
-- 构建命令：`./switch2mac.py build "/Users/amid031799/Downloads/MKWROM" --engine nxnative --icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
-- `switch2mac.py` 原先没有 `--icon` 参数（只有引擎的 `build_ipa_from_nsp.py` 支持），
-  已在本项目补上：`switch2mac.py` 的 `build` 子命令接受 `--icon`，nxnative 构建时
+- 构建命令：`./hermit.py build "/Users/amid031799/Downloads/MKWROM" --engine nxnative --icon "/Users/amid031799/Downloads/MKWROM/Mario Kart World.png"`
+- `hermit.py` 原先没有 `--icon` 参数（只有引擎的 `build_ipa_from_nsp.py` 支持），
+  已在本项目补上：`hermit.py` 的 `build` 子命令接受 `--icon`，nxnative 构建时
   原样传给引擎 builder。
 
 

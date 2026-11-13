@@ -62,7 +62,7 @@ package struct ToolsCard<Diagnostics: View, ShellCache: View>: View {
                 // Choose repository) needs no git at all, and the note says which folder to pick.
                 HStack(spacing: 4) {
                     Text(loc.t("repo.manualHint")).foregroundStyle(.secondary)
-                    Link("github.com/azmasm/switch2mac", destination: URL(string: RepoStore.url.replacingOccurrences(of: ".git", with: ""))!)
+                    Link("github.com/azmasm/hermit", destination: URL(string: RepoStore.url.replacingOccurrences(of: ".git", with: ""))!)
                     Text(loc.t("repo.manualHint2")).foregroundStyle(.secondary)
                 }
                 .font(.manrope(12)).padding(.horizontal, 18).padding(.bottom, 12)

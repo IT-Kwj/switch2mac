@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""switch2mac's additions in another nxnative checkout (upstream nxnative for Donkey Kong Bananza, pokopia-native's for Pokémon Pokopia), as switch2mac.py build applies them:
+"""Hermit's additions in another nxnative checkout (upstream nxnative for Donkey Kong Bananza, pokopia-native's for Pokémon Pokopia), as hermit.py build applies them:
 
-  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (tools/engine/s2m_share.m, a copy of switch2mac-engine's dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
+  - Mario Kart World's overlay (key 1) and settings panel (key 2): tools/engine/s2m_ui.m copied in, with the shared shader list's offer (tools/engine/s2m_share.m, a copy of hermit-builds' dm/host/s2m_share.m), two calls in front_mac.m, the file in the host's Makefile
   - the overlay's data: mtl_cur_frame (nvn_mtl.m) and nvn_game_size (hle_nvn.c), when the checkout lacks them
   - the "Performance overlay" row in the app's settings list (dm/games/settings.py)
 
@@ -20,7 +20,7 @@ def edit(path, after, add, why):   # add the text after the first line holding `
     s = path.read_text()
     if MARK in add and add.strip() in s: return
     i = s.find(after)
-    if i < 0: sys.exit(f'{path}: no line with {after!r} ({why}): this engine version is not one switch2mac knows')
+    if i < 0: sys.exit(f'{path}: no line with {after!r} ({why}): this engine version is not one Hermit knows')
     j = s.index('\n', i) + 1
     path.write_text(s[:j] + add + s[j:])
     print(f'  {path.name}: {why}')
@@ -58,7 +58,7 @@ def main():
         hn.write_text(s.replace(k, 'static _Atomic int g_game_w, g_game_h;   // (switch2mac) the size of the frame the game presents last (the overlay)\n'
                                    'void nvn_game_size(int *w, int *h) { *w = atomic_load(&g_game_w); *h = atomic_load(&g_game_h); }\n' + k, 1))
         edit(hn, 'const int *crop = present_crop(o->crop, (int)t->d.width, (int)t->d.height, lc);', '        atomic_store(&g_game_w, (int)t->d.width); atomic_store(&g_game_h, (int)t->d.height);   // (switch2mac)\n', 'nvn_game_size')
-    bi = nx / 'scripts/build_ipa_from_nsp.py'   # a quick try (switch2mac.py --quick) also takes the game's shared shader list (S2M_SEEN), and builds a game whose profile has no shader_seen.tsv
+    bi = nx / 'scripts/build_ipa_from_nsp.py'   # a quick try (hermit.py --quick) also takes the game's shared shader list (S2M_SEEN), and builds a game whose profile has no shader_seen.tsv
     s = bi.read_text() if bi.is_file() else ''
     old = ("    return set(re.findall(r'^[0-9a-f]{16}\\b', g.table('shader_seen.tsv').read_text(errors='replace'), re.M))\n")
     if old in s:

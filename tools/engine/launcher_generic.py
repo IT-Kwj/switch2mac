@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# The launcher settings (Resources/dm/launcher.json) of a game built on switch2mac's engine with a borrowed profile (an untested build): the engine's
+# The launcher settings (Resources/dm/launcher.json) of a game built on Hermit's engine with a borrowed profile (an untested build): the engine's
 # generic list (dm/games/settings.py) plus the performance overlay row, as Mario Kart World's launcher.py makes them without its own game-specific rows.
-# Usage: launcher_generic.py <engine folder> <rewritten modules dir> <out.json> <title ID>   (switch2mac.py runs it)
+# Usage: launcher_generic.py <engine folder> <rewritten modules dir> <out.json> <title ID>   (hermit.py runs it)
 import json, os, sys
 repo, patched, out, tid = sys.argv[1:5]
 sys.path[:0] = [os.path.join(repo, 'dm/games'), os.path.join(repo, 'dm/tools')]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Reading a NUP container (one .nup file: a Switch 2 game's base, updates and DLC, unencrypted; https://github.com/a55uka/nup SPEC v1) without unpacking it:
-# its packages, its title ID and the update versions it holds, every file checked against its SHA-256 as it is read. switch2mac.py uses it to identify a
+# its packages, its title ID and the update versions it holds, every file checked against its SHA-256 as it is read. hermit.py uses it to identify a
 # .nup dump before any engine is fetched; the build itself hands the .nup to nxnative's own builder, which packs it (scripts/pack_nup.py there).
 # Taken from nxnative (MIT, github.com/seedds/nxnative) scripts/pack_nup.py at 6bbdbbe25511: the container reader and scan(), unchanged; its packing steps
 # (exefs, pack, pack_version: they need nxnative's dm/tools) are left out. See NOTICE.md.
@@ -231,3 +231,33 @@ def unpack(n, out, say=print):
         tree(updates[-1].exefs, out / 'base/exefs')
     stamp.write_text(key)
     return out
+
+
+def localized(payload):   # the localized icons record (TLV 0x000A) → {lowercase language tag: image bytes} (as nxnative's pack_nup.py reads it)
+    out, p = {}, 0
+    while p < len(payload):
+        ln = payload[p]; tag = payload[p + 1:p + 1 + ln].decode(errors='replace').lower(); p += 1 + ln
+        if p + 4 > len(payload): break
+        dn = struct.unpack_from('<I', payload, p)[0]; p += 4
+        out.setdefault(tag, payload[p:p + dn]); p += dn
+    return out
+
+
+def icon(n):
+    """The game's own icon as the NUP carries it (the base package's, else the newest update's): image bytes, or None when the file holds none.
+    The app shows it for a game the shop's list has no banner for; it stays on the player's Mac."""
+    for k in sorted(n.packages, key=lambda k: (k.kind != BASE, -k.version)):
+        if k.kind not in (BASE, UPDATE): continue
+        meta = k.meta(); icons = localized(meta.get(T_LICONS, b''))
+        image = meta.get(T_ICON) or icons.get('en-us') or icons.get('en') or next(iter(icons.values()), None)
+        if image: return image
+    return None
+
+
+if __name__ == '__main__':   # nup.py icon <file.nup> <out image>: exit 0 and the file written, or 1 when the NUP has no icon
+    if len(sys.argv) != 4 or sys.argv[1] != 'icon': sys.exit('usage: nup.py icon <file.nup> <out image>')
+    try:
+        with Nup(sys.argv[2]) as n: image = icon(n)
+    except (Error, OSError) as x: sys.exit(str(x))
+    if not image: sys.exit(1)
+    Path(sys.argv[3]).write_bytes(image)

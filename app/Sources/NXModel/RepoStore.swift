@@ -23,7 +23,7 @@ import NXCore
 /// - The git work blocks, so it runs off the main actor. The method that starts it sets `busy` first and returns the `Task`.
 /// - The engine sync that follows a clone, a pull and an adoption is not here: it is `didMove`, and the engine has its own store.
 @MainActor package final class RepoStore: ObservableObject, RepoLocation {
-    nonisolated package static let url = "https://github.com/azmasm/switch2mac.git"
+    nonisolated package static let url = "https://github.com/azmasm/hermit.git"
     nonisolated package static let pathKey = "repoPath"
     nonisolated package static let autoUpdateKey = "autoUpdateRepo"
 
@@ -98,7 +98,7 @@ import NXCore
     package func clone() -> Task<Void, Never> {
         guard mayStart else { return Task {} }
         guard git.binary != nil else { status = t("repo.gitMissing"); return Task {} }
-        let dest = home + "/Library/Application Support/switch2mac/repo"
+        let dest = home + "/Library/Application Support/\(AppIdentity.folder)/repo"
         if FileManager.default.fileExists(atPath: dest) {
             if RepoLayout.isRepo(dest) { path = dest; status = ""; return checkForUpdates() }
             else { status = String(format: t("repo.destBusy"), shortPath(dest)) }

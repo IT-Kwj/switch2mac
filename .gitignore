@@ -7,7 +7,7 @@
 *.mtl4a
 __pycache__/
 .DS_Store
-# the engines builds download, one per game's pinned commit (switch2mac-engine, nxnative, pokopia-native)
+# the engines builds download, one per game's pinned commit (hermit-builds, nxnative, pokopia-native)
 /engines/
 # the app's build output
 /app/.build/

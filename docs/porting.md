@@ -1,65 +1,65 @@
 # Porting a Switch 2 game to the Mac
 
-This guide covers how to bring up a new Switch 2 game with switch2mac, or a new version of one that already works. It sums up everything learned while porting Mario Kart World, whose full story is in [mario-kart-world.md](mario-kart-world.md). You can follow it yourself in Terminal, or hand it to an AI coding assistant together with [AGENTS.md](../AGENTS.md).
+This guide covers how to bring up a new Switch 2 game with Hermit, or a new version of one that already works. It sums up everything learned while porting Mario Kart World, whose full story is in [mario-kart-world.md](mario-kart-world.md). You can follow it yourself in Terminal, or hand it to an AI coding assistant together with [AGENTS.md](../AGENTS.md).
 
 Bring-up is research. A new game will boot partway, draw wrong, or crash, and each problem has to be traced. Nothing below promises that a given game will run.
 
 ## The easy case: a game nxnative already runs
 
-Most of switch2mac's games were added this way, in a few minutes each and without a test build: upstream [nxnative](https://github.com/seedds/nxnative) has a profile for the game (`dm/games/<title ID>/` on its `main`), and switch2mac builds it with nxnative's own builder plus switch2mac's front end. Copy Donkey Kong Bananza's folder as the pattern:
+Most of Hermit's games were added this way, in a few minutes each and without a test build: upstream [nxnative](https://github.com/seedds/nxnative) has a profile for the game (`dm/games/<title ID>/` on its `main`), and Hermit builds it with nxnative's own builder plus Hermit's front end. Copy Donkey Kong Bananza's folder as the pattern:
 
 1. **`games/<game>/game.json`**: `title_id`, `name`, `version` (from the profile's `game.tsv` build line), `"engine": {"kind": "nxnative", "repo": "https://github.com/seedds/nxnative", "commit": <the newest commit that touches dm/games/<title ID>, in full>}`, and `disk_gb` (the RomFS size from the profile's README, plus room for the build).
 2. **`games/<game>/README.md`**: what nxnative reports (the Mac it played on, how far, the frame rate), the dump folder layout, the shader count (over 100,000 means a build of hours), and known problems with their issue numbers.
 3. **`games/<game>/shader_list.tsv`**: the header only (`game=<title ID>`, `engine=nxnative-<commit, 12 characters>`).
 4. **`games/<game>/reports.tsv`**: every report that names the Mac, from the profile's README and from nxnative's GitHub issues (search the game's name), with its source. Leave out reports without a Mac model.
 5. **The README's game table and dump-folder table**, and **NOTICE.md** (the game in nxnative's line, its trademarks).
-6. Check: `./switch2mac.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
+6. Check: `./hermit.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
 
-A game with a second port (Pokopia: pokopia-native and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
+A game with a second port (Pokopia: pokopia-native, horizon-nx2 and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
 
 ## How a build works
 
 | Step | Tool | Output in `work/` |
 |---|---|---|
-| Game files | switch2mac-engine's `dm/tools/romfs_image.py` | `extract/ExeFS`, `extract/RomFS.img` (one image of the RomFS) |
-| Code | switch2mac-engine's `dm/tools/patch_nso.py` | `build/patched/`: the game's modules, rewritten so system calls and SDK functions land in the host |
+| Game files | hermit-builds' `dm/tools/romfs_image.py` | `extract/ExeFS`, `extract/RomFS.img` (one image of the RomFS) |
+| Code | hermit-builds' `dm/tools/patch_nso.py` | `build/patched/`: the game's modules, rewritten so system calls and SDK functions land in the host |
 | Shaders | `nx2_split.py` (find + lower Ampere → Maxwell with `nx2_lower`), `own_compilers.py` (Ryujinx translator → MSL → Metal), `nx2_res.py`, `nx2_reflect.py` | `cache/metal_shader_cache/b-<chain>/`, `profile/<title ID>/shader_*.tsv` |
 | Host | `make -C engines/switch2mac-<commit>/dm/host GAME=<title ID>` | `dm/host/dmhost` there: the native runtime, built for this game's profile |
-| App | switch2mac-engine's `dm/mac/pack_app.py` | `<Game>.app` (APFS clones of the big files) |
+| App | hermit-builds' `dm/mac/pack_app.py` | `<Game>.app` (APFS clones of the big files) |
 
-The game's ARM64 code runs directly on the CPU. NVN2, the Switch 2 graphics API, is implemented on Metal 4 (switch2mac-engine's `dm/gfx/nvn/nvn_mtl.m`), and every shader is translated ahead of time. The *chain version* (switch2mac-engine's `dm/gfx/nvn/dmsh_chain.h`) is a hash of the translator tools. It names the library folder. Any change to the translator tools needs `dmsh_chain.py --header` and a host rebuild, or the host refuses the libraries.
+The game's ARM64 code runs directly on the CPU. NVN2, the Switch 2 graphics API, is implemented on Metal 4 (hermit-builds' `dm/gfx/nvn/nvn_mtl.m`), and every shader is translated ahead of time. The *chain version* (hermit-builds' `dm/gfx/nvn/dmsh_chain.h`) is a hash of the translator tools. It names the library folder. Any change to the translator tools needs `dmsh_chain.py --header` and a host rebuild, or the host refuses the libraries.
 
 ## 1. The dump
 
-You need a dumped, already-extracted folder: `exefs/` (`main`, `main.npdm`, `sdk`, `subsdk*`, `rtld`) and `romfs/`, or the same under `base/`. switch2mac decrypts nothing and uses no keys. Dump tools leave `.listing` files, and Finder adds `.DS_Store`; `build` skips both.
+You need a dumped, already-extracted folder: `exefs/` (`main`, `main.npdm`, `sdk`, `subsdk*`, `rtld`) and `romfs/`, or the same under `base/`. Hermit decrypts nothing and uses no keys. Dump tools leave `.listing` files, and Finder adds `.DS_Store`; `build` skips both.
 
-The title ID is in `main.npdm` (ACI0 + 0x10). The build ID of each module is the first 0x10 bytes of its NSO build ID: switch2mac-engine's `dm/tools/nso.py <module> <out.img>` unpacks the module and prints it (`moduleid`). A version's identity is the build ID of its `main`.
+The title ID is in `main.npdm` (ACI0 + 0x10). The build ID of each module is the first 0x10 bytes of its NSO build ID: hermit-builds' `dm/tools/nso.py <module> <out.img>` unpacks the module and prints it (`moduleid`). A version's identity is the build ID of its `main`.
 
 Updates: an update dump's RomFS is the full patched tree. Build from the update's own `exefs/` + `romfs/`.
 
 ## 2. A game folder and a profile
 
 1. **`games/<game>/game.json`**: `title_id`, `name`, `version` and `marker`. The marker is a RomFS file that only this game has, used by the app to check its image. `language` optionally sets the packed default language (e.g. `zh-Hans`; `engine_build` passes it to nxnative's builder as `--language`).
-2. **switch2mac-engine's `dm/games/<title ID>/game.tsv`**: the profile (a game on switch2mac's engine has its profile there: commit it in that repository, then pin the new commit in `games/<game>/game.json`). Start from a copy of Mario Kart World's (`0400C3F00006E000/`) and change:
+2. **hermit-builds' `dm/games/<title ID>/game.tsv`**: the profile (a game on Hermit's engine has its profile there: commit it in that repository, then pin the new commit in `games/<game>/game.json`). Start from a copy of Mario Kart World's (`0400C3F00006E000/`) and change:
    - `title_id`, `program_id`, `name`.
    - `build v0 <version> main=<id> sdk=<id> subsdk0=<id> ...`: one line per version, with the IDs the build prints when it stops.
    - `modules`: every module that `main` imports from, in load order (Mario Kart World 1.0.0: `main subsdk0 sdk`; 1.8.0 adds `subsdk1`).
    - `romfs_marker`: as in game.json.
-   - Memory: `mem_reserve`, `mem_alias`, `app_pool` and `sys_resource` (the system resource size from NPDM META +0x14). switch2mac-engine's `dm/games/profile_guess.py <ExeFS dir> <RomFS dir>` guesses these and other keys from the game's files, with a reason for each.
+   - Memory: `mem_reserve`, `mem_alias`, `app_pool` and `sys_resource` (the system resource size from NPDM META +0x14). hermit-builds' `dm/games/profile_guess.py <ExeFS dir> <RomFS dir>` guesses these and other keys from the game's files, with a reason for each.
    - `tex_flush_upload on` and `tex_dirty_upload on`: keep these. Nintendo's own engines fill textures from the CPU, sometimes before the texture is created (see "Lessons" below).
    - Empty shader tables (`shader_map.tsv`, `shader_facts.tsv`, `shader_pairs.tsv`, `shader_map.tsv.conflicts.tsv`, each with only its header). The first build fills them in `work/profile/`; copy the results back into the profile when they are good.
 3. `games/<game>/launcher.py` and `env.txt`: copy Mario Kart World's and change the title ID and its game-specific rows (its Performance mode toggle names one of Mario Kart World's own shaders).
-4. Run `./switch2mac.py build <dump>`.
+4. Run `./hermit.py build <dump>`.
 
-nxnative's `dm/games/README.md` ([in switch2mac-engine](https://github.com/azmasm/switch2mac-engine/blob/switch2mac/dm/games/README.md)) describes every profile file.
+nxnative's `dm/games/README.md` ([in hermit-builds](https://github.com/azmasm/hermit-builds/blob/switch2mac/dm/games/README.md)) describes every profile file.
 
 ### A game another port already runs
 
-When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds switch2mac's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `switch2mac.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
+When someone else's port of a game already works (upstream nxnative's profiles, a game-specific builder such as pokopia-native), add it without copying its code: `games/<game>/game.json` with `title_id`, `name`, `version` and an `engine` entry, `{"kind": "nxnative" | "pokopia-native", "repo": <its GitHub URL>, "commit": <the full commit>}` (Donkey Kong Bananza and Pokémon Pokopia are examples). `build` fetches that commit into `engines/`, adds Hermit's front end with `tools/engine/patch.py` (overlay, key-2 settings, no settings window at launch: each change is found by a line of that engine's source, so a new commit may need the script's anchors checked), and runs the engine's own builder. Another builder needs a new `kind` in `hermit.py` `engine_build`. Check the port's licence first and credit it in NOTICE.md.
 
 **Several builds of one game.** A game can list `builds` instead of one `engine`: each `{"id", "name", "engine": {...}, "shader_list": <file in the game folder>, "about"}`, and `choose`, rules read in order (`chip_min` / `chip_max`: the chip generation, 1 for M1; `memory_min` / `memory_max` in GB; `build`, `why`); the first the Mac meets wins, else the first build. Base the rules on `games/<game>/reports.tsv` (players' Macs and how each build ran). `build --engine <id>` overrides; `builds <game>` shows the choice. Mario Kart World is the example.
 
-**On GitHub, this runs by itself.** `.github/workflows/update-builds.yml` checks every 5 minutes: when a game's engine has a newer commit, or nxnative has a Switch 2 profile switch2mac has no folder for, a Mac runner applies it (`update.py --new-games --apply --compile --ci`) and commits each game that compiles to `main`. Players' apps pull it when they open. The steps below are the same by hand.
+**On GitHub, this runs by itself.** `.github/workflows/update-builds.yml` checks every 5 minutes: when a game's engine has a newer commit, or nxnative has a Switch 2 profile Hermit has no folder for, a Mac runner applies it (`update.py --new-games --apply --compile --ci`) and commits each game that compiles to `main`. Players' apps pull it when they open. The steps below are the same by hand.
 
 Keeping such a game current: `tools/engine/update.py` says whose build has a newer commit (nxnative: commits that change the game's profile; pokopia-native: any commit), and `--apply --compile` moves the game to it on the `dev` branch: it re-applies the front end, compiles the host as a check, and updates `game.json`, the shader list's header (its rows are kept), the game's page and NOTICE.md, one commit per game. A new commit the front end no longer fits stops that game where it was, with the reason. Nothing is pushed.
 
@@ -68,7 +68,7 @@ Keeping such a game current: `tools/engine/update.py` says whose build has a new
 Build, then run the game straight from `work/` with a log:
 
 ```bash
-./switch2mac.py run
+./hermit.py run
 ```
 
 `run` takes host switches as `VAR=value` arguments, and writes everything to the terminal and to `work/logs/run-<time>.log`. To match the app's defaults, add the switches from the game's `launcher.py` (Mario Kart World: `DM_NVN_ENC_THREAD=1`).
@@ -86,8 +86,8 @@ Milestones for a new game: boot → first NVN2 call → first frame → title sc
 
 Switch 2 games build some shaders while they run, so they are not in the BNSH containers the split reads. Mario Kart World has 321 of them (4 only in handheld console mode), including the final copy to the screen; without them the first launch is black. Their parts *are* in the dump, in BAHS containers (`Lib/agl`, `Lib/gsys`, `Lib/Terrain`, `Shader/*.sarc`) and loose in `main`.
 
-1. Play the game with `./switch2mac.py run` (or the installed app). The host saves every unknown shader to `work/run/shdump` (or the app's support folder) as `<key>.ctl` + `<key>.code`.
-2. `./switch2mac.py refresh` builds them in, so your own build is complete.
+1. Play the game with `./hermit.py run` (or the installed app). The host saves every unknown shader to `work/run/shdump` (or the app's support folder) as `<key>.ctl` + `<key>.code`.
+2. `./hermit.py refresh` builds them in, so your own build is complete.
 3. To make it complete for everyone, locate them in the game files:
 
 ```bash
@@ -102,13 +102,13 @@ Metal builds a pipeline for every shader pair and render state the game draws wi
 
 A list belongs to one game **and** one engine version: its first line is `# switch2mac shader list<TAB>game=<title ID><TAB>engine=<switch2mac | kind-commit>`. Keys differ between engines, so a game whose `game.json` moves to another engine commit may need its list recorded again, and a game with several builds has a list for each (`--build <id>` in `new`, `merge`, `ship`; `collect` follows the file's engine).
 
-The app records every row it builds in `pso_user.tsv` (next to its save folder). When the game closes, switch2mac-engine's `dm/host/s2m_share.m` writes the rows the shipped list lacks to `shader-list-contribution.txt` under the same header (the engine comes from `S2M_ENGINE`, baked into the app), and every 100 new rows offers to send them: the **Shader list** issue form (`.github/ISSUE_TEMPLATE/shader-list.yml`) plus the file in Finder to drag in. Sent rows go to `.shader-list-contribution.txt.done`. `S2M_SHARE=0` turns the offer off, `S2M_SHARE_EVERY` changes the 100.
+The app records every row it builds in `pso_user.tsv` (next to its save folder). When the game closes, hermit-builds' `dm/host/s2m_share.m` writes the rows the shipped list lacks to `shader-list-contribution.txt` under the same header (the engine comes from `S2M_ENGINE`, baked into the app), and every 100 new rows offers to send them: the **Shader list** issue form (`.github/ISSUE_TEMPLATE/shader-list.yml`) plus the file in Finder to drag in. Sent rows go to `.shader-list-contribution.txt.done`. `S2M_SHARE=0` turns the offer off, `S2M_SHARE_EVERY` changes the 100.
 
 Maintainers: `tools/shader_list.py collect` reads the open `shader-list` issues (`gh`), checks each file's game and engine against `games/<game>/game.json` and its shader keys against the game's shader table (Mario Kart World; Donkey Kong Bananza once its engine is fetched), and reports; `--apply` adds the rows, `--close` thanks and closes the issues taken, `--drop-unknown` drops rows of other shaders. A file can be merged by hand with `merge <game> <file>`. For a new game, play it widely, then seed its list with `new <game>` and `merge`. (This follows MacNativeGames' shared shader list for Tears of the Kingdom.)
 
 ## 5. Finding graphics bugs
 
-All of these are host switches (`./switch2mac.py run VAR=value ...`). While the game runs, you can also write a command line into `work/run/ctl.txt`; the host reads it at the next frame.
+All of these are host switches (`./hermit.py run VAR=value ...`). While the game runs, you can also write a command line into `work/run/ctl.txt`; the host reads it at the next frame.
 
 | Switch / command | What it gives |
 |---|---|
@@ -126,7 +126,7 @@ All of these are host switches (`./switch2mac.py run VAR=value ...`). While the 
 | `memdump <addr> <bytes> <file>` (ctl) | raw guest memory |
 | `DM_GPUW_LOG=1` | each distinct GPU writer (storage-buffer writes with shader key, copies, fills), once |
 | `DM_GPU_READWATCH=1` | the CPU code that reads GPU results |
-| `DM_NVN_GPUPROF=every:600` + switch2mac-engine's `dm/tools/gpuprof.py` | GPU time per pass |
+| `DM_NVN_GPUPROF=every:600` + hermit-builds' `dm/tools/gpuprof.py` | GPU time per pass |
 | `DM_METAL_HUD=1`, `DM_OVERLAY=detailed`, `tools/porting/perf.sh [log]` | fps, GPU / frame time, memory |
 | `DM_FT_DEBUG=WxH`, `DM_NVN_TEXINFO=WxH`, `DM_TEX_BT=WxH` | life of textures of one size: registration, uploads, who creates them |
 
@@ -134,7 +134,7 @@ Method that worked every time: screenshot → pass dump of that frame → the pa
 
 ## 6. Lessons from Mario Kart World
 
-Each of these lessons cost days to find, and each will probably apply to the next Switch 2 game too. All the fixes are in [switch2mac-engine](https://github.com/azmasm/switch2mac-engine).
+Each of these lessons cost days to find, and each will probably apply to the next Switch 2 game too. All the fixes are in [hermit-builds](https://github.com/azmasm/hermit-builds).
 
 - **Movies**: 1.0.0 decodes VP9 through the low-level `nn::codec` API, not `movie::VideoDecoder`. `hle_nx2_codec.c` covers both with libvpx, on a worker thread per decoder.
 - **NVN2 compute driver constants**: c0 has its own layout on Switch 2 (dispatch size at +4 / +8). The NVN1 layout gave 1/0 → NaN → a white world.

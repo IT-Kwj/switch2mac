@@ -47,7 +47,7 @@ package struct ActionCard: View {
             Text(loc.t("status.installFirst")).font(.manrope(13)).foregroundStyle(LauncherPalette.building)
         } else if !repo.isRepo {
             Text(loc.t("status.chooseRepo")).font(.manrope(13)).foregroundStyle(LauncherPalette.building)
-        } else if build.identifying {   // switch2mac: one dump folder, named by switch2mac.py identify
+        } else if build.identifying {   // Hermit: one dump folder, named by hermit.py identify
             Text("Reading your dump…").font(.manrope(13)).foregroundStyle(.secondary)
         } else if build.dumpInfo == nil {
             Text("Choose your game’s dump folder").font(.manrope(13)).foregroundStyle(.secondary)
@@ -56,7 +56,7 @@ package struct ActionCard: View {
         } else if !build.keysReady {   // a Switch 1 game without a usable prod.keys
             Text("Choose your prod.keys above").font(.manrope(13)).foregroundStyle(LauncherPalette.building)
         } else {
-            Text("The game goes to " + build.shortPath(build.switch2macLibraryDir))
+            Text("The game goes to " + build.shortPath(build.hermitLibraryDir))
                 .font(.manrope(13)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
         }
     }

@@ -5,12 +5,12 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Thanks!** Your report goes into the game's reports table (`games/<game>/reports.tsv`) and helps switch2mac pick the right build for Macs like yours. Only the Mac's model, chip, memory and macOS are recorded, never anything about you. Don't attach game files, saves or the app.
+        **Thanks!** Your report goes into the game's reports table (`games/<game>/reports.tsv`) and helps Hermit pick the right build for Macs like yours. Only the Mac's model, chip, memory and macOS are recorded, never anything about you. Don't attach game files, saves or the app.
   - type: input
     id: game
     attributes:
       label: Game
-      description: As the switch2mac app names it.
+      description: As the Hermit app names it.
       placeholder: Mario Kart World
     validations:
       required: true
@@ -18,7 +18,7 @@ body:
     id: build
     attributes:
       label: Build
-      description: The engine, as the game's Build card shows it (switch2mac, nxnative or pokopia-native; say "untested" for an untested build). Not sure? Leave it empty.
+      description: The build, as the game's Build card names it (azmasm's build, nxnative or pokopia-native; say "untested" for an untested build). Not sure? Leave it empty.
       placeholder: nxnative
   - type: input
     id: version

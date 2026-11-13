@@ -7,24 +7,32 @@ package enum RepoLayout {
     /// (the build script in startBuild, the RomFS archive in the archive step). A copy older than this app lacks some of
     /// them (#87: romfs_image.py exists since v0.4.8, so a build ran 70 minutes and failed at its last step). A new
     /// tool the launcher calls goes into this list and is then checked before every build.
-    package static let buildScript = "switch2mac.py"   // switch2mac: its one entry point (identify, build --progress json, install --to)
-    package static let romfsImageTool = "dm/tools/romfs_image.py"   // the original launcher's archive step (unused by switch2mac's builds)
-    package static let requiredTools = [buildScript]
+    package static let buildScript = "hermit.py"   // Hermit: its one entry point (identify, build --progress json, install --to)
+    /// The script's name before the app became Hermit. The repository keeps a file of that name that runs hermit.py, and a checkout
+    /// from before the rename has only this one.
+    package static let legacyBuildScript = "switch2mac.py"
+    /// The build script of a checkout: hermit.py, or the old name where the checkout has no hermit.py yet.
+    package static func script(in dir: String) -> String {
+        let new = dir + "/" + buildScript
+        return FileManager.default.fileExists(atPath: new) || !FileManager.default.fileExists(atPath: dir + "/" + legacyBuildScript) ? new : dir + "/" + legacyBuildScript
+    }
+    package static let romfsImageTool = "dm/tools/romfs_image.py"   // the original launcher's archive step (unused by Hermit's builds)
+    package static let requiredTools = [buildScript]   // missingTools takes the old name too
 
     /// Home shown as ~ (shorter in a one-line row, and it keeps the account name out of screenshots).
     package static func shortPath(_ path: String, home: String = NSHomeDirectory()) -> String {
         path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
     }
 
-    /// A switch2mac checkout: switch2mac.py beside its games/ folder.
+    /// A Hermit checkout: hermit.py (switch2mac.py before the rename) beside its games/ folder.
     package static func isRepo(_ dir: String) -> Bool {
         let fm = FileManager.default
-        return !dir.isEmpty && fm.fileExists(atPath: dir + "/" + buildScript) && fm.fileExists(atPath: dir + "/games")
+        return !dir.isEmpty && fm.fileExists(atPath: script(in: dir)) && fm.fileExists(atPath: dir + "/games")
     }
 
     /// The tools of `requiredTools` that `dir` does not have (empty: the build tools are as new as this app needs).
     package static func missingTools(in dir: String) -> [String] {
-        requiredTools.filter { !FileManager.default.fileExists(atPath: dir + "/" + $0) }
+        requiredTools.filter { !FileManager.default.fileExists(atPath: $0 == buildScript ? script(in: dir) : dir + "/" + $0) }
     }
 
     /// Whether the checkout's build script has this fork's `--work-dir` (issue #5): an upstream
@@ -32,7 +40,7 @@ package enum RepoLayout {
     /// app passes it. Read from the script's own argparse rather than assumed — the option is the
     /// fork's, not upstream's.
     package static func supportsWorkDir(_ dir: String) -> Bool {
-        if isRepo(dir) { return true }   // switch2mac.py takes --work
+        if isRepo(dir) { return true }   // hermit.py takes --work
         let script = EngineLayout.root(dir) + "/" + buildScript
         if !FileManager.default.fileExists(atPath: script), EngineLayout.hasEngineTool(dir) { return true }   // engine/ not made yet: the fork's engine has it
         guard let text = try? String(contentsOfFile: script, encoding: .utf8) else { return false }
@@ -52,9 +60,9 @@ package enum RepoLayout {
         // (the report's build log). The fork check is the script's own argparse, not a name match,
         // so a checkout under any folder name ranks correctly.
         let saved = defaults.string(forKey: "repoPath").flatMap { isRepo($0) ? $0 : nil }
-        // switch2mac: only the app's own download. A checkout found by walking up from the app or the current folder (a developer's working
+        // Hermit: only the app's own download. A checkout found by walking up from the app or the current folder (a developer's working
         // copy) is never picked by itself: the automatic update would pull into it. A player can still choose one in Settings.
-        var seeds: [String] = [home + "/Library/Application Support/switch2mac/repo"]
+        var seeds: [String] = [home + "/Library/Application Support/\(AppIdentity.folder)/repo"]
         _ = (bundleURL, currentDirectory)
         var seen = Set<String>()
         var repos: [String] = []

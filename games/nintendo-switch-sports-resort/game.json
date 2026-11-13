@@ -1,0 +1,11 @@
+{
+ "title_id": "04008E001F098000",
+ "name": "Nintendo Switch Sports Resort",
+ "version": "update v65536",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "51492a90c9d220057c12b27e0b61b34ec2dfa96c"
+ },
+ "disk_gb": 50
+}

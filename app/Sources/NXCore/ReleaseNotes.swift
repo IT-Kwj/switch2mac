@@ -23,7 +23,7 @@ package enum ReleaseNotes {
     }
 
     /// The repository bare `#123` references point into.
-    package static let repository = "azmasm/switch2mac"
+    package static let repository = "azmasm/hermit"
 
     // ---- Language split ----
 

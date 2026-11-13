@@ -1,6 +1,6 @@
-// switch2mac's front end for the games built on another engine (upstream nxnative, pokopia-native): Mario Kart World's performance overlay (key 1) and settings panel (key 2)
+// Hermit's front end for the games built on another engine (upstream nxnative, pokopia-native): Mario Kart World's performance overlay (key 1) and settings panel (key 2)
 // (and, through s2m_share.m, the shared shader list's offer when the game closes),
-// the same code as switch2mac-engine's dm/host/front_mac.m (github.com/azmasm/switch2mac-engine). tools/engine/patch.py copies this file into the engine's dm/host and adds the two calls front_mac.m makes:
+// the same code as hermit-builds' dm/host/front_mac.m (github.com/azmasm/hermit-builds). tools/engine/patch.py copies this file into the engine's dm/host and adds the two calls front_mac.m makes:
 // s2m_ui_attach once the window and layer exist, s2m_ui_key first in its key monitor.
 // Data hooks (nvn_mtl.m / hle_nvn.c): mtl_cur_frame, mtl_gpu_ms, nvn_game_fps, nvn_game_size.
 #import <Cocoa/Cocoa.h>
@@ -50,14 +50,14 @@ static double footprint_gb(void) { task_vm_info_data_t vi; mach_msg_type_number_
     if (_n < OV_N) _fps[_n++] = (float)_fpsNow; else { memmove(_fps, _fps + 1, (OV_N - 1) * sizeof *_fps); _fps[OV_N - 1] = (float)_fpsNow; }
     [self refreshWithCPU:cpuPct];
 }
-// The engine this app was built with (S2M_ENGINE, baked in by switch2mac.py: "nxnative-84dea6983541", "pokopia-native-160604df414b", "switch2mac"):
+// The engine this app was built with (S2M_ENGINE, baked in by hermit.py: "nxnative-84dea6983541", "pokopia-native-160604df414b", "switch2mac"):
 // its name, and the commit's first 8 characters when it has one.
 static void engine_name(NSString **name, NSString **version) {
     const char *e = getenv("S2M_ENGINE"); NSString *s = e && *e ? @(e) : @"";
     NSRange dash = [s rangeOfString:@"-" options:NSBackwardsSearch]; NSString *tail = dash.location != NSNotFound ? [s substringFromIndex:dash.location + 1] : @"";
     BOOL hex = tail.length >= 7 && [tail rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"] invertedSet]].location == NSNotFound;
     *name = hex ? [s substringToIndex:dash.location] : s; *version = hex ? [tail substringToIndex:MIN(8u, tail.length)] : @"";
-    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when switch2mac.py baked one in
+    const char *b = getenv("S2M_BUILD");   // the build's own name from its game page ("azmasm's build", "kid-with-sword-remake"), when hermit.py baked one in
     if (b && *b) *name = @(b);
 }
 - (void)refreshWithCPU:(double)cpuPct {

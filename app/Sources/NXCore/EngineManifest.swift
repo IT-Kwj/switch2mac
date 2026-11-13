@@ -162,12 +162,12 @@ package struct EngineStore {
 
     package init(root: URL = EngineStore.defaultRoot) { self.root = root }
 
-    /// `~/Library/Application Support/switch2mac/engine/<engine_id>/` (switch2mac's own folder, never the original launcher's). The folder is a full checkout for the
+    /// `~/Library/Application Support/Hermit/engine/<engine_id>/` (Hermit's own folder, never the original launcher's). The folder is a full checkout for the
     /// build (`dm/`, `scripts/`, ...), so `repoPath` can point at it.
     package static var defaultRoot: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory() + "/Library/Application Support")
-        return base.appendingPathComponent("switch2mac/engine", isDirectory: true)
+        return base.appendingPathComponent(AppIdentity.folder + "/engine", isDirectory: true)
     }
 
     /// The file in a tree that names it (`tools/engine.py tree` writes it, with a newline).

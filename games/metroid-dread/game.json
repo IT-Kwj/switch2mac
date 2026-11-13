@@ -10,7 +10,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "df1e321d4a9304855f81de3c9a3d471c4c748af5",
+    "commit": "94f107e58498cfa608fdbf829f6b7cf8b1def01b",
     "builder": {
      "script": "games/dread/build.py",
      "args": [
@@ -53,7 +53,7 @@
     "commit": "a342d6401af8b609ccf3709cf9f7ca27bb784ddc"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (2.1.0) with switch2mac's overlay and key-2 settings.",
+   "about": "nxnative's profile (2.1.0) with Hermit's overlay and key-2 settings.",
    "version_names": {
     "v327680": "2.1.0"
    }

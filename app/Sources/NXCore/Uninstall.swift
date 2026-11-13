@@ -3,7 +3,7 @@ import Foundation
 /// Uninstalling the launcher (NX Play's Uninstall): everything the app put outside its bundle, with the
 /// player's games and keys left alone. What goes:
 ///
-/// - the state folder `~/Library/Application Support/switch2mac/` (settings, the venv, library file)
+/// - the state folder `~/Library/Application Support/Hermit/` (settings, the venv, library file)
 ///   whole: the code and build tools it downloaded, engine copies, build leftovers, box art, the title cache
 /// - the games' logs (`~/Library/Logs/nxnative`) and the app's caches and saved window state
 /// - the project checkout the launcher itself cloned (`~/the original launcher`, only when it is the launcher's own
@@ -38,10 +38,12 @@ package enum Uninstall {
         var p = Plan(defaultsDomain: defaultsDomain)
         let kept = [gamesFolder, outputFolder].filter { !$0.isEmpty }
         let holdsPlayerFiles = { (folder: String) in kept.contains { contains(folder, $0) } }
-        // switch2mac's own folder only: ~/Library/Application Support/switch2mac belongs to the the original launcher app and is never touched.
-        // switch2mac's folder whole: its copy of the code and the build tools, engine copies, build leftovers, box art and banners, the title cache, its records
-        let engine = home + "/Library/Application Support/switch2mac"
+        // Hermit's folder whole: its copy of the code and the build tools, engine copies, build leftovers, box art and banners, the title cache, its records
+        let engine = home + "/Library/Application Support/\(AppIdentity.folder)"
         if fm.fileExists(atPath: engine), !holdsPlayerFiles(engine) { p.stateFolders.append(engine) }
+        // and the link with switch2mac's old folder name that the move to Hermit left (AppIdentity.migrate): only when it is that link
+        let legacy = home + "/Library/Application Support/" + AppIdentity.legacyFolder
+        if (try? fm.destinationOfSymbolicLink(atPath: legacy)) == engine { p.stateFolders.append(legacy) }
         // what macOS and the games keep for it: the games' logs (not their saves and settings, which the built games keep using), the app's caches and window state
         var extra = [home + "/Library/Logs/nxnative"]
         if let d = defaultsDomain {
@@ -53,7 +55,7 @@ package enum Uninstall {
             // The launcher's own clone sits at ~/the original launcher and is a git checkout with origin = this repo.
             // A folder the player picked from anywhere else stays: we cannot know what else lives there.
             guard checkout == own, !holdsPlayerFiles(checkout) else { continue }
-            if let origin = gitOrigin(checkout), origin.contains("azmasm/switch2mac") { p.checkouts.append(checkout) }
+            if let origin = gitOrigin(checkout), (origin.contains("azmasm/hermit") || origin.contains("azmasm/switch2mac")) { p.checkouts.append(checkout) }
         }
         return p
     }

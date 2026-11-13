@@ -3,7 +3,7 @@ import XCTest
 @testable import NXCore
 
 /// `EngineSyncStore` without SwiftUI: a fake `ProcessRunner` stands in for `tools/engine.py sync`, the checkouts and the engine store are
-/// folders in a temporary directory and the defaults are a suite of their own. The model's wiring is tested in Switch2MacTests
+/// folders in a temporary directory and the defaults are a suite of their own. The model's wiring is tested in HermitTests
 /// (EngineLayoutTests runs a real script, EngineUpdateModelTests the release app's rules through `LauncherStores`).
 @MainActor final class EngineSyncStoreTests: XCTestCase {
     private final class FakeRepo: RepoLocation {

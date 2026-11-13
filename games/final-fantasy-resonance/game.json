@@ -17,7 +17,7 @@
     "commit": "cc60a0c1d749dadfdf6fb052db1b48194f2b95af"
    },
    "shader_list": "shader_list.tsv",
-   "about": "nxnative's profile (1.0.1) with switch2mac's overlay and key-2 settings: see its notes for how far it plays.",
+   "about": "nxnative's profile (1.0.1) with Hermit's overlay and key-2 settings: see its notes for how far it plays.",
    "version_names": {
     "v65536": "1.0.1"
    }

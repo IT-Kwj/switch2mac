@@ -1,0 +1,27 @@
+{
+ "title_id": "0100C9C00E25C000",
+ "name": "Mario Golf: Super Rush",
+ "version": "4.0.0",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative",
+   "versions": [
+    "v262144"
+   ],
+   "version_names": {
+    "v262144": "4.0.0"
+   },
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "8d44aaf8f3a59eb0e0f63ced14b3f7f26e903484"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (4.0.0) with Hermit's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

@@ -50,7 +50,7 @@ extension BuildStore {
         prepareShellMove(to: ShellRootMove.destination(inside: folder))
     }
 
-    /// The confirmation for the way back to `~/Library/Application Support/switch2mac/shell`.
+    /// The confirmation for the way back to `~/Library/Application Support/Hermit/shell`.
     package func prepareShellMoveToDefault() {
         prepareShellMove(to: ShellRootMigration.defaultRoot(home: home))
     }

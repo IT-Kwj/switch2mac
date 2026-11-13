@@ -9,7 +9,7 @@ final class ShellRootMigrationTests: XCTestCase {
     private var home: String { base + "/home" }
     private var out: String { base + "/Games" }
     private var oldRoot: String { out + "/switch2mac-shell" }
-    private var newRoot: String { home + "/Library/Application Support/switch2mac/shell" }
+    private var newRoot: String { home + "/Library/Application Support/Hermit/shell" }
 
     override func setUpWithError() throws {
         base = fm.temporaryDirectory.path + "/nspb-migrate-" + UUID().uuidString

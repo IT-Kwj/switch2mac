@@ -4,7 +4,7 @@
   tools/reports.py from-issue <number> [--apply]   read the issue (gh), check it, print what it gives as one JSON line; --apply adds the row
 
 A row needs a game this repository has and a Mac it can read: a chip (M1 ... M9, with Pro / Max / Ultra) and its memory in GB. The build is the engine the
-form names, or, when it names none, the one switch2mac picks for that chip and memory; its version is the one the form gives,
+form names, or, when it names none, the one Hermit picks for that chip and memory; its version is the one the form gives,
 else the commit the build pins today. Every field is plain text with tabs and line breaks removed, and capped: the form asks only about the Mac, and
 the pull request the workflow opens lets a maintainer read the row before it goes in. A form edited later replaces its own row (the source names the issue).
 The GitHub workflow .github/workflows/reports.yml runs it for every new or edited [How it ran] issue.
@@ -13,7 +13,7 @@ import importlib.util, json, re, subprocess, sys, unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-_s = importlib.util.spec_from_file_location('s2m', ROOT / 'switch2mac.py'); S2M = importlib.util.module_from_spec(_s); _s.loader.exec_module(S2M)
+_s = importlib.util.spec_from_file_location('s2m', ROOT / 'hermit.py'); S2M = importlib.util.module_from_spec(_s); _s.loader.exec_module(S2M)
 BUILD_LABELS = {'pokopia': 'pokopia-native', 'nxnative': 'nxnative', 'azmasm': 'switch2mac', 'switch2mac': 'switch2mac'}   # words in the Build answer, the more particular first
 
 
@@ -68,7 +68,7 @@ def apply(result):   # the row in its game's table; a row from the same issue is
 def main():
     a = sys.argv[1:]
     if len(a) < 2 or a[0] != 'from-issue' or not a[1].isdigit(): sys.exit(__doc__)
-    issue = json.loads(subprocess.run(['gh', 'api', f'repos/azmasm/switch2mac/issues/{a[1]}'], capture_output=True, text=True, check=True).stdout)
+    issue = json.loads(subprocess.run(['gh', 'api', f'repos/azmasm/hermit/issues/{a[1]}'], capture_output=True, text=True, check=True).stdout)
     r = from_issue(issue)
     if r['ok'] and '--apply' in a: apply(r)
     print(json.dumps(r, ensure_ascii=False))

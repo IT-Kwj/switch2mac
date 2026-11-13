@@ -2,7 +2,7 @@
 
 Title ID `0400D4201C6EA000`, update v327680 (1.1.1). **nxnative reports it plays at 60 fps on an M4 Pro**: the title movie, practice, the main menu, Adventure's opening story and Free Play singles with real rallies.
 
-Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with switch2mac's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
+Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder at the commit `game.json` names (fetched once into `./engines`), with Hermit's front end added (`tools/engine/patch.py`), so it plays like the Mario Kart World port:
 
 - the game starts at once: no settings window first
 - **key 1**: the performance overlay in the top right (compact FPS and resolution → detailed graph, GPU, frame time, CPU, memory → off)
@@ -10,7 +10,7 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 
 | What | |
 |---|---|
-| Profile and notes | [nxnative `dm/games/0400D4201C6EA000`](https://github.com/seedds/nxnative/tree/80fc2ecb8d580e953dff0a6e4324d833c9aab6ab/dm/games/0400D4201C6EA000) |
+| Profile and notes | [nxnative `dm/games/0400D4201C6EA000`](https://github.com/seedds/nxnative/tree/a2514d7def4e35f3c47f8792af9e6ad31c90ace9/dm/games/0400D4201C6EA000) |
 | Dump folder | `base/` and `updates/327680/` (the RomFS is 7.6 GB) |
 | Shaders | about 35,000 (nxnative ships 1,351 of them as a seed list); all translate |
 | Verified by nxnative | on an M4 Pro: Free Play singles on Stadium Court (Grass) with real rallies at 60 fps |
@@ -22,14 +22,14 @@ Built with [upstream nxnative](https://github.com/seedds/nxnative)'s own builder
 
 ## How it runs on players' Macs
 
-[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. switch2mac has not test-built this game: what is known comes from these reports.
+[`reports.tsv`](reports.tsv): every report that names the Mac (nxnative's own playtests and GitHub issues), with the fps and memory where given, and whether it was fixed. Hermit has not test-built this game: what is known comes from these reports.
 
 ## Build
 
-In the switch2mac app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
+In the Hermit app: choose your dump folder on the **Builds** page and press **Build**. In Terminal:
 
 ```bash
-./switch2mac.py build "<your dump folder>"
+./hermit.py build "<your dump folder>"
 ```
 
-Then `./switch2mac.py install`. `refresh` and `run` are for Mario Kart World only.
+Then `./hermit.py install`. `refresh` and `run` are for Mario Kart World only.

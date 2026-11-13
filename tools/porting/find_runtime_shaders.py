@@ -4,7 +4,7 @@
 Some Switch 2 shaders are not in the containers the shader split reads (BNSH): the game assembles them while it runs from parts kept in other
 containers (e.g. BAHS in Lib/agl, Lib/gsys, Lib/Terrain, Shader/*.sarc) or in main. The host saves each one it meets (DM_NVN_SHDUMP) as
 <key>.ctl (control section) + <key>.code, key = sha256(control[:0xd8] + code)[:16]. This tool finds both parts in the game files and writes
-their positions (no game data), so `switch2mac.py build` can take them straight from the next person's dump.
+their positions (no game data), so `hermit.py build` can take them straight from the next person's dump.
 
 Usage: find_runtime_shaders.py <romfs folder> <main.img> <out.tsv> <capture folder> [capture folder ...] [--name SUBSTRING ...]
   romfs folder   work/input/romfs after a build;  main.img   work/shader/main.img (main unpacked by the build)

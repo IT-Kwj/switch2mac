@@ -9,11 +9,11 @@
    "name": "pokopia-native (xFractals)",
    "engine": {
     "kind": "pokopia-native",
-    "repo": "https://github.com/xFractals/pokopia-native",
-    "commit": "9cb7f07a663f78f92b0015d49ea49f8c73968b8e"
+    "repo": "https://github.com/azmasm/pokopia-native",
+    "commit": "028deee1a825241db5b480e32b8429c7da44d29b"
    },
    "shader_list": "shader_list.tsv",
-   "about": "xFractals' Pokopia builder: builds only the ~3,800 shaders the game needs (about an hour), takes update v327680 or 2.0.1. The default.",
+   "about": "xFractals' Pokopia builder, from the copy kept at azmasm/pokopia-native (its original repository is gone): builds only the ~3,800 shaders the game needs (about an hour), takes update v327680 or 2.0.1.",
    "versions": [
     "v327680",
     "v655360"
@@ -36,7 +36,7 @@
   },
   {
    "id": "horizon-nx2",
-   "name": "horizon-nx2 (MacBook Air)",
+   "name": "horizon-nx2",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/joaoalvess/horizon-nx2",

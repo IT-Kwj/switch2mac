@@ -77,7 +77,7 @@ package struct ShellLibrary: Codable, Equatable {
         return ShellRootMigration.defaultRoot(home: home)
     }
 
-    /// The shell root: the saved one (`shellRoot` in `defaults`), else `~/Library/Application Support/switch2mac/shell`, which is then
+    /// The shell root: the saved one (`shellRoot` in `defaults`), else `~/Library/Application Support/Hermit/shell`, which is then
     /// saved. A root that an older version made inside the output folder (`<folder>/switch2mac-shell`) moves there once, when that is
     /// safe (`ShellRootMigration`), and otherwise stays where it is. `parent` is where an older version would have made it. A saved
     /// root at a volume root is repaired (#492).

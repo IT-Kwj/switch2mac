@@ -10,7 +10,7 @@
    "engine": {
     "kind": "macnativegames",
     "repo": "https://github.com/ly05010419/MacNativeGames",
-    "commit": "df1e321d4a9304855f81de3c9a3d471c4c748af5",
+    "commit": "94f107e58498cfa608fdbf829f6b7cf8b1def01b",
     "builder": {
      "script": "games/ot0/scripts/build_ot0.py",
      "args": [
@@ -62,10 +62,10 @@
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/seedds/nxnative",
-    "commit": "9c2fb0c9671d40c578a7e1b1c89df66f084d7b4b"
+    "commit": "3c4de03c71e45651d1f3440e149cb4c47811ec3d"
    },
    "shader_list": "shader_list-nxnative.tsv",
-   "about": "nxnative's profile (1.0.5) with switch2mac's overlay and key-2 settings.",
+   "about": "nxnative's profile (1.0.5) with Hermit's overlay and key-2 settings.",
    "version_names": {
     "v327680": "1.0.5"
    }

@@ -1,0 +1,27 @@
+{
+ "title_id": "01007A2027548000",
+ "name": "Trails in the Sky 2nd Chapter",
+ "version": "1.0.4",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative",
+   "versions": [
+    "v393216"
+   ],
+   "version_names": {
+    "v393216": "1.0.4"
+   },
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "6cb67b8e4fa8f328c614e43eab5303ba2aac625b"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.0.4) with Hermit's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-11-12 (4)
+
+- **Pokémon Pokopia: pokopia-native is back** as the default build, from a copy of its last available version (3 November) kept at [azmasm/pokopia-native](https://github.com/azmasm/pokopia-native): xFractals' work, MIT. horizon-nx2 stays the pick for MacBook Airs and 16 GB Macs.
+
+## 2026-11-12 (3)
+
+- **Ready to play, in games built by Hermit, looks like Hermit:** the app's typeface, a compact header with the X beside the title, and a setting a switch takes over shows the value it sets (Frame rate under Frame generation; Render scale and the upscaler under Fast mode). Games get it at their next build.
+- **Pokémon Pokopia:** pokopia-native is no longer available, so the game's other builds are offered instead.
+- **Tidier repository:** texts and screens left from the app Hermit grew out of, old icon drafts, and Ocarina of Time's unfinished first build on Hermit's own engine are gone.
+
+## 2026-11-12 (2)
+
+- **`switch2mac.py` is now `hermit.py`** for people who build in Terminal: `./hermit.py build "<your dump>"`. The old command still works (it runs `hermit.py`), so nothing changes for the app or for older guides.
+- **azmasm's builds have their own home:** [hermit-builds](https://github.com/azmasm/hermit-builds) (it was switch2mac-engine) opens on a `builds` folder with a page for each build (Mario Kart World, Ocarina of Time) and the branch its code is on. nxnative's own code, kept up to date, is in the fork [azmasm/nxnative](https://github.com/azmasm/nxnative).
+
+## 2026-11-12 (1): Hermit 0.5.0
+
+- **switch2mac is now Hermit.** A hermit crab moves into a new shell; your games move to your Mac. New name, new icon (a pixel crab with a terminal prompt in its shell), same app. Your library, settings, builds and saves carry over by themselves the first time Hermit opens. The repository is now `azmasm/hermit` (older links still lead here); `switch2mac.py` keeps its name for now.
+- **Read the booklet:** open a game's case and click its booklet (or **Booklet**) to read about the game on paper pages: its introduction and description from its eShop page, publisher, release date, players, genre and age rating, then your keyboard's keys, how the game ran on Macs like yours (players' reports) and a page about your build. The shop's text is downloaded onto your Mac like the banners; none of it is in Hermit. Arrow keys, a click on a page or a controller turn the pages.
+- **Ready to play:** pressing Play shows the game's settings first, so a game starts the way you want it. Games opened from Finder, the Dock or Spotlight show the same window (after their next build). A switch in Settings turns it off.
+- **Hermit Mode** is the new name of "Close while playing": Hermit closes when a game starts, so the game gets all of your Mac, and opens again when you quit the game.
+- **A game with no banner shows its own icon:** when the shop's list has no picture for a game, Hermit shows the icon from your `.nup` dump (a built game already showed its app icon).
+- **Updating:** the app updates itself from 0.4.6 (older versions: install the package). New installs use `Hermit-0.5.0.pkg`; if the old `switch2mac.app` is still in Applications, Hermit asks once whether to move it to the Trash.
+
 ## 2026-11-11 (3): switch2mac app 0.4.6
 
 - **New build of The Legend of Zelda: Ocarina of Time: azmasm's build.** nxnative with Ocarina pull requests merged ahead of upstream: faster foliage, fewer stutters (including area loads that froze late in a session or stayed at 20 fps), a first start in seconds, the leaf, mist and flower-bush picture fixes, and settings for Frame generation (30 drawn, 60 shown), Fast mode, Render scale and the Switch 2's full docked picture. On an M1 Max it plays at about 50-55 fps, or a steady 30 drawn / 60 shown with Frame generation at 1920x1080. The app recommends it on M1 and M2 Macs with 32 GB or more; other Macs keep their build, and **Build with…** offers it everywhere. Thanks to seedds and to everyone whose pull requests it carries (NOTICE.md names them).

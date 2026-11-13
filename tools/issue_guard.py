@@ -38,7 +38,7 @@ def act(event):
     print('found:', ', '.join(why))   # the reasons only, never the text
     n = issue['number']
     gh('label', 'create', 'needs-review', '--repo', repo, '--color', 'B60205', '--description', 'Hidden by the issue guard: the maintainer reviews it')   # once; fails harmlessly after
-    note = ('This was hidden automatically because it seems to contain ' + ' and '.join(why) + '. switch2mac never accepts console keys, game '
+    note = ('This was hidden automatically because it seems to contain ' + ' and '.join(why) + '. Hermit never accepts console keys, game '
             'files or links to them: see [LEGAL.md](../blob/main/LEGAL.md). The maintainer will review it. If this was a mistake, please post again without it.')
     if comment:
         gh('api', 'graphql', '-f', 'query=mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: OFF_TOPIC}) { clientMutationId } }',

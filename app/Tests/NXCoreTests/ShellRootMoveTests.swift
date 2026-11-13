@@ -9,7 +9,7 @@ final class ShellRootMoveTests: XCTestCase {
     private let fm = FileManager.default
     private var base: String!
     private var home: String { base + "/home" }
-    private var source: String { home + "/Library/Application Support/switch2mac/shell" }
+    private var source: String { home + "/Library/Application Support/Hermit/shell" }
     private var picked: String { base + "/Drive/Games" }
     private var destination: String { ShellRootMove.destination(inside: picked) }
     private var buildFramework: String { base + "/Out/build/DmGame0100BBBB.framework" }
