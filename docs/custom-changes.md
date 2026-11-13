@@ -392,3 +392,18 @@ DM_FOCUS_KEEP=1
 - 闪退问题：`6815810d` 仍未修复，`DM_FOCUS_KEEP=1` 继续保留
 - 0fps 长卡顿：上游 issue #1859 仍 open，本次未修复
 
+### 2026-11-13：上游改名为 Hermit，合并 0.5.0
+
+- `switch2mac.py` 上游已改名为 `hermit.py`；旧 `switch2mac.py` 只保留兼容入口，
+  会转调 `hermit.py`。本项目命令统一改为 `./hermit.py`。
+- 我们自己的 `--icon` 和 `--language`（game.json `language`）已移植到
+  `hermit.py` 的 `engine_build()`；中文界面、poll 100ms 和 `/builds` 忽略仍然保留。
+- 马车世界 nxnative 引擎：`6815810d` -> `a2514d7d`（条件渲染改为 host 统一处理，
+  render_cond 配置删除；另有 OoT/PRAGMATA 的 compute 线程数修复等）。
+- 大金刚 nxnative：`084f5aa5` -> `a2514d7d`。
+- 时之笛：nxnative -> `529cf68c`，kid-with-sword -> `5a6abb8e`，
+  azmasm 构建继续使用 hermit-builds。
+- 新增游戏：Mario Golf: Super Rush、Trails in the Sky 2nd Chapter。
+- 启动闪退：`a2514d7d` 仍然是 `oe::Initialize` no-op，继续保留 `DM_FOCUS_KEEP=1`。
+- 0fps 长卡顿：上游 issue #1859 仍 open，本次未修复。
+
