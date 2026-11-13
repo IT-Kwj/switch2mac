@@ -407,3 +407,23 @@ DM_FOCUS_KEEP=1
 - 启动闪退：`a2514d7d` 仍然是 `oe::Initialize` no-op，继续保留 `DM_FOCUS_KEEP=1`。
 - 0fps 长卡顿：上游 issue #1859 仍 open，本次未修复。
 
+#### 启动设置窗口（Ready to play）汉化
+
+- 打开游戏时出现的弹窗是 Hermit 的 “Ready to play” 窗口，源码是
+  `tools/engine/s2m_launcher.swift`；游戏内按 2 键的面板是
+  `tools/engine/s2m_ui.m`。两者不是同一个界面，但读取同一份
+  `Resources/dm/launcher.json`，并把选择写到同一组
+  `launcher.<VAR>` 偏好里。
+- 启动窗口已汉化：标题、说明、高级设置、启动前显示、恢复默认、开始游戏、
+  退出、云存档卡片、文件选择框、菜单栏，以及 Game/Controls/Performance
+  分区标题（显示/控制/性能）。
+- `patch.py` 新增 `DM_FRAMEGEN`（帧生成）、`DM_FAST_720`（快速模式）、
+  `DM_FULL_DOCKED`（完整底座画面）三项的中文 label/note；2 键面板和启动
+  窗口都会使用。
+- 默认中文语言：`game.json` 的 `language: zh-Hans` 仍然作为“首次启动”的
+  默认值。启动窗口里的语言选择会覆盖它，并保存为 `launcher.DM_LANG`。
+  如果去掉 `language`，新构建首次启动会是英文，需要在启动窗口选一次中文；
+  目前已保留默认中文。
+- 这些改动需要重新构建才会写入 App；启动窗口是编译进 App 的 Swift 源码，
+  设置项文字则是在构建时生成到 `launcher.json`。
+

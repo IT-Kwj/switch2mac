@@ -116,6 +116,15 @@ private struct S2MDropdown: View {   // a longer choice: a pill with the current
     }
 }
 
+private func s2mSectionName(_ s: String) -> String {   // the same headings as the in-game key-2 panel
+    switch s {
+    case "Game": return "显示"
+    case "Controls": return "控制"
+    case "Performance": return "性能"
+    default: return s
+    }
+}
+
 struct LauncherView: View {
     @ObservedObject var m: LauncherModel
     let done: (Bool) -> Void
@@ -133,7 +142,7 @@ struct LauncherView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Ready to play").font(S2MFont.f(24, .heavy)).tracking(-0.5).lineLimit(1)
+                    Text("准备开玩").font(S2MFont.f(24, .heavy)).tracking(-0.5).lineLimit(1)
                     Text(info("CFBundleName") ?? "Game").font(S2MFont.f(14)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
                 }
                 Spacer(minLength: 8)
@@ -141,10 +150,10 @@ struct LauncherView: View {
                     Image(systemName: "xmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.secondary)
                         .frame(width: 30, height: 30).background(Color.white.opacity(0.08), in: Circle()).contentShape(Circle())
                 }
-                .buttonStyle(.plain).keyboardShortcut(.cancelAction).accessibilityLabel("Quit")
+                .buttonStyle(.plain).keyboardShortcut(.cancelAction).accessibilityLabel("退出")
             }
             .padding(.horizontal, 30).padding(.top, 24)
-            Text("Check this game's settings before it starts. You can change them in the game with key 2.")
+            Text("启动前检查游戏设置。进入游戏后可按 2 键修改。")
                 .font(S2MFont.f(12.5)).foregroundStyle(.tertiary).fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 30).padding(.top, 12).padding(.bottom, 18)
             ScrollView {
@@ -154,7 +163,7 @@ struct LauncherView: View {
                         card {
                             Button { withAnimation(.easeInOut(duration: 0.18)) { advanced.toggle() } } label: {
                                 HStack(spacing: 8) {
-                                    Text("Advanced settings").font(S2MFont.f(14, .medium))
+                                    Text("高级设置").font(S2MFont.f(14, .medium))
                                     Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
                                         .rotationEffect(.degrees(advanced ? 90 : 0))
                                     Spacer()
@@ -173,12 +182,12 @@ struct LauncherView: View {
             Divider().opacity(0.3)
             HStack(spacing: 14) {
                 Toggle("", isOn: $show).toggleStyle(S2MSwitch()).labelsHidden()
-                Text(show ? "Show before playing" : "Show before playing (hold Option at launch to see it again)")
+                Text(show ? "启动前显示" : "启动前显示（启动时按住 Option 可再次显示）")
                     .font(S2MFont.f(12)).foregroundStyle(.secondary).lineLimit(2)
                 Spacer(minLength: 8)
                 if m.changed {
                     Button { m.reset() } label: {
-                        Text("Reset to tested defaults").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
+                        Text("恢复测试默认值").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
                             .padding(.horizontal, 16).padding(.vertical, 9)
                             .background(Color.white.opacity(0.06), in: Capsule()).overlay(Capsule().strokeBorder(Color.white.opacity(0.1)))
                     }
@@ -187,7 +196,7 @@ struct LauncherView: View {
                 Button { done(true) } label: {   // Play: red, as Hermit's Play
                     HStack(spacing: 7) {
                         Image(systemName: "play.fill").font(.system(size: 12, weight: .bold))
-                        Text("Play").font(S2MFont.f(13.5, .bold))
+                        Text("开始游戏").font(S2MFont.f(13.5, .bold))
                     }
                     .lineLimit(1).fixedSize()
                     .foregroundStyle(.black).padding(.horizontal, 26).padding(.vertical, 9)
@@ -209,7 +218,7 @@ struct LauncherView: View {
             let rows = m.rows(in: section, basic: basic)
             if !rows.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(section).font(S2MFont.f(15, .semibold)).foregroundStyle(.secondary).padding(.leading, 2)
+                    Text(s2mSectionName(section)).font(S2MFont.f(15, .semibold)).foregroundStyle(.secondary).padding(.leading, 2)
                     card {
                         ForEach(Array(rows.enumerated()), id: \.element.id) { i, s in
                             if i > 0 { Divider().opacity(0.25).padding(.leading, 18) }
@@ -248,8 +257,8 @@ struct LauncherView: View {
                 } else if !s.note.isEmpty {
                     Text(s.note).font(S2MFont.f(12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
-                if let set { Text("Set by \(set.by) while it is on").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
-                else if fixed { Text("Set where the game is started, so it can't be changed here").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
+                if let set { Text("开启时由“\(set.by)”设定").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
+                else if fixed { Text("由启动设置固定，无法在此更改").font(S2MFont.f(11.5)).foregroundStyle(.tertiary) }
             }
             Spacer(minLength: 12)
             control(s, value).frame(width: S2M.controlWidth, alignment: .trailing).disabled(fixed)
@@ -287,15 +296,15 @@ private struct CloudSavesCard: View {
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Cloud saves").font(S2MFont.f(14, .medium))
-                Text(fixed.map { "\(Self.shown($0)) (env.txt)" } ?? (folder.isEmpty ? "Off: the save stays on this Mac" : Self.shown(folder)))
+                Text("云存档").font(S2MFont.f(14, .medium))
+                Text(fixed.map { "\(Self.shown($0)) (env.txt)" } ?? (folder.isEmpty ? "关闭：存档只保存在这台 Mac" : Self.shown(folder)))
                     .font(S2MFont.f(12)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
             }
             Spacer(minLength: 12)
             if fixed == nil {
-                if !folder.isEmpty { Button("Turn off") { folder = "" }.buttonStyle(.plain).font(S2MFont.f(13, .semibold)).foregroundStyle(.secondary) }
+                if !folder.isEmpty { Button("关闭") { folder = "" }.buttonStyle(.plain).font(S2MFont.f(13, .semibold)).foregroundStyle(.secondary) }
                 Button { choose() } label: {
-                    Text(folder.isEmpty ? "Choose a folder…" : "Change…").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
+                    Text(folder.isEmpty ? "选择文件夹…" : "更改…").font(S2MFont.f(13, .semibold)).lineLimit(1).fixedSize()
                         .padding(.horizontal, 16).padding(.vertical, 8)
                         .background(Color.white.opacity(0.06), in: Capsule()).overlay(Capsule().strokeBorder(Color.white.opacity(0.1)))
                 }
@@ -310,8 +319,8 @@ private struct CloudSavesCard: View {
     private func choose() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true; panel.canChooseFiles = false; panel.allowsMultipleSelection = false; panel.canCreateDirectories = true
-        panel.prompt = "Use for Cloud Saves"
-        panel.message = "The folder the iPhone app chose in its launcher's Cloud saves"
+        panel.prompt = "用于云存档"
+        panel.message = "iPhone 应用在其启动器“云存档”中选择的文件夹"
         panel.directoryURL = URL(fileURLWithPath: folder.isEmpty ? Self.drive : folder)
         if panel.runModal() == .OK, let url = panel.url { folder = url.path }
     }
@@ -332,8 +341,8 @@ private final class Launcher: NSObject, NSApplicationDelegate, NSWindowDelegate 
     func applicationDidFinishLaunching(_ n: Notification) {
         let name = info("CFBundleName") ?? "Game"
         let menu = NSMenu(), item = NSMenuItem(), app = NSMenu()
-        app.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        app.addItem(withTitle: "Quit \(name)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        app.addItem(withTitle: "关闭窗口", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        app.addItem(withTitle: "退出 \(name)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.submenu = app; menu.addItem(item); NSApp.mainMenu = menu
         // Hermit's look: no title bar or window buttons (the X in the view closes it), dark, moved by its background
         let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 720), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
