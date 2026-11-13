@@ -427,3 +427,18 @@ DM_FOCUS_KEEP=1
 - 这些改动需要重新构建才会写入 App；启动窗口是编译进 App 的 Swift 源码，
   设置项文字则是在构建时生成到 `launcher.json`。
 
+#### 2026-11-13：1.8.0 使用最新 nxnative builder
+
+- 构建入口：`nxnative a2514d7d`（不是 `nxnative-mkw` 的 Thijs2004
+  `b1c5e4e5` 旧 fork）。
+- 最新 nxnative 没有注册 v917504，构建时自动从 v0 派生 1.8.0 profile：
+  `packing v917504 from a profile derived from it`。
+- 结果：11,603 个 shader，11,602 成功，1 个失败：Ampere instruction 481
+  未实现（见 `work/0400C3F00006E000/logs/dmsh_build.log`）。
+- App 23.6 GB，已安装到 `/Applications`。启动窗口和游戏内 2 键的中文已
+  检查（关键字符串和二进制内容），图标使用 `Mario Kart World.png`。
+- 上游警告：派生 profile 不是注册构建，部分 SDK/线程补丁不会应用；如果
+  实际运行有问题，可切回旧的 `nxnative-mkw` 1.8.0 构建。
+- `hermit.py` 新增旧 builder 图标兼容：builder 不认识 `--icon` 时，自动
+  生成 `work/<tid>/extract/v917504/icon.jpg`，仍使用同一个图标。
+

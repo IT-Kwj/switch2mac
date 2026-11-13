@@ -935,6 +935,19 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
         lang = g.get('build', {}).get('language') or g.get('language')   # a game's packed default language (game.json "language"), e.g. Donkey Kong Bananza's zh-Hans
         lang_args = ['--language', lang] if lang else []
         P.end()
+        icon_args = []
+        if getattr(a, 'icon', None):
+            icon = Path(a.icon).expanduser().resolve()
+            if not icon.is_file(): sys.exit(f'--icon: no such file: {icon}')
+            builder = nx / 'scripts/build_ipa_from_nsp.py'
+            if re.search(r"add_argument\([^\n]*['\"]--icon", builder.read_text(errors='replace')):
+                icon_args = ['--icon', icon]
+            else:   # older builders read the game's 256x256 JPEG from the extraction
+                ver = dump_version(dump) or 'v0'
+                dest = w / tid / 'extract' / ver / 'icon.jpg'
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                run(['sips', '-s', 'format', 'jpeg', '-z', '256', '256', icon, '--out', dest], env=e)
+                print(f'  icon: {dest} (this builder reads it from the extraction)')
         s1 = []
         if DUMP_S1:   # nxnative's builder reads a folder of one game's files: links to this game's base, update and DLC only (its folder may hold other games)
             base, upd, dlc = s1_parts(DUMP_S1, tid)
@@ -946,8 +959,7 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
             s1 = ['--title-id', tid]
         run([py(), nx / 'scripts/build_ipa_from_nsp.py', dump, '--platform', 'mac-app', '--allow-other-metal', '--env-file', sw,
              '--work-dir', w / tid, '-o', app, '--progress', 'json' if P.json else 'lines'] + (['-k', Path(a.keys).expanduser().resolve()] if DUMP_S1 else [])
-            + (['--seen-shaders'] if getattr(a, 'quick', False) else [])
-            + (['--icon', Path(a.icon).expanduser().resolve()] if getattr(a, 'icon', None) else []) + lang_args + s1
+            + (['--seen-shaders'] if getattr(a, 'quick', False) else []) + icon_args + lang_args + s1
             + eng.get('args', []), env=e, cwd=nx, shift=P.k if P.json else None)
     elif eng['kind'] == 'macnativegames':   # MacNativeGames (ly05010419, MIT): its own runtime and builder (build_app.py) for Tears of the Kingdom and Breath of the Wild
         if not DUMP_S1: sys.exit(f'{g["name"]}: MacNativeGames builds from the game\'s .xci / .nsp files with your prod.keys')
