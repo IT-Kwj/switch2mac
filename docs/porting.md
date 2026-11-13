@@ -15,7 +15,7 @@ Most of Hermit's games were added this way, in a few minutes each and without a 
 5. **The README's game table and dump-folder table**, and **NOTICE.md** (the game in nxnative's line, its trademarks).
 6. Check: `./hermit.py builds <game>` lists the build and its reports, `tools/shader_list.py stats` shows the empty list, and `tools/engine/update.py` sees the pin. The app picks the game up on its next start.
 
-A game with a second port (Pokopia: horizon-nx2 and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
+A game with a second port (Pokopia: pokopia-native, horizon-nx2 and nxnative) gets `builds` instead of `engine`: see "Several builds of one game" below.
 
 ## How a build works
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-12 (4)
+
+- **Pokémon Pokopia: pokopia-native is back** as the default build, from a copy of its last available version (3 November) kept at [azmasm/pokopia-native](https://github.com/azmasm/pokopia-native): xFractals' work, MIT. horizon-nx2 stays the pick for MacBook Airs and 16 GB Macs.
+
 ## 2026-11-12 (3)
 
 - **Ready to play, in games built by Hermit, looks like Hermit:** the app's typeface, a compact header with the X beside the title, and a setting a switch takes over shows the value it sets (Frame rate under Frame generation; Render scale and the upscaler under Fast mode). Games get it at their next build.
