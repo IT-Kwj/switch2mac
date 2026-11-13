@@ -1,12 +1,12 @@
 # Sonic Frontiers Definitive Edition
 
-Title ID `0400921025B32000`, update v65536. Added automatically when [nxnative](https://github.com/seedds/nxnative) added its profile: see [nxnative's notes on it](https://github.com/seedds/nxnative/tree/ad8bca6c1c9a17ea2f9c59739f8537a999888d63/dm/games/0400921025B32000) for how far it plays and on which Mac.
+Title ID `0400921025B32000`, update v65536. Added automatically when [nxnative](https://github.com/seedds/nxnative) added its profile: see [nxnative's notes on it](https://github.com/seedds/nxnative/tree/a4b59097637e8c48c83d85d997ca621e454b6ae5/dm/games/0400921025B32000) for how far it plays and on which Mac.
 
 Built with nxnative's own builder at the commit `game.json` names (fetched once into `./engines`), with Hermit's front end added (`tools/engine/patch.py`): the game starts at once, **key 1** is the performance overlay and **key 2** the settings.
 
 | What | |
 |---|---|
-| Profile and notes | [nxnative `dm/games/0400921025B32000`](https://github.com/seedds/nxnative/tree/ad8bca6c1c9a17ea2f9c59739f8537a999888d63/dm/games/0400921025B32000) |
+| Profile and notes | [nxnative `dm/games/0400921025B32000`](https://github.com/seedds/nxnative/tree/a4b59097637e8c48c83d85d997ca621e454b6ae5/dm/games/0400921025B32000) |
 | Dump folder | `base/` and `updates/65536/` |
 
 ## Shared shader list
