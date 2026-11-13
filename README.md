@@ -123,7 +123,7 @@ cd hermit
 - `setup` checks macOS, Xcode, Metal, .NET, Python and git, and stops with the exact fix for anything missing; then it makes a Python environment in `.venv` (it finds a new enough Python by itself: macOS's own is too old).
 - `build` writes only into `./work`. Mario Kart World is built step by step here ([its page](games/mario-kart-world/README.md#build)). The other games: their engine is fetched once into `./engines` at the version the game's `game.json` names, Hermit's front end (overlay and key-2 settings) is added to it, and the engine's own builder makes the app.
 - `build` first checks there is enough free disk space for that game.
-- `install` moves the app to `/Applications`, replacing an older one.
+- `install` moves the app to `/Applications`, replacing an older one, then removes the build files the app no longer needs (the game unpacked, temporary files, the build's engine download: often tens of GB). The shader caches stay, so a rebuild is still quick. `HERMIT_KEEP_BUILD=1` keeps everything (for `run` and `refresh`).
 - `./hermit.py builds <game>` shows a game's builds, the one your Mac gets and why, and how each ran on players' Macs; `build --engine <id>` builds another one.
 
 ### The first start waits

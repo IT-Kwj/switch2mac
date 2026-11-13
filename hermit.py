@@ -209,10 +209,24 @@ def list_keys(g, b):   # how many shaders a build's shared list names (games/<ga
     except OSError: return 0
 
 
+def engine_seen(commit, tid):   # the engine profile at that commit ships a list of the shaders players used (shader_seen.tsv). Noted in engine-seen.json
+    # ("<commit12>/<title ID>": true / false) while the download is here, so the Build page still offers a quick try after trim_build removed it
+    key, d, SEEN_MEMO = f'{commit[:12]}/{tid}', ENGINES / f'nxnative-{commit[:12]}', app_folder() / 'engine-seen.json'
+    try: memo = json.loads(SEEN_MEMO.read_text())
+    except (OSError, ValueError): memo = {}
+    if not (d / '.git').is_dir(): return bool(memo.get(key))
+    have = (d / 'dm/games' / tid / 'shader_seen.tsv').is_file()
+    if memo.get(key) != have:
+        memo[key] = have; memo = dict(list(memo.items())[-300:])
+        try: SEEN_MEMO.write_text(json.dumps(memo))
+        except OSError: pass
+    return have
+
+
 def quick_ok(g, b):   # a quick try (--quick) needs nxnative's builder and a list of the shaders players used: the game's shared list, or the engine profile's own shader_seen.tsv
     if b['engine']['kind'] != 'nxnative' or b.get('untested'): return False
     if list_keys(g, b): return True
-    return bool(g.get('title_id')) and (ENGINES / f'nxnative-{b["engine"]["commit"][:12]}' / 'dm/games' / g['title_id'] / 'shader_seen.tsv').is_file()
+    return bool(g.get('title_id')) and engine_seen(b['engine']['commit'], g['title_id'])
 
 
 def reports(g):   # how the game ran on players' Macs (games/<game>/reports.tsv): one dict a report
@@ -786,6 +800,25 @@ def prune_engines():   # after a build
     if freed: print(f'  removed engine copies no build uses any more: {freed / 1e9:.1f} GB freed')
 
 
+BULKY = ('extract', 'extract.partial', 'nsp', 'tmp', 'aoc', 'aoc.partial', 'ipa', 'xcode', 'switch-files', 'out')   # in a build folder (or nxnative's <title ID> folder in it)
+
+
+def trim_build(w, tid, g):   # after an install: the game unpacked (tens of GB), converted files, temporary files and the build's engine download. The app is whole without them,
+    # and a rebuild makes them again in minutes; the shader caches (the hours of a build), logs and stage times stay. Not for MacNativeGames (its apps name their builder's
+    # folders), nor with HERMIT_KEEP_BUILD=1 (a maintainer who runs or refreshes builds from the folder)
+    if g['engine'].get('kind') == 'macnativegames' or os.environ.get('HERMIT_KEEP_BUILD'): return
+    gone = [d for base in (w, w / tid) for d in [base / n for n in BULKY] + sorted(base.glob('patched_*')) if d.is_dir()]
+    eng = ENGINES / f'{g["engine"].get("kind")}-{(g["engine"].get("commit") or "")[:12]}'
+    if g['engine'].get('commit') and (eng / '.git').is_dir():
+        head = subprocess.run(['git', '-C', eng, 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
+        if head and eng.name.endswith(head[:12]):   # one Hermit fetched (a copy moved by hand is left alone)
+            if g['engine'].get('kind') == 'nxnative': engine_seen(g['engine']['commit'], tid)   # noted first: a quick try is still offered without it
+            gone.append(eng)
+    freed = 0
+    for d in gone: freed += disk_bytes(d); shutil.rmtree(d, ignore_errors=True)
+    if freed > 1e8: print(f'  removed the build files the app no longer needs: {freed / 1e9:.1f} GB freed (shader caches kept, so a rebuild stays quick)')
+
+
 BUILDS = app_folder() / 'builds'   # where the app builds each game (BuildStore+Hermit.swift: builds/<title ID>)
 
 
@@ -1234,6 +1267,7 @@ def refresh(a):
     e = env(); w, ex, b, sh, cache = paths(a)
     tid = built_game(w)
     if not own_engine(GAMES[tid]): sys.exit(f'{GAMES[tid]["name"]} is built with another engine: refresh is for the games on Hermit\'s engine (build again instead)')
+    if not ex.is_dir(): sys.exit("the game's unpacked files were removed after its install, to save space: build it again first (HERMIT_KEEP_BUILD=1 keeps them)")
     use_engine(GAMES[tid])
     caps = w / 'captures'; caps.mkdir(exist_ok=True); new = []
     for saved in (Path.home() / f'Library/Application Support/nxnative/{tid}/shdump', w / 'run/shdump'):   # the installed app's captures, and run's
@@ -1371,7 +1405,7 @@ def install(a):
         if subprocess.run(['pgrep', '-f', f'{old}/Contents/MacOS'], capture_output=True).returncode == 0: sys.exit(f'{g["name"]} is running: quit it first')
         shutil.rmtree(old)
     shutil.move(str(app), dst); Path(str(app) + '.key').unlink(missing_ok=True)
-    switched_build(g)
+    switched_build(g); trim_build(w, tid, g)
     print(f'installed: {dst}\nThe first start after each install waits 1-3 minutes while macOS scans the app (no window, no Dock icon yet): wait, do not open it twice.')
 
 
@@ -1381,6 +1415,7 @@ def run_game(a):
     line into it while the game runs (shot, passdump, texraw, memdump, ...). Shaders the game meets that the build lacks are saved to work/run/shdump."""
     w = paths(a)[0]; tid = built_game(w); g = GAMES[tid]; r = w / 'run'
     if not own_engine(g): sys.exit(f'{g["name"]} is built with another engine: open the app instead (its own runner: {w / tid})')
+    if not (w / 'extract').is_dir(): sys.exit("the game's unpacked files were removed after its install, to save space: build it again first (HERMIT_KEEP_BUILD=1 keeps them)")
     use_engine(g)
     for d in ('save', 'temp', 'shdump'): (r / d).mkdir(parents=True, exist_ok=True)
     (r / 'ctl.txt').write_text(''); (w / 'logs').mkdir(exist_ok=True)
