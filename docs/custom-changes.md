@@ -496,3 +496,32 @@ DM_FOCUS_KEEP=1
 - 目录恢复后 `du` 会重新显示约 45 GB（两份 APFS 克隆），实际物理占用仍约
   22 GB；这是为了减少后续上游合并冲突而接受的显示差异。
 
+## 上游更新固定检查清单
+
+每次合并 `upstream/main` 后依次检查：
+
+1. **1.8.0 支持是否变化**
+   - 检查 `games/mario-kart-world/game.json` 是否新增了官方 1.8.0 构建，
+     以及 nxnative PR #1252 / #2621 是否已经合并。
+   - 如果上游已经正式注册 1.8.0：删除本地临时的 `nxnative-180` 和
+     `shader_list-nxnative-180.tsv`，改用上游推荐的构建。
+   - 如果还没有变化：继续使用当前 `nxnative-180`，不要回退到旧
+     `nxnative-mkw`（实测 bug 多）。
+
+2. **nxnative 是否更新**
+   - 对比 `games/mario-kart-world/game.json` 的 `nxnative` commit 与
+     `nxnative-180` 的 commit。
+   - 如果最新 nxnative 更新了：同步更新 `nxnative-180` 的 commit，并更新
+     `games/mario-kart-world/shader_list-nxnative-180.tsv` 第一行的
+     `engine=nxnative-<commit12>`。
+   - 检查 `tools/engine/patch.py` 的锚点是否仍匹配，特别是
+     `settings.tsv`、`hle_net.c` 和 launcher 补丁。
+
+3. **启动页和 2 键汉化**
+   - 检查 `tools/engine/s2m_launcher.swift` 的启动页面（“准备开玩”
+     窗口）和 `tools/engine/s2m_ui.m` 的 2 键面板。
+   - 对照新生成的 `Resources/dm/launcher.json`、引擎新 `settings.tsv`
+     行、二进制中的关键中文字符串；发现英文项立即补进
+     `patch.py` 或 `s2m_launcher.swift`。
+   - 每次构建后也必须做一次这项检查，不能只看构建是否成功。
+
