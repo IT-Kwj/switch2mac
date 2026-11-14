@@ -464,20 +464,6 @@ def update_dirs(d):   # the newest update's exefs and romfs when it holds both (
     return (found[0] / 'exefs', found[0] / 'romfs') if found else None
 
 
-def prepare_dump(d, w, ver):   # a merged update tree (exefs/ + romfs/ directly) as the base/ and updates/<version>/ layout the engine builders read; APFS clones keep one physical copy
-    d = Path(d).expanduser().resolve()
-    if not ver or ver == 'v0' or not ver[1:].isdigit(): return d
-    if (d / 'base/exefs/main').is_file() or (d / 'updates').is_dir(): return d
-    if not (d / 'exefs/main').is_file() or not (d / 'romfs').is_dir(): return d
-    layout = w / 'dump-layout'; shutil.rmtree(layout, ignore_errors=True)
-    (layout / 'base').mkdir(parents=True); (layout / 'updates' / ver[1:]).mkdir(parents=True)
-    for part in ('exefs', 'romfs'):
-        run(['cp', '-cR', d / part, layout / 'base' / part])   # a real directory tree, sharing APFS extents with d
-        run(['cp', '-cR', layout / 'base' / part, layout / 'updates' / ver[1:] / part])
-    print(f'  dump layout: {layout} (APFS clones for the builder; the source stays one tree)')
-    return layout
-
-
 DUMP_NUP = None; NUP_BASE = True   # the .nup the dump path names (read_dump), or None for a dump folder
 
 
@@ -733,26 +719,12 @@ def version_name(g, v):   # an update version as players know it ("1.8.0") when 
     return f'v{v}'
 
 
-def main_build_id(exefs):   # the first 0x10 bytes of an NSO/NRO build ID, enough to identify a merged update without the engine's nso module
-    try: d = (Path(exefs) / 'main').read_bytes()[:0x60]
-    except OSError: return ''
-    if d[:4] == b'NSO0' or d[0x10:0x14] == b'NRO0': return d[0x40:0x50].hex()
-    return ''
-
-
-def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), a game.json "builds_by_main" match for a merged update tree, "v0" with no update, None when it cannot tell
+def dump_version(d):   # the dump's game version as the profiles name it: "v<update>" for the newest update folder (updates/<number>/), "v0" with no update, None when it cannot tell
     if read_dump(d): return f'v{nup_scan(DUMP_NUP)[1]}'
     if DUMP_S1: return f'v{s1_scan(DUMP_S1)[1]}'
     d = Path(d).expanduser().resolve(); u = update_dirs(d)
-    if u: return f'v{u[0].parent.name}' if u[0].parent.name.isdigit() else None
-    for base in (d, d / 'base'):
-        npdm = base / 'exefs/main.npdm'
-        if npdm.is_file():
-            g = GAMES.get(title_id(npdm))
-            bid = main_build_id(base / 'exefs')
-            if g and bid in g.get('builds_by_main', {}): return g['builds_by_main'][bid]
-            break
-    return 'v0'
+    if not u: return 'v0'
+    return f'v{u[0].parent.name}' if u[0].parent.name.isdigit() else None
 
 
 def title_id(npdm):
@@ -828,7 +800,7 @@ def prune_engines():   # after a build
     if freed: print(f'  removed engine copies no build uses any more: {freed / 1e9:.1f} GB freed')
 
 
-BULKY = ('extract', 'extract.partial', 'nsp', 'tmp', 'aoc', 'aoc.partial', 'ipa', 'xcode', 'switch-files', 'out', 'dump-layout')   # in a build folder (or nxnative's <title ID> folder in it)
+BULKY = ('extract', 'extract.partial', 'nsp', 'tmp', 'aoc', 'aoc.partial', 'ipa', 'xcode', 'switch-files', 'out')   # in a build folder (or nxnative's <title ID> folder in it)
 
 
 def trim_build(w, tid, g):   # after an install: the game unpacked (tens of GB), converted files, temporary files and the build's engine download. The app is whole without them,
@@ -975,7 +947,6 @@ def engine_build(a, tid, w, e):   # a game on another engine: its own builder do
     print(f'  {g["name"]} ({tid}): built with {eng["kind"]} {eng["commit"][:12]}')
     e = {k: v for k, v in e.items() if k != 'DMSH_BORDER_EMU'}   # Mario Kart World's translator setting, not this engine's
     w.mkdir(parents=True, exist_ok=True); app = w / app_file(g)
-    dump = prepare_dump(dump, w, dump_version(dump))   # a merged update tree stays one tree for the player; the engine builder gets APFS-cloned base/updates folders
     untested = g['build'].get('untested')
     if untested: print(f'  UNTESTED: {g["name"]} on {KINDS[eng["kind"]]}, with a profile it guesses from the game\'s files. It may stop partway or not start.')
     if getattr(a, 'quick', False):

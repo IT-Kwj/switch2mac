@@ -4,9 +4,6 @@
  "version": "1.0.0",
  "marker": "Movie/StaffRoll_00.webm",
  "disk_gb": 50,
- "builds_by_main": {
-  "d00e4f399e411d0613aa8d26b1c02fef": "v917504"
- },
  "builds": [
   {
    "id": "switch2mac",
