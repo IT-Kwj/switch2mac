@@ -1,0 +1,27 @@
+{
+ "title_id": "0100C510166F0000",
+ "name": "Chained Echoes",
+ "version": "1.1.1",
+ "console": "switch",
+ "check": "daily",
+ "builds": [
+  {
+   "id": "nxnative",
+   "name": "nxnative",
+   "versions": [
+    "v131072"
+   ],
+   "version_names": {
+    "v131072": "1.1.1"
+   },
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "5b086b77c962a6e414eab710ff0682fdbc82325c"
+   },
+   "shader_list": "shader_list.tsv",
+   "about": "nxnative's profile (1.1.1) with Hermit's overlay and key-2 settings: see its notes for how far it plays."
+  }
+ ],
+ "disk_gb": 30
+}
