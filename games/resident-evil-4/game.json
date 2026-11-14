@@ -1,0 +1,11 @@
+{
+ "title_id": "0400569027BF4000",
+ "name": "Resident Evil 4",
+ "version": "update v131072",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "ad8bca6c1c9a17ea2f9c59739f8537a999888d63"
+ },
+ "disk_gb": 50
+}

@@ -56,6 +56,9 @@ The app keeps itself and its game list up to date: new games and fixes arrive wh
 | Every other Switch game nxnative has a profile for (133 more) | its profile's versions | nxnative | Added from nxnative's profiles and kept up to date automatically (checked daily): each page links nxnative's notes on how far it plays. A game with no profile can still be tried with an untested build, guessed from its files. | [games/](games) |
 | PRAGMATA | update v196608 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/ccd834e06a3938834bb5579e2ccc6a0ad13d3970/dm/games/0400C76024710000). | [games/pragmata](games/pragmata) |
 | Nintendo Switch Sports Resort | update v65536 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/f4b7e77c907b652097849c08fd8a5da07f99d17f/dm/games/04008E001F098000). | [games/nintendo-switch-sports-resort](games/nintendo-switch-sports-resort) |
+| Sonic Frontiers Definitive Edition | update v65536 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/647f46f5b7c989355c2a2cad5dd5af672df04816/dm/games/0400921025B32000). | [games/sonic-frontiers-definitive-edition](games/sonic-frontiers-definitive-edition) |
+| Resident Evil 4 | update v131072 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/11825d2a650316ab29ea7a4c31f921e03eec5b63/dm/games/0400569027BF4000). | [games/resident-evil-4](games/resident-evil-4) |
+| Orbitals | update v327680 | [nxnative](https://github.com/seedds/nxnative) | Added from nxnative's profile: see [its notes](https://github.com/seedds/nxnative/tree/f7096458da98adcae46dc1a4b5e9c9ca07d778b9/dm/games/040032B023CA4000). | [games/orbitals](games/orbitals) |
 | Your game? | | | | [docs/porting.md](docs/porting.md) |
 
 > **Mario Kart World on a 16 GB Mac:** Macs with less than 24 GB now get nxnative's build of Mario Kart World automatically, which needs much less memory (about 11 GB): players report 60 fps on a 16 GB M6 and 36-40 fps on a 16 GB M1 Pro. azmasm's build can grow past 20 GB in long sessions, so it is kept for Macs with 24 GB or more ([both builds](games/mario-kart-world/README.md#two-builds)).
@@ -79,6 +82,9 @@ The files your dump tool wrote, for example:
 | The Legend of Zelda: Ocarina of Time | `base/` and `updates/131072/` |
 | PRAGMATA | `base/` and `updates/196608/` |
 | Nintendo Switch Sports Resort | `base/` and `updates/65536/` |
+| Sonic Frontiers Definitive Edition | `base/` and `updates/65536/` |
+| Resident Evil 4 | `base/` and `updates/131072/` |
+| Orbitals | `base/` and `updates/327680/` |
 
 **A `.nup` file works too** (a NUP container: the base game, updates and DLC in one file, no keys needed): choose the file itself, or a folder holding it. Every build that runs on nxnative's builder opens it directly; azmasm's build of Mario Kart World (`switch2mac` on the command line) needs a dump folder, so the app recommends another build for a `.nup`.
 
@@ -123,7 +129,7 @@ cd hermit
 - `setup` checks macOS, Xcode, Metal, .NET, Python and git, and stops with the exact fix for anything missing; then it makes a Python environment in `.venv` (it finds a new enough Python by itself: macOS's own is too old).
 - `build` writes only into `./work`. Mario Kart World is built step by step here ([its page](games/mario-kart-world/README.md#build)). The other games: their engine is fetched once into `./engines` at the version the game's `game.json` names, Hermit's front end (overlay and key-2 settings) is added to it, and the engine's own builder makes the app.
 - `build` first checks there is enough free disk space for that game.
-- `install` moves the app to `/Applications`, replacing an older one.
+- `install` moves the app to `/Applications`, replacing an older one, then removes the build files the app no longer needs (the game unpacked, temporary files, the build's engine download: often tens of GB). The shader caches stay, so a rebuild is still quick. `HERMIT_KEEP_BUILD=1` keeps everything (for `run` and `refresh`).
 - `./hermit.py builds <game>` shows a game's builds, the one your Mac gets and why, and how each ran on players' Macs; `build --engine <id>` builds another one.
 
 ### The first start waits

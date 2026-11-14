@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-13 (1)
+
+- **Hermit now removes a game's leftover build files once the game is installed** (the game unpacked, temporary files and the build's engine download: often tens of GB). The shader caches stay, so a rebuild is still quick.
+
 ## 2026-11-12 (4)
 
 - **Pokémon Pokopia: pokopia-native is back** as the default build, from a copy of its last available version (3 November) kept at [azmasm/pokopia-native](https://github.com/azmasm/pokopia-native): xFractals' work, MIT. horizon-nx2 stays the pick for MacBook Airs and 16 GB Macs.

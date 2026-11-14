@@ -100,6 +100,8 @@ extension BuildStore {
     package var hermitLibraryDir: String { Self.outputFolder }
     /// Settings → Output: where finished games go, /Applications unless the player chose another folder.
     nonisolated package static let s2mOutputKey = "s2m.outputFolder"
+    /// Settings → Storage: keep each game's whole build folder after its install (hermit.py removes the bulky, re-made parts unless HERMIT_KEEP_BUILD is set).
+    nonisolated package static let keepBuildFilesKey = "s2m.keepBuildFiles"
     nonisolated package static var outputFolder: String { UserDefaults.standard.string(forKey: s2mOutputKey).flatMap { $0.isEmpty ? nil : $0 } ?? "/Applications" }
 
     /// The build of a game with several the player picked (Builds page), else the one chosen for this Mac. Kept per game.
@@ -117,6 +119,7 @@ extension BuildStore {
                                      "USER": NSUserName(), "HOME": NSHomeDirectory(), "LANG": "en_US.UTF-8", "TMPDIR": NSTemporaryDirectory()]
         if let root = Toolchain.dotnetRoot(for: deps.dotnetPath.isEmpty ? "dotnet" : deps.dotnetPath) { env["DOTNET_ROOT"] = root; env["DOTNET_ROOT_ARM64"] = root }
         env.merge(BundledTools.environment(for: py)) { $1 }
+        if UserDefaults.standard.bool(forKey: Self.keepBuildFilesKey) { env["HERMIT_KEEP_BUILD"] = "1" }
         return env
     }
 

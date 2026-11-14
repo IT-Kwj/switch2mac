@@ -1,3 +1,3 @@
-# switch2mac shared shader list	game=0100ABF008968000	engine=nxnative-17f670a77e4f
-# Pokémon Sword, built with nxnative at 17f670a77e4f. Added to nxnative's own seed list (its profile's pso_manifest.tsv) at build time.
+# switch2mac shared shader list	game=0100ABF008968000	engine=nxnative-c398ff35b6f4
+# Pokémon Sword, built with nxnative at c398ff35b6f4. Added to nxnative's own seed list (its profile's pso_manifest.tsv) at build time.
 # Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.

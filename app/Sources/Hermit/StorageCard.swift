@@ -15,13 +15,14 @@ struct StorageCard: View {
     @State private var confirm = false
     @State private var note = ""
     @State private var open = false
+    @AppStorage(BuildStore.keepBuildFilesKey) private var keepAll = false
 
     private var total: Int64 { (items ?? []).reduce(0) { $0 + $1.bytes } }
     private var builds: [StorageItem] { (items ?? []).filter { $0.kind == "build" } }
     private var engines: [StorageItem] { (items ?? []).filter { $0.kind == "engine" } }
 
     var body: some View {
-        CardGroup("Storage", footnote: "Building a game leaves its working files behind (the game unpacked, shaders, tools) so a rebuild is faster, and a copy of the code of each build you used. Clean up removes them. Your games, saves, settings and the shader caches your games keep stay, and so do your dumps and keys: a later build only takes longer.") {
+        CardGroup("Storage", footnote: "After a game installs, Hermit removes the build files its app no longer needs and keeps only the shader caches, so a rebuild is faster (Keep build files keeps everything). Clean up removes what is left. Your games, saves, settings and the shader caches your games keep stay, and so do your dumps and keys: a later build only takes longer.") {
             CardRow("Build leftovers", detail: summary, dot: total > 0 ? LauncherPalette.unbuilt : LauncherPalette.ready, open: (items?.isEmpty == false) ? open : nil) {
                 if measuring || cleaning { ProgressView().controlSize(.small) }
                 else if total > 0 {
@@ -29,6 +30,10 @@ struct StorageCard: View {
                 } else {
                     Button("Check again") { measure() }
                 }
+            }
+            CardDivider()
+            CardRow("Keep build files", detail: keepAll ? "Each game keeps everything its build made: rebuilds are a few minutes quicker, and take tens of GB per game." : "Off: after a game installs, only its shader caches stay.", dot: nil) {
+                Toggle("", isOn: $keepAll).labelsHidden().toggleStyle(LauncherSwitchStyle())
             }
             .contentShape(Rectangle())
             .onTapGesture { if items?.isEmpty == false { withAnimation(.easeOut(duration: 0.15)) { open.toggle() } } }
