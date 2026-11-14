@@ -458,3 +458,13 @@ DM_FOCUS_KEEP=1
   只有代码里正式注册/推荐了新 builder，才切换过去。`--engine` 只能作为
   实验性覆盖，不作为默认。
 
+#### 2026-11-14 试玩结果：最新 nxnative 派生 1.8.0 更合适
+
+- Mac：M3 Max，36 GB（用户本机）。
+- 构建：`nxnative a2514d7d` 对 v917504 的派生 profile。
+- 实际试玩反馈：上一版 `nxnative-mkw` 地图等 bug 全部消失，本版可正常游玩。
+- 虽然仍有 1 个 shader（Ampere instruction 481）翻译失败，但用户实际玩到的
+  内容没有受影响。
+- 结论：在 nxnative 正式注册 1.8.0（PR #1252/#2621）之前，本机 1.8.0 优先
+  使用 `--engine nxnative` 的最新派生构建；等上游正式注册后再改回代码推荐。
+
