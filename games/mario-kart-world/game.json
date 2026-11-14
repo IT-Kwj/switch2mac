@@ -4,6 +4,9 @@
  "version": "1.0.0",
  "marker": "Movie/StaffRoll_00.webm",
  "disk_gb": 50,
+ "builds_by_main": {
+  "d00e4f399e411d0613aa8d26b1c02fef": "v917504"
+ },
  "builds": [
   {
    "id": "switch2mac",
@@ -53,8 +56,26 @@
    "nup_needs_base": true
   },
   {
+   "id": "nxnative-180",
+   "name": "nxnative (1.8.0)",
+   "engine": {
+    "kind": "nxnative",
+    "repo": "https://github.com/seedds/nxnative",
+    "commit": "a4705fe1a98df98701973c262ece62e4bf56b6f5"
+   },
+   "versions": [
+    "v917504"
+   ],
+   "shader_list": "shader_list-nxnative-180.tsv",
+   "about": "Latest nxnative with Hermit's overlay and settings, building 1.8.0 from a profile derived from v0: tested on an M3 Max 36 GB. Replaces the old nxnative-mkw build; its profile is not registered by upstream yet.",
+   "nup_needs_base": true,
+   "version_names": {
+    "v917504": "1.8.0"
+   }
+  },
+  {
    "id": "nxnative-mkw",
-   "name": "Thijs2004's 1.8.0 version",
+   "name": "nxnative-mkw (legacy 1.8.0)",
    "engine": {
     "kind": "nxnative",
     "repo": "https://github.com/Thijs2004/nxnative-mkw",
@@ -67,7 +88,7 @@
    "watch": [
     ""
    ],
-   "about": "Thijs2004's nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): the only build here for a dump with the 1.8.0 update.",
+   "about": "Legacy Thijs2004 nxnative port for Mario Kart World 1.8.0 (update v917504) (MIT): kept as a manual fallback only; the current 1.8.0 build is nxnative-180.",
    "nup_needs_base": true,
    "version_names": {
     "v917504": "1.8.0"
@@ -76,8 +97,8 @@
  ],
  "choose": [
   {
-   "build": "nxnative-mkw",
-   "why": "Your dump has the 1.8.0 update: this is the build that plays it"
+   "build": "nxnative-180",
+   "why": "Your dump has the 1.8.0 update: latest nxnative, tested on an M3 Max"
   },
   {
    "memory_max": 16,

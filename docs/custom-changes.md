@@ -487,3 +487,17 @@ DM_FOCUS_KEEP=1
   `work/0400C3F00006E000` 仍保留，供下次继续构建。
 - 构建后可用空间约 34 GB。
 
+#### 2026-11-14：MKWROM/180 改为单树，构建时临时生成 base/updates
+
+- `MKWROM/180` 现在只保留一份 `exefs/` + `romfs/`，Finder/`du` 显示约 22 GB；
+  不再保留两份 APFS 克隆。
+- `game.json` 增加 `builds_by_main`：
+  - `d00e4f399e411d0613aa8d26b1c02fef` -> `v917504`
+- 新增构建 `nxnative-180`，使用最新 `nxnative a4705fe1a98d`，并在 `choose`
+  中排在首位；旧 `nxnative-mkw` 保留为 legacy 手动回退，不再默认选择。
+- `hermit.py prepare_dump()` 在构建工作区的 `dump-layout/` 临时生成
+  `base/` + `updates/917504/`，使用 APFS 克隆；源目录始终只有一份。
+- 已验证 `identify` 为 v917504，builder 的 `pack_dump.scan()` 看到
+  `versions: [917504]`；临时布局验证后已删除。
+- `trim_build` 的清理列表加入 `dump-layout`，以后 `install` 会自动清掉临时布局。
+

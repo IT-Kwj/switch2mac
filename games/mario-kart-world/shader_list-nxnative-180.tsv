@@ -1,0 +1,3 @@
+# switch2mac shared shader list	game=0400C3F00006E000	engine=nxnative-a4705fe1a98d
+# Mario Kart World 1.8.0, built with the latest nxnative at a4705fe1a98d through a derived profile. This list starts empty; rows are added as players meet shaders.
+# Rows: S<TAB>shader key<TAB>stage / C<TAB>compute shader key / R<TAB>render pipeline key (hex): identifiers and render state only, no game data. Row order = first-use order; do not sort.
