@@ -1,0 +1,11 @@
+{
+ "title_id": "040032B023CA4000",
+ "name": "Orbitals",
+ "version": "update v327680",
+ "engine": {
+  "kind": "nxnative",
+  "repo": "https://github.com/seedds/nxnative",
+  "commit": "f7096458da98adcae46dc1a4b5e9c9ca07d778b9"
+ },
+ "disk_gb": 50
+}
