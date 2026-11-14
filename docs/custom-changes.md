@@ -468,3 +468,22 @@ DM_FOCUS_KEEP=1
 - 结论：在 nxnative 正式注册 1.8.0（PR #1252/#2621）之前，本机 1.8.0 优先
   使用 `--engine nxnative` 的最新派生构建；等上游正式注册后再改回代码推荐。
 
+#### 每次构建后的固定检查
+
+1. 启动窗口（Hermit “准备开玩”页面）：检查标题、说明、高级设置、
+   启动前显示、恢复默认、开始游戏、云存档、菜单栏和分区标题。
+2. 游戏内 2 键面板：检查分区标题、所有设置 label/note、选项文字，
+   以及“高级 ▸ / 高级 ▾”和锁定/变更提示。
+3. 检查 `Resources/dm/launcher.json` 与 `Contents/MacOS/nxnative` /
+   `dmhost` 中的关键中文字符串；发现英文项立即补进 `patch.py` 或
+   `s2m_launcher.swift`。
+
+#### 2026-11-14 最新 nxnative a4705fe1 1.8.0 构建
+
+- 构建：`nxnative a4705fe1a98d` 对 v917504 的派生 profile。
+- Shader：11,603 个，11,602 成功，仍是同一个 Ampere instruction 481 失败。
+- App：24.7 GB，已安装到 `/Applications`；启动窗口和 2 键汉化检查通过。
+- 按“只检查不删除”的要求，本次没有让 install 自动 trim 构建缓存；
+  `work/0400C3F00006E000` 仍保留，供下次继续构建。
+- 构建后可用空间约 34 GB。
+
